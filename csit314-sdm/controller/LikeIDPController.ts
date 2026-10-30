@@ -2,23 +2,25 @@
 // Feature: Like IDP (Customer)
 //
 // What goes here:
-// - Saves a like from the logged-in customer. Likes feed the favourites list,
-//   recommendations, the dashboard and the platform report.
+// - Adds an IDP to the logged-in customer's favourites list, once only.
 //
 // Rules:
-// - Only a logged-in customer can like an IDP.
-// - The IDP must exist and be visible (designer verified).
 // - A customer can like the same IDP only once.
+// - The boundary only calls this for a logged-in customer.
 //
 // Methods:
-// - validateLike(idpID, customerID)
-//     -> IDP.getIDP(idpID)
-//     -> IDPLike.getLike(customerID, idpID)    duplicate check
-// - likeIDP(idpID, customerID)
-//     -> IDPLike.createLike(like)
-// - unlikeIDP(idpID, customerID)               optional
-//     -> IDPLike.deleteLike(likeID)
+// - likeIDP(customerID, idpID)               true = added, false = already in favourites
+//     -> IDPLike.isLiked(customerID, idpID)
+//     -> IDPLike.addLike(customerID, idpID)
 //
-// Entities used: IDPLike, IDP
+// Entities used: IDPLike
 //
 // Attributes: none
+import { IDPLike } from "@/entity/IDPLike";
+
+export class LikeIDPController {
+  static async likeIDP(customerID: string, idpID: number): Promise<boolean> {
+    if (await IDPLike.isLiked(customerID, idpID)) return false;
+    return await IDPLike.addLike(customerID, idpID);
+  }
+}

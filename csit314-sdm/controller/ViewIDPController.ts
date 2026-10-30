@@ -1,24 +1,30 @@
 // Control: ViewIDPController
-// Feature: View IDP (Interior Designer and Customer)
+// Feature: View IDP (Customer)
 //
 // What goes here:
-// - Loads everything needed to show one IDP.
-// - Records a view event when a customer opens the IDP (used by the dashboard and report).
-//
-// Rules:
-// - IDPs from designers who are not verified are hidden from customers.
-// - A view is recorded only for customers, not when the owner views their own IDP.
+// - Loads everything needed to show one IDP. No login needed, no data is changed.
 //
 // Methods:
-// - viewIDP(idpID, viewerID)
+// - viewIDP(idpID)                           null if there is no such IDP (e.g. deleted by the designer)
 //     -> IDP.getIDP(idpID)
 //     -> IDPPhoto.getPhotos(idpID)
-//     -> IDPLike.countLikes(idpID)
-//     -> IDPLike.getLike(customerID, idpID)       has this customer liked it already?
-//     -> CompanyInformation.getCompanyInfo(designerID)
-// - recordView(idpID, customerID)
-//     -> IDPView.createView(view)
 //
-// Entities used: IDP, IDPPhoto, IDPLike, IDPView, CompanyInformation
+// Entities used: IDP, IDPPhoto
 //
 // Attributes: none
+import { IDP } from "@/entity/IDP";
+import { IDPPhoto } from "@/entity/IDPPhoto";
+
+export interface IDPDetails {
+  idp: IDP;
+  photos: IDPPhoto[];
+}
+
+export class ViewIDPController {
+  static async viewIDP(idpID: number): Promise<IDPDetails | null> {
+    const idp = await IDP.getIDP(idpID);
+    if (!idp) return null;
+    const photos = await IDPPhoto.getPhotos(idpID);
+    return { idp, photos };
+  }
+}
