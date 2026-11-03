@@ -4,15 +4,18 @@
 //
 // Rules / fixed values:
 // - DEMO_CUSTOMER_ID = C1
+// - DEMO_DESIGNER_ID = D1                   the designer side is always "logged in" as D1 for now
 //
 // Methods:
 // - getLoggedInCustomerID()                 null when nobody is logged in
+// - getLoggedInDesignerID()
 // - loginAsDemoCustomer()
 // - logout()
 //
 // Attributes: none
 const SESSION_KEY = "idp_platform_session_customerID";
 const DEMO_CUSTOMER_ID = "C1";
+const DEMO_DESIGNER_ID = "D1";
 
 export class SessionController {
   // Logged in by default so the features can be tried straight away.
@@ -23,6 +26,10 @@ export class SessionController {
     } catch {
       return DEMO_CUSTOMER_ID;
     }
+  }
+
+  static getLoggedInDesignerID(): string {
+    return DEMO_DESIGNER_ID;
   }
 
   static loginAsDemoCustomer(): void {
