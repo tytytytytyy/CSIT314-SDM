@@ -1,16 +1,22 @@
 // Control: IDViewIDPDetailsController
 // Feature: View IDP Details (Interior Designer)
-// Not the same as ViewIDPController (Customer): a designer can only view their OWN IDPs,
-// and sees the status and photo captions so they can check the IDP before updating it.
+// Not the same as ViewIDPController (Customer): a designer only sees their OWN IDPs,
+// sees each IDP's status (In Progress / Completed), and can go on to edit it (Update IDP).
+// Designers cannot like IDPs; liking is a customer feature.
 //
 // Rules:
+// - The list only shows the logged-in designer's IDPs.
 // - The IDP must exist (not deleted).
 // - The IDP must belong to the logged-in designer.
 //
 // Methods:
-// - viewIDPDetails(designerID, idpID)
+// - getMyIDPs(designerID)                       the designer's IDP list
+//     -> IDP.getIDPsByDesigner(designerID)
+//     -> IDPPhoto.getPhotos(idpID) for each      first photo is the main photo
+// - viewIDPDetails(designerID, idpID)          one IDP in full
 //     -> IDP.getIDP(idpID)
 //     -> IDPPhoto.getPhotos(idpID)              only if the designer owns the IDP
+// - getStatusLabel(status)                      ongoing -> "In Progress", completed -> "Completed"
 //
 // Entities used: IDP, IDPPhoto
 //
@@ -31,7 +37,33 @@ export interface IDViewIDPDetailsResult {
   details?: IDPDetails;
 }
 
+export interface MyIDPItem {
+  idpID: number;
+  title: string;
+  status: "ongoing" | "completed";
+  propertyType: string;
+  category: string;
+  mainPhotoURL: string | null;
+}
+
 export class IDViewIDPDetailsController {
+  static async getMyIDPs(designerID: string): Promise<MyIDPItem[]> {
+    const idps = await IDP.getIDPsByDesigner(designerID);
+    const items: MyIDPItem[] = [];
+    for (const idp of idps) {
+      const photos = await IDPPhoto.getPhotos(idp.idpID);
+      items.push({
+        idpID: idp.idpID,
+        title: idp.title,
+        status: idp.status,
+        propertyType: idp.propertyType,
+        category: idp.category,
+        mainPhotoURL: photos[0]?.photoURL ?? null,
+      });
+    }
+    return items;
+  }
+
   static async viewIDPDetails(designerID: string, idpID: number): Promise<IDViewIDPDetailsResult> {
     const idp = await IDP.getIDP(idpID);
     if (!idp) return { status: "notFound" };
@@ -39,5 +71,9 @@ export class IDViewIDPDetailsController {
 
     const photos = await IDPPhoto.getPhotos(idpID);
     return { status: "ok", details: { idp, photos } };
+  }
+
+  static getStatusLabel(status: "ongoing" | "completed"): string {
+    return status === "completed" ? "Completed" : "In Progress";
   }
 }

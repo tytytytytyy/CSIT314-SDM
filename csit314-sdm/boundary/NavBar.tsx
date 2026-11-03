@@ -1,11 +1,15 @@
 // Boundary: NavBar
 // Shared nav bar with the "Favourites List" link (View Favourites List trigger).
 // The log in / log out button is a TEST helper for the stub SessionController.
+// Designer pages (/designer/...) show DesignerNavBar instead, since designers have no
+// favourites list and are not the C1 customer.
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
 import { SessionController } from "@/controller/SessionController";
+import DesignerNavBar from "@/boundary/DesignerNavBar";
 
 export default function NavBar() {
   // null on the server / first render, then the real session state (localStorage is browser-only).
@@ -14,6 +18,9 @@ export default function NavBar() {
     () => SessionController.getLoggedInCustomerID() !== null,
     () => null,
   );
+  const pathname = usePathname();
+
+  if (pathname?.startsWith("/designer")) return <DesignerNavBar />;
 
   const toggleTestLogin = () => {
     if (loggedIn) SessionController.logout();

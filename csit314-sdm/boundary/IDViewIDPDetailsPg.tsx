@@ -1,7 +1,9 @@
 // Boundary: IDViewIDPDetailsPg
-// Feature: View IDP Details (Interior Designer)
-// Not the same as IDPViewPg (Customer): only the owner can open it, it shows the status and
-// photo captions, and it has an Edit button instead of a Like button.
+// Feature: View IDP Details (Interior Designer) - step 2, one IDP in full.
+// Opened from IDMyIDPListPg.
+// Not the same as IDPViewPg (Customer): only the owner can open it, it shows the status
+// (In Progress / Completed) and photo captions, and it has an Edit button instead of a
+// Like button (designers cannot like IDPs).
 //
 // Route: /designer/idp/[idpID]   (app/designer/idp/[idpID]/page.tsx renders this)
 //
@@ -20,6 +22,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { IDViewIDPDetailsController, type IDPDetails } from "@/controller/IDViewIDPDetailsController";
 import { SessionController } from "@/controller/SessionController";
+import StatusBadge from "@/boundary/StatusBadge";
 
 type View =
   | { kind: "loading" }
@@ -53,13 +56,7 @@ export default function IDViewIDPDetailsPg({ idpID }: { idpID: number }) {
       <p className="text-sm text-zinc-500">My IDP #{idp.idpID}</p>
       <div className="mt-1 flex flex-wrap items-center gap-3">
         <h1 className="text-3xl font-semibold">{idp.title}</h1>
-        <span
-          className={`rounded-full px-3 py-1 text-xs font-medium ${
-            idp.status === "completed" ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-800"
-          }`}
-        >
-          {idp.status === "completed" ? "Completed" : "Ongoing"}
-        </span>
+        <StatusBadge status={idp.status} />
       </div>
 
       <div className="mt-4 flex gap-3">
@@ -71,8 +68,8 @@ export default function IDViewIDPDetailsPg({ idpID }: { idpID: number }) {
         >
           Edit IDP
         </button>
-        <Link href="/" className="rounded border px-4 py-2">
-          Back
+        <Link href="/designer/idp" className="rounded border px-4 py-2">
+          Back to My IDPs
         </Link>
       </div>
 

@@ -18,7 +18,8 @@
 // - getIDPsByDesigner(designerID)
 // - countIDPs(startDate, endDate)                       platform report
 //
-// Only getIDP is implemented so far (View IDP, Like IDP, View Favourites List).
+// Implemented so far: getIDP (View IDP, Like IDP, View Favourites List),
+// getIDPsByDesigner (ID View IDP Details).
 import { readTable } from "./LocalStore";
 
 export interface IDPData {
@@ -51,5 +52,13 @@ export class IDP implements IDPData {
   static async getIDP(idpID: number): Promise<IDP | null> {
     const row = readTable<IDPData>("idp").find((r) => r.idpID === idpID);
     return row ? new IDP(row) : null;
+  }
+
+  // All IDPs owned by one designer, in idpID order.
+  static async getIDPsByDesigner(designerID: string): Promise<IDP[]> {
+    return readTable<IDPData>("idp")
+      .filter((r) => r.designerID === designerID)
+      .sort((a, b) => a.idpID - b.idpID)
+      .map((r) => new IDP(r));
   }
 }
