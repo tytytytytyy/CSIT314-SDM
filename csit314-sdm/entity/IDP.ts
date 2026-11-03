@@ -19,8 +19,14 @@
 // - countIDPs(startDate, endDate)                       platform report
 //
 // Implemented so far: getIDP (View IDP, Like IDP, View Favourites List),
-// getIDPsByDesigner (ID View IDP Details).
-import { readTable } from "./LocalStore";
+// getIDPsByDesigner (ID View IDP Details), updateIDP (ID Update IDP).
+//
+// Fixed values:
+// - STATUSES       = ongoing | completed   (shown as "In Progress" / "Completed")
+// - CATEGORIES     = Residential | Commercial
+// - PROPERTY_TYPES = HDB, Condo, Landed (Residential); Office, Retail, F&B (Commercial)
+// - STYLES         = Scandinavian, Industrial, Minimalist, ...
+import { readTable, writeTable } from "./LocalStore";
 
 export interface IDPData {
   idpID: number;
@@ -35,6 +41,17 @@ export interface IDPData {
 }
 
 export class IDP implements IDPData {
+  static readonly STATUSES = ["ongoing", "completed"] as const;
+  static readonly CATEGORIES = ["Residential", "Commercial"] as const;
+  static readonly PROPERTY_TYPES = {
+    Residential: ["HDB", "Condo", "Landed"],
+    Commercial: ["Office", "Retail", "F&B"],
+  } as const;
+  static readonly STYLES = [
+    "Scandinavian", "Industrial", "Minimalist", "Modern Luxury", "Japandi",
+    "Contemporary", "Tropical", "Mid-Century Modern", "Peranakan",
+  ] as const;
+
   idpID!: number;
   designerID!: string;
   title!: string;
@@ -60,5 +77,16 @@ export class IDP implements IDPData {
       .filter((r) => r.designerID === designerID)
       .sort((a, b) => a.idpID - b.idpID)
       .map((r) => new IDP(r));
+  }
+
+  // Saves new values for an existing IDP (matched by idpID). False if there is no such IDP.
+  static async updateIDP(idp: IDPData): Promise<boolean> {
+    const rows = readTable<IDPData>("idp");
+    const index = rows.findIndex((r) => r.idpID === idp.idpID);
+    if (index === -1) return false;
+    const updated = [...rows];
+    updated[index] = { ...idp };
+    writeTable("idp", updated);
+    return true;
   }
 }

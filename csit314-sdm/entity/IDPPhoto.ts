@@ -12,8 +12,8 @@
 // - getPhotos(idpID)                                    ordered by sortOrder, first is the main photo
 // - deletePhoto(photoID)
 //
-// Only getPhotos is implemented so far.
-import { readTable } from "./LocalStore";
+// photoURL is a data: URL while the data lives in the browser (LocalStore).
+import { readTable, writeTable } from "./LocalStore";
 
 export interface IDPPhotoData {
   photoID: string;
@@ -41,5 +41,26 @@ export class IDPPhoto implements IDPPhotoData {
       .filter((r) => r.idpID === idpID)
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map((r) => new IDPPhoto(r));
+  }
+
+  // Saves a new photo and returns it with its new photoID and uploadedAt.
+  static async addPhoto(photo: Omit<IDPPhotoData, "photoID" | "uploadedAt">): Promise<IDPPhoto> {
+    const rows = readTable<IDPPhotoData>("idp_photo");
+    const created: IDPPhotoData = {
+      ...photo,
+      photoID: `P${Date.now()}${Math.floor(Math.random() * 1000)}`,
+      uploadedAt: new Date().toISOString(),
+    };
+    writeTable("idp_photo", [...rows, created]);
+    return new IDPPhoto(created);
+  }
+
+  // Removes a photo. False if there is no such photo.
+  static async deletePhoto(photoID: string): Promise<boolean> {
+    const rows = readTable<IDPPhotoData>("idp_photo");
+    const remaining = rows.filter((r) => r.photoID !== photoID);
+    if (remaining.length === rows.length) return false;
+    writeTable("idp_photo", remaining);
+    return true;
   }
 }
