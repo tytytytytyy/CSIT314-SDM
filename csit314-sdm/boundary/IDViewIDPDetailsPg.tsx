@@ -9,10 +9,12 @@
 //
 // What goes here:
 // - Title, status, photos with captions, style, property type, category, budget, description.
-// - "Edit IDP" button for Update IDP (disabled until Update IDP is built).
+// - "Edit IDP" button that opens IDUpdateIDPPg (Update IDP).
+// - "IDP updated" message after coming back from a successful update.
 //
 // Methods:
 // - displayIDPDetails(idpDetails)
+// - displayUpdatedMsg()              shown after Update IDP saves
 // - displayErrorPg(message)          "IDP not found" or "You can only view your own IDPs"
 //
 // Attributes: none
@@ -31,13 +33,16 @@ type View =
 
 export default function IDViewIDPDetailsPg({ idpID }: { idpID: number }) {
   const [view, setView] = useState<View>({ kind: "loading" });
+  const [showUpdatedMsg, setShowUpdatedMsg] = useState(false);
 
   const displayIDPDetails = (idpDetails: IDPDetails) => setView({ kind: "details", details: idpDetails });
+  const displayUpdatedMsg = () => setShowUpdatedMsg(true);
   const displayErrorPg = (message: string) => setView({ kind: "error", message });
 
   useEffect(() => {
     // Designer clicks one of their IDPs -> the page asks the controller for its details.
     const load = async () => {
+      if (new URLSearchParams(window.location.search).get("updated") === "1") displayUpdatedMsg();
       const designerID = SessionController.getLoggedInDesignerID();
       const result = await IDViewIDPDetailsController.viewIDPDetails(designerID, idpID);
       if (result.status === "ok" && result.details) displayIDPDetails(result.details);
@@ -59,27 +64,28 @@ export default function IDViewIDPDetailsPg({ idpID }: { idpID: number }) {
         <StatusBadge status={idp.status} />
       </div>
 
+      {showUpdatedMsg && (
+        <p role="status" className="mt-4 rounded border border-green-300 bg-green-50 p-3 text-sm text-green-800">
+          IDP updated.
+        </p>
+      )}
+
       <div className="mt-4 flex gap-3">
-        <button
-          type="button"
-          disabled
-          title="Update IDP is not built yet"
-          className="rounded border bg-zinc-900 px-4 py-2 text-white disabled:opacity-40"
-        >
+        <Link href={`/designer/idp/${idp.idpID}/edit`} className="rounded border bg-zinc-900 px-4 py-2 text-white">
           Edit IDP
-        </button>
+        </Link>
         <Link href="/designer/idp" className="rounded border px-4 py-2">
           Back to My IDPs
         </Link>
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        {photos.map((photo) => (
+        {photos.map((photo, index) => (
           <figure key={photo.photoID}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={photo.photoURL} alt={photo.caption} className="rounded" />
             <figcaption className="mt-1 text-sm text-zinc-500">
-              {photo.sortOrder === 1 ? "Main photo: " : ""}
+              {index === 0 ? "Main photo: " : ""}
               {photo.caption}
             </figcaption>
           </figure>
