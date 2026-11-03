@@ -12,6 +12,36 @@ beforeEach(() => {
   window.localStorage.clear();
 });
 
+describe("getMyIDPs", () => {
+  it("lists only the logged-in designer's own IDPs", async () => {
+    const list = await IDViewIDPDetailsController.getMyIDPs("D1");
+    expect(list.map((item) => item.idpID)).toEqual([1, 2]);
+  });
+
+  it("gives each IDP its status and main photo", async () => {
+    const list = await IDViewIDPDetailsController.getMyIDPs("D1");
+    expect(list[0]).toMatchObject({ idpID: 1, status: "completed", propertyType: "HDB" });
+    expect(list[0].mainPhotoURL).toMatch(/^data:image\/svg\+xml/);
+    expect(list[1]).toMatchObject({ idpID: 2, status: "ongoing" });
+  });
+
+  it("does not show other designers' IDPs", async () => {
+    const list = await IDViewIDPDetailsController.getMyIDPs("D2");
+    expect(list.map((item) => item.idpID)).toEqual([3]);
+  });
+
+  it("returns an empty list for a designer with no IDPs", async () => {
+    expect(await IDViewIDPDetailsController.getMyIDPs("D99")).toEqual([]);
+  });
+});
+
+describe("getStatusLabel", () => {
+  it("shows ongoing as In Progress", () => {
+    expect(IDViewIDPDetailsController.getStatusLabel("ongoing")).toBe("In Progress");
+    expect(IDViewIDPDetailsController.getStatusLabel("completed")).toBe("Completed");
+  });
+});
+
 describe("viewIDPDetails", () => {
   it("returns the IDP and its photos to the designer who owns it", async () => {
     const result = await IDViewIDPDetailsController.viewIDPDetails("D1", 1);
