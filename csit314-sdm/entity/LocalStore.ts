@@ -3,7 +3,7 @@
 // the browser's localStorage, filled with dummy data the first time it is read.
 // Replace readTable / writeTable with real queries later; the entity methods stay the same.
 //
-// Database tables: idp, idp_photo, idp_like
+// Database tables: idp, idp_photo, idp_like, idp_sequence (next-ID counter for idp)
 //
 // Bump KEY_PREFIX when the seed data or the row shapes change, so old browser data is ignored.
 
@@ -49,6 +49,9 @@ const SEED: Record<string, unknown[]> = {
     { likeID: "L1", customerID: "C1", idpID: 4, likedAt: "2026-10-02T09:00:00.000Z" },
     { likeID: "L2", customerID: "C1", idpID: 2, likedAt: "2026-10-05T09:00:00.000Z" },
   ],
+  // Last idpID handed out, like a database AUTOINCREMENT counter. It is 4 because the deleted
+  // IDP 4 once existed: a new IDP must not reuse 4, or it would pick up C1's old like.
+  idp_sequence: [{ lastIDPID: 4 }],
 };
 
 export function readTable<T>(table: string): T[] {

@@ -17,9 +17,11 @@
 // - searchIDPs(criteria)                                active promotions listed first
 // - getIDPsByDesigner(designerID)
 // - countIDPs(startDate, endDate)                       platform report
+// - deleteIDP(idpID)                                    used to undo a failed Create IDP
 //
 // Implemented so far: getIDP (View IDP, Like IDP, View Favourites List),
-// getIDPsByDesigner (ID View IDP Details), updateIDP (ID Update IDP).
+// getIDPsByDesigner (ID View IDP Details), updateIDP (ID Update IDP),
+// createIDP and deleteIDP (ID Create IDP).
 //
 // Fixed values:
 // - STATUSES       = ongoing | completed   (shown as "In Progress" / "Completed")
@@ -77,6 +79,26 @@ export class IDP implements IDPData {
       .filter((r) => r.designerID === designerID)
       .sort((a, b) => a.idpID - b.idpID)
       .map((r) => new IDP(r));
+  }
+
+  // Saves a new IDP with the next free idpID and returns it.
+  static async createIDP(idp: Omit<IDPData, "idpID">): Promise<IDP> {
+    const sequence = readTable<{ lastIDPID: number }>("idp_sequence")[0] ?? { lastIDPID: 0 };
+    const rows = readTable<IDPData>("idp");
+    const idpID = Math.max(sequence.lastIDPID, ...rows.map((r) => r.idpID)) + 1;
+    const created: IDPData = { ...idp, idpID };
+    writeTable("idp", [...rows, created]);
+    writeTable("idp_sequence", [{ lastIDPID: idpID }]);
+    return new IDP(created);
+  }
+
+  // Removes an IDP. False if there is no such IDP.
+  static async deleteIDP(idpID: number): Promise<boolean> {
+    const rows = readTable<IDPData>("idp");
+    const remaining = rows.filter((r) => r.idpID !== idpID);
+    if (remaining.length === rows.length) return false;
+    writeTable("idp", remaining);
+    return true;
   }
 
   // Saves new values for an existing IDP (matched by idpID). False if there is no such IDP.
