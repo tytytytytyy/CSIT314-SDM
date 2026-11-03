@@ -8,6 +8,7 @@
 // - The logged-in designer's IDPs: main photo, title, property type, category, status.
 // - How many are completed out of the total.
 // - Empty message when the designer has no IDPs yet.
+// - "Create IDP" button that opens IDCreateIDPPg (Create IDP).
 //
 // Methods:
 // - displayMyIDPs(myIDPs)
@@ -43,7 +44,12 @@ export default function IDMyIDPListPg() {
 
   return (
     <main className="mx-auto w-full max-w-4xl p-8">
-      <h1 className="text-3xl font-semibold">My IDPs</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-3xl font-semibold">My IDPs</h1>
+        <Link href="/designer/idp/create" className="rounded bg-zinc-900 px-4 py-2 text-white">
+          + Create IDP
+        </Link>
+      </div>
       {view.kind === "loading" && <p className="mt-6">Loading...</p>}
       {view.kind === "empty" && <p className="mt-6">You have not created any IDPs yet.</p>}
       {view.kind === "list" && (

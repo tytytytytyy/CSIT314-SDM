@@ -10,11 +10,11 @@
 // What goes here:
 // - Title, status, photos with captions, style, property type, category, budget, description.
 // - "Edit IDP" button that opens IDUpdateIDPPg (Update IDP).
-// - "IDP updated" message after coming back from a successful update.
+// - "IDP created" / "IDP updated" message after Create IDP / Update IDP saves.
 //
 // Methods:
 // - displayIDPDetails(idpDetails)
-// - displayUpdatedMsg()              shown after Update IDP saves
+// - displaySavedMsg(message)         shown after Create IDP / Update IDP saves
 // - displayErrorPg(message)          "IDP not found" or "You can only view your own IDPs"
 //
 // Attributes: none
@@ -33,16 +33,18 @@ type View =
 
 export default function IDViewIDPDetailsPg({ idpID }: { idpID: number }) {
   const [view, setView] = useState<View>({ kind: "loading" });
-  const [showUpdatedMsg, setShowUpdatedMsg] = useState(false);
+  const [savedMsg, setSavedMsg] = useState<string | null>(null);
 
   const displayIDPDetails = (idpDetails: IDPDetails) => setView({ kind: "details", details: idpDetails });
-  const displayUpdatedMsg = () => setShowUpdatedMsg(true);
+  const displaySavedMsg = (message: string) => setSavedMsg(message);
   const displayErrorPg = (message: string) => setView({ kind: "error", message });
 
   useEffect(() => {
     // Designer clicks one of their IDPs -> the page asks the controller for its details.
     const load = async () => {
-      if (new URLSearchParams(window.location.search).get("updated") === "1") displayUpdatedMsg();
+      const query = new URLSearchParams(window.location.search);
+      if (query.get("created") === "1") displaySavedMsg("IDP created.");
+      else if (query.get("updated") === "1") displaySavedMsg("IDP updated.");
       const designerID = SessionController.getLoggedInDesignerID();
       const result = await IDViewIDPDetailsController.viewIDPDetails(designerID, idpID);
       if (result.status === "ok" && result.details) displayIDPDetails(result.details);
@@ -64,9 +66,9 @@ export default function IDViewIDPDetailsPg({ idpID }: { idpID: number }) {
         <StatusBadge status={idp.status} />
       </div>
 
-      {showUpdatedMsg && (
+      {savedMsg && (
         <p role="status" className="mt-4 rounded border border-green-300 bg-green-50 p-3 text-sm text-green-800">
-          IDP updated.
+          {savedMsg}
         </p>
       )}
 

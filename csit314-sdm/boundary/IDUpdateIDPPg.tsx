@@ -5,8 +5,7 @@
 // Route: /designer/idp/[idpID]/edit   (app/designer/idp/[idpID]/edit/page.tsx renders this)
 //
 // What goes here:
-// - Form filled with the IDP's current values: title, description, style, category,
-//   property type (only the types for the chosen category), budget, status.
+// - Form filled with the IDP's current values (fields shared with Create IDP: IDPFormFields).
 // - Current photos with a Remove / Undo button each.
 // - Upload more photos (they are shrunk in the browser before saving, to save space).
 // - "Save changes" submits to IDUpdateIDPController; "Cancel" goes back without saving.
@@ -25,26 +24,27 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  IDUpdateIDPController,
-  type NewPhotoUpload,
-  type UpdateFormData,
-  type UpdateIDPInput,
-} from "@/controller/IDUpdateIDPController";
+import { IDUpdateIDPController, type NewPhotoUpload, type UpdateFormData } from "@/controller/IDUpdateIDPController";
 import type { IDPDetails } from "@/controller/IDViewIDPDetailsController";
 import { SessionController } from "@/controller/SessionController";
+import IDPFormFields, {
+  ErrorList,
+  NewPhotoCard,
+  UploadPhotosButton,
+  preparePhoto,
+  toIDPInput,
+  type IDPFormValues,
+} from "@/boundary/IDPFormFields";
 
 type View =
   | { kind: "loading" }
   | { kind: "form"; details: IDPDetails; formData: UpdateFormData }
   | { kind: "error"; message: string };
 
-type FormValues = Omit<UpdateIDPInput, "budget"> & { budget: string };
-
 export default function IDUpdateIDPPg({ idpID }: { idpID: number }) {
   const router = useRouter();
   const [view, setView] = useState<View>({ kind: "loading" });
-  const [values, setValues] = useState<FormValues | null>(null);
+  const [values, setValues] = useState<IDPFormValues | null>(null);
   const [removedPhotoIDs, setRemovedPhotoIDs] = useState<string[]>([]);
   const [newPhotos, setNewPhotos] = useState<NewPhotoUpload[]>([]);
   const [errors, setErrors] = useState<string[]>([]);
@@ -76,7 +76,7 @@ export default function IDUpdateIDPPg({ idpID }: { idpID: number }) {
     const result = await IDUpdateIDPController.updateIDP(
       SessionController.getLoggedInDesignerID(),
       idpID,
-      { ...values, budget: values.budget.trim() === "" ? NaN : Number(values.budget) },
+      toIDPInput(values),
       removedPhotoIDs,
       newPhotos
     );
@@ -101,14 +101,6 @@ export default function IDUpdateIDPPg({ idpID }: { idpID: number }) {
   if (view.kind === "error") return <p className="p-8 text-red-600">{view.message}</p>;
 
   const { details, formData } = view;
-  const form = values!;
-  const set = (field: keyof FormValues, value: string) => setValues({ ...form, [field]: value });
-
-  // Changing the category also resets the property type if it no longer fits.
-  const changeCategory = (category: string) => {
-    const types = formData.propertyTypesByCategory[category] ?? [];
-    setValues({ ...form, category, propertyType: types.includes(form.propertyType) ? form.propertyType : types[0] });
-  };
 
   const toggleRemove = (photoID: string) =>
     setRemovedPhotoIDs((ids) => (ids.includes(photoID) ? ids.filter((id) => id !== photoID) : [...ids, photoID]));
@@ -126,15 +118,7 @@ export default function IDUpdateIDPPg({ idpID }: { idpID: number }) {
       <p className="text-sm text-zinc-500">My IDP #{idpID}</p>
       <h1 className="text-3xl font-semibold">Edit IDP</h1>
 
-      {errors.length > 0 && (
-        <div role="alert" className="mt-6 rounded border border-red-300 bg-red-50 p-4 text-sm text-red-800">
-          <ul className="list-disc pl-5">
-            {errors.map((message) => (
-              <li key={message}>{message}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <ErrorList messages={errors} />
 
       <form
         className="mt-6 flex flex-col gap-5"
@@ -143,72 +127,7 @@ export default function IDUpdateIDPPg({ idpID }: { idpID: number }) {
           submitUpdate();
         }}
       >
-        <Field label="Title" htmlFor="title">
-          <input id="title" value={form.title} onChange={(e) => set("title", e.target.value)} className={inputClass} />
-        </Field>
-
-        <Field label="Description" htmlFor="description">
-          <textarea
-            id="description"
-            rows={4}
-            value={form.description}
-            onChange={(e) => set("description", e.target.value)}
-            className={inputClass}
-          />
-        </Field>
-
-        <div className="grid gap-5 sm:grid-cols-2">
-          <Field label="Status" htmlFor="status">
-            <select id="status" value={form.status} onChange={(e) => set("status", e.target.value)} className={inputClass}>
-              {formData.statuses.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-          </Field>
-
-          <Field label="Style" htmlFor="style">
-            <select id="style" value={form.style} onChange={(e) => set("style", e.target.value)} className={inputClass}>
-              {formData.styles.map((style) => (
-                <option key={style}>{style}</option>
-              ))}
-            </select>
-          </Field>
-
-          <Field label="Category" htmlFor="category">
-            <select id="category" value={form.category} onChange={(e) => changeCategory(e.target.value)} className={inputClass}>
-              {formData.categories.map((category) => (
-                <option key={category}>{category}</option>
-              ))}
-            </select>
-          </Field>
-
-          <Field label="Property type" htmlFor="propertyType">
-            <select
-              id="propertyType"
-              value={form.propertyType}
-              onChange={(e) => set("propertyType", e.target.value)}
-              className={inputClass}
-            >
-              {(formData.propertyTypesByCategory[form.category] ?? []).map((type) => (
-                <option key={type}>{type}</option>
-              ))}
-            </select>
-          </Field>
-
-          <Field label="Budget (SGD)" htmlFor="budget">
-            <input
-              id="budget"
-              type="number"
-              min={1}
-              step="any"
-              value={form.budget}
-              onChange={(e) => set("budget", e.target.value)}
-              className={inputClass}
-            />
-          </Field>
-        </div>
+        <IDPFormFields values={values!} onChange={setValues} formData={formData} />
 
         <section>
           <p className="text-sm font-medium">
@@ -220,7 +139,11 @@ export default function IDUpdateIDPPg({ idpID }: { idpID: number }) {
               return (
                 <li key={photo.photoID} className="rounded border p-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={photo.photoURL} alt={photo.caption} className={`aspect-[8/5] w-full rounded object-cover ${removed ? "opacity-30" : ""}`} />
+                  <img
+                    src={photo.photoURL}
+                    alt={photo.caption}
+                    className={`aspect-[8/5] w-full rounded object-cover ${removed ? "opacity-30" : ""}`}
+                  />
                   <div className="mt-1 flex items-center justify-between gap-2 text-xs">
                     <span className="truncate">{removed ? "Will be removed" : photo.caption}</span>
                     <button type="button" onClick={() => toggleRemove(photo.photoID)} className="shrink-0 underline">
@@ -231,35 +154,14 @@ export default function IDUpdateIDPPg({ idpID }: { idpID: number }) {
               );
             })}
             {newPhotos.map((photo, index) => (
-              <li key={index} className="rounded border border-dashed border-green-500 p-2">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photo.dataURL} alt={photo.fileName} className="aspect-[8/5] w-full rounded object-cover" />
-                <div className="mt-1 flex items-center justify-between gap-2 text-xs">
-                  <span className="truncate text-green-700">New: {photo.fileName}</span>
-                  <button
-                    type="button"
-                    onClick={() => setNewPhotos((photos) => photos.filter((_, i) => i !== index))}
-                    className="shrink-0 underline"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </li>
+              <NewPhotoCard
+                key={index}
+                photo={photo}
+                onRemove={() => setNewPhotos((photos) => photos.filter((_, i) => i !== index))}
+              />
             ))}
           </ul>
-          <label className="mt-3 inline-block cursor-pointer rounded border px-4 py-2 text-sm">
-            Upload more photos
-            <input
-              type="file"
-              multiple
-              accept="image/jpeg,image/png,image/webp"
-              className="sr-only"
-              onChange={(e) => {
-                addFiles(e.target.files);
-                e.target.value = "";
-              }}
-            />
-          </label>
+          <UploadPhotosButton label="Upload more photos" onFiles={addFiles} />
         </section>
 
         <div className="flex gap-3">
@@ -273,50 +175,4 @@ export default function IDUpdateIDPPg({ idpID }: { idpID: number }) {
       </form>
     </main>
   );
-}
-
-// ---- Helpers (UI only) ----
-
-const inputClass = "w-full rounded border border-zinc-300 bg-white px-3 py-2 text-sm text-black";
-
-function Field({ label, htmlFor, children }: { label: string; htmlFor: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label htmlFor={htmlFor} className="text-sm font-medium">
-        {label}
-      </label>
-      {children}
-    </div>
-  );
-}
-
-// Shrinks an image to at most 1280px wide/high as a JPEG, so it fits in browser storage.
-// Files that are not images are passed through unchanged, so the controller can reject them.
-async function preparePhoto(file: File): Promise<NewPhotoUpload> {
-  const original = await new Promise<string>((resolve) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.readAsDataURL(file);
-  });
-  if (!file.type.startsWith("image/")) return { fileName: file.name, dataURL: original };
-
-  try {
-    const image = await new Promise<HTMLImageElement>((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-      img.src = original;
-    });
-    const scale = Math.min(1, 1280 / Math.max(image.width, image.height));
-    const canvas = document.createElement("canvas");
-    canvas.width = Math.round(image.width * scale);
-    canvas.height = Math.round(image.height * scale);
-    const context = canvas.getContext("2d")!;
-    context.fillStyle = "#fff"; // white behind transparent PNGs
-    context.fillRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    return { fileName: file.name, dataURL: canvas.toDataURL("image/jpeg", 0.8) };
-  } catch {
-    return { fileName: file.name, dataURL: original };
-  }
 }
