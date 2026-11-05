@@ -3,32 +3,19 @@
 // the browser's localStorage, filled with dummy data the first time it is read.
 // Replace readTable / writeTable with real queries later; the entity methods stay the same.
 //
-// Database tables: idp, idp_photo, idp_like, idp_sequence (next-ID counter for idp),
+// Database tables: idp, idp_photo, idp_like, idp_view, idp_sequence (next-ID counter for idp),
 //                  user_account, designer_verification, company_information
+//
+// The hand-made rows below are the special cases the unit tests and demo rely on. The large set
+// of generated dummy data (entity/DummyData.js) is added to them the first time the app runs.
 //
 // Bump KEY_PREFIX when the seed data or the row shapes change, so old browser data is ignored.
 
-const KEY_PREFIX = "idp_platform_v4_";
+import { generateDummyData, placeholderPhoto, placeholderLogo } from "./DummyData";
 
-function placeholderPhoto(label, colour) {
-  const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">` +
-    `<rect width="800" height="500" fill="${colour}"/>` +
-    `<text x="400" y="260" font-size="40" text-anchor="middle" fill="white" font-family="Arial">${label}</text>` +
-    `</svg>`;
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-}
+const KEY_PREFIX = "idp_platform_v6_";
 
-function placeholderLogo(initials, colour) {
-  const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">` +
-    `<rect width="200" height="200" rx="32" fill="${colour}"/>` +
-    `<text x="100" y="122" font-size="72" text-anchor="middle" fill="white" font-family="Arial" font-weight="bold">${initials}</text>` +
-    `</svg>`;
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-}
-
-const SEED = {
+const HAND_MADE = {
   // Login accounts. Passwords are left out until the Login feature exists.
   // D1-D3 are verified designers. D4 is still waiting for verification and D5 was suspended,
   // so Browse Interior Designers must hide both.
@@ -285,7 +272,30 @@ const SEED = {
   // Last idpID handed out, like a database AUTOINCREMENT counter. It is 4 because the deleted
   // IDP 4 once existed: a new IDP must not reuse 4, or it would pick up C1's old like.
   idp_sequence: [{ lastIDPID: 4 }],
+  idp_view: [],
 };
+
+// Hand-made rows plus the generated dummy data, built once per page load.
+let seedCache = null;
+function seed() {
+  if (seedCache) return seedCache;
+  const { lastIDPID, ...extraTables } = generateDummyData();
+  seedCache = {};
+  for (const table of new Set([...Object.keys(HAND_MADE), ...Object.keys(extraTables)])) {
+    seedCache[table] = [...(HAND_MADE[table] ?? []), ...(extraTables[table] ?? [])];
+  }
+  seedCache.idp_sequence = [{ lastIDPID: Math.max(HAND_MADE.idp_sequence[0].lastIDPID, lastIDPID ?? 0) }];
+  return seedCache;
+}
+
+// The first time any table is read, every table gets its starting data at once,
+// so views, likes and IDPs all share the same dates.
+function seedAllTables() {
+  for (const [table, rows] of Object.entries(seed())) {
+    const key = KEY_PREFIX + table;
+    if (window.localStorage.getItem(key) === null) window.localStorage.setItem(key, JSON.stringify(rows));
+  }
+}
 
 export function readTable(table) {
   if (typeof window === "undefined") return [];
@@ -293,11 +303,12 @@ export function readTable(table) {
   try {
     const raw = window.localStorage.getItem(key);
     if (raw) return JSON.parse(raw);
-    window.localStorage.setItem(key, JSON.stringify(SEED[table] ?? []));
+    seedAllTables();
+    return JSON.parse(window.localStorage.getItem(key) ?? "[]");
   } catch {
     // storage blocked or corrupted: fall back to the seed data
   }
-  return SEED[table] ?? [];
+  return seed()[table] ?? [];
 }
 
 export function writeTable(table, rows) {
