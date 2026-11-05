@@ -21,7 +21,9 @@ export default function NavBar() {
   );
   const pathname = usePathname();
 
-  if (pathname?.startsWith("/designer")) return <DesignerNavBar />;
+  // "/designer" and "/designer/..." only, so the customer page "/designers" keeps this bar.
+  const isDesignerPage = pathname === "/designer" || pathname?.startsWith("/designer/");
+  if (isDesignerPage) return <DesignerNavBar />;
 
   const toggleTestLogin = () => {
     if (loggedIn) SessionController.logout();

@@ -56,11 +56,16 @@ function makeRandom(seed) {
   };
 }
 
+// Makes text safe to put inside an SVG image (e.g. "&" would otherwise break it).
+function escapeXML(text) {
+  return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/'/g, "&apos;");
+}
+
 export function placeholderPhoto(label, colour) {
   const svg =
     `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'>` +
     `<rect width='160' height='100' fill='${colour}'/>` +
-    `<text x='80' y='54' font-size='11' text-anchor='middle' fill='white' font-family='Arial'>${label}</text></svg>`;
+    `<text x='80' y='54' font-size='11' text-anchor='middle' fill='white' font-family='Arial'>${escapeXML(label)}</text></svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
@@ -68,7 +73,7 @@ export function placeholderLogo(initials, colour) {
   const svg =
     `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>` +
     `<rect width='100' height='100' rx='16' fill='${colour}'/>` +
-    `<text x='50' y='61' font-size='34' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>${initials}</text></svg>`;
+    `<text x='50' y='61' font-size='34' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>${escapeXML(initials)}</text></svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
@@ -188,7 +193,7 @@ export function generateDummyData(today = new Date()) {
       location: pick(LOCATIONS),
       phone: `+65 6${between(100, 999)} ${between(1000, 9999)}`,
       website: `https://${slug}${d}.example.com`,
-      logoURL: placeholderLogo(name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase(), pick(styleColours)),
+      logoURL: placeholderLogo(name.split(" ").filter((w) => /^[A-Za-z]/.test(w)).map((w) => w[0]).join("").slice(0, 2).toUpperCase(), pick(styleColours)),
     });
   }
   for (let c = 2; c <= CUSTOMERS; c++) {
