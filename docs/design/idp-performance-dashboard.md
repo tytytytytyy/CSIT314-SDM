@@ -15,7 +15,7 @@ and the existing entities (`IDP`, `IDPView`, `IDPLike`) instead of `viewIDDashbo
 | One `IDDatabase` entity with `getIDEvents()` returning an undefined `IdpEvent` | `IDP.getIDPsByDesigner`, `IDPView.getViewsByIDPs`, `IDPLike.getLikesByIDPs` | These are the real tables (`idp`, `idp_view`, `idp_like`) |
 | Events fetched without fetching the IDPs | IDPs fetched first, then their events | Otherwise an IDP with 0 views and 0 likes is missing from the ranking, and "no IDPs" is confused with "no events" |
 | No date validation | `validateDateRange` plus an alt frame | Covers alternative flow 3a |
-| `flash(str, str)`, `str`, `dict`, `List<...>` | `displayInvalidDateRangeMsg()`, `displayNoIDPsMsg()`, `String`, `int`, `IDP[]` | `flash` is Flask, not Next.js; types now match the other diagrams and the TypeScript code |
+| `flash(str, str)`, `str`, `dict`, `List<...>` | `displayInvalidDateRangeMsg()`, `displayNoIDPsMsg()`, `String`, `int`, `IDP[]` | `flash` is Flask, not Next.js; types now match the other diagrams and the code |
 | `calculateLikeRate(viewCount, likeCount)` | `calculateLikeRate(likes, views)` | Same order as the formula likes / views |
 | `MAX_DASHBOARD_DAYS = 90` in the old repo skeleton | Removed | Not in the use case |
 
