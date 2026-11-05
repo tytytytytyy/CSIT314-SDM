@@ -16,7 +16,8 @@
 // - countLikes(idpID, startDate, endDate)
 // - getLikesByIDPs(idpIDs, startDate, endDate)          dashboard (raw events; the controller groups by day)
 //
-// countLikes and getLikesByIDPs are not implemented yet.
+// countLikes: startDate / endDate are optional; leave them out to count every like.
+// getLikesByIDPs is not implemented yet.
 import { readTable, writeTable } from "./LocalStore";
 
 export class IDPLike {
@@ -45,6 +46,17 @@ export class IDPLike {
     };
     writeTable("idp_like", [...rows, created]);
     return true;
+  }
+
+  // Number of likes on one IDP, optionally only those liked between startDate and endDate
+  // (inclusive, ISO date strings).
+  static async countLikes(idpID, startDate, endDate) {
+    return readTable("idp_like").filter(
+      (r) =>
+        r.idpID === idpID &&
+        (!startDate || r.likedAt >= startDate) &&
+        (!endDate || r.likedAt <= endDate),
+    ).length;
   }
 
   static async getLikesByCustomer(customerID) {

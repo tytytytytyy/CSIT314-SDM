@@ -13,7 +13,30 @@
 //   status, createdAt
 //
 // Methods:
-// - getAccount(accountID)
+// - getAccount(accountID)                               null if there is no such account
 // - updateStatus(accountID, status)
 // - searchAccounts(keyword)
 // - countNewAccounts(profileID, startDate, endDate)     platform report
+//
+// Implemented so far: getAccount (Browse Interior Designers).
+// password is not in the dummy data yet; it arrives with the Login feature.
+import { readTable } from "./LocalStore";
+
+export class UserAccount {
+  static ACCOUNT_STATUS = ["pending", "active", "suspended", "rejected"];
+
+  accountID;
+  email;
+  profileID;
+  status;
+  createdAt;
+
+  constructor(data) {
+    Object.assign(this, data);
+  }
+
+  static async getAccount(accountID) {
+    const row = readTable("user_account").find((r) => r.accountID === accountID);
+    return row ? new UserAccount(row) : null;
+  }
+}

@@ -1,5 +1,6 @@
 // Boundary: NavBar
-// Shared nav bar with the "Favourites List" link (View Favourites List trigger).
+// Shared nav bar with the "Browse Designers" link (Browse Interior Designers trigger) and the
+// "Favourites List" link (View Favourites List trigger).
 // The log in / log out button is a TEST helper for the stub SessionController.
 // Designer pages (/designer/...) show DesignerNavBar instead, since designers have no
 // favourites list and are not the C1 customer.
@@ -33,6 +34,7 @@ export default function NavBar() {
       <Link href="/" className="font-semibold">
         IDP Platform
       </Link>
+      <Link href="/designers">Browse Designers</Link>
       <Link href="/customer/favourites">Favourites List</Link>
       <button
         type="button"

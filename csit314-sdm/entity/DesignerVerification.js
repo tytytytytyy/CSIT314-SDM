@@ -15,6 +15,32 @@
 // Methods:
 // - getPendingVerifications()
 // - getVerification(verificationID)
-// - getVerificationByDesigner(designerID)
+// - getVerificationByDesigner(designerID)               null if the designer never applied
 // - updateVerification(verification)
 // - countVerified(startDate, endDate)                   platform report
+//
+// Implemented so far: getVerificationByDesigner (Browse Interior Designers).
+import { readTable } from "./LocalStore";
+
+export class DesignerVerification {
+  static VERIFICATION_STATUS = ["pending", "approved", "rejected"];
+
+  verificationID;
+  designerID;
+  status;
+  submittedAt;
+  reviewedBy;
+  reviewedAt;
+  rejectReason;
+
+  constructor(data) {
+    Object.assign(this, data);
+  }
+
+  static async getVerificationByDesigner(designerID) {
+    const row = readTable("designer_verification").find(
+      (r) => r.designerID === designerID,
+    );
+    return row ? new DesignerVerification(row) : null;
+  }
+}
