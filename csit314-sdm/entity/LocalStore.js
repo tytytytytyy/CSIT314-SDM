@@ -3,22 +3,18 @@
 // the browser's localStorage, filled with dummy data the first time it is read.
 // Replace readTable / writeTable with real queries later; the entity methods stay the same.
 //
-// Database tables: idp, idp_photo, idp_like, idp_sequence (next-ID counter for idp)
+// Database tables: idp, idp_photo, idp_like, idp_view, idp_sequence (next-ID counter for idp)
+//
+// The hand-made rows below are the special cases the unit tests and demo rely on. The large set
+// of generated dummy data (entity/DummyData.js) is added to them the first time the app runs.
 //
 // Bump KEY_PREFIX when the seed data or the row shapes change, so old browser data is ignored.
 
-const KEY_PREFIX = "idp_platform_v3_";
+import { generateDummyData, placeholderPhoto } from "./DummyData";
 
-function placeholderPhoto(label, colour) {
-  const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">` +
-    `<rect width="800" height="500" fill="${colour}"/>` +
-    `<text x="400" y="260" font-size="40" text-anchor="middle" fill="white" font-family="Arial">${label}</text>` +
-    `</svg>`;
-  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
-}
+const KEY_PREFIX = "idp_platform_v4_";
 
-const SEED = {
+const HAND_MADE = {
   // IDP 4 is not in this table: the designer deleted it (a hard delete), but customer C1's
   // like of it is still in idp_like, so the favourites list has to leave it out.
   idp: [
@@ -110,7 +106,32 @@ const SEED = {
   // Last idpID handed out, like a database AUTOINCREMENT counter. It is 4 because the deleted
   // IDP 4 once existed: a new IDP must not reuse 4, or it would pick up C1's old like.
   idp_sequence: [{ lastIDPID: 4 }],
+  idp_view: [],
 };
+
+// Hand-made rows plus the generated dummy data, built once per page load.
+let seedCache = null;
+function seed() {
+  if (seedCache) return seedCache;
+  const extra = generateDummyData();
+  seedCache = {
+    idp: [...HAND_MADE.idp, ...(extra.idp ?? [])],
+    idp_photo: [...HAND_MADE.idp_photo, ...(extra.idp_photo ?? [])],
+    idp_like: [...HAND_MADE.idp_like, ...(extra.idp_like ?? [])],
+    idp_view: [...HAND_MADE.idp_view, ...(extra.idp_view ?? [])],
+    idp_sequence: [{ lastIDPID: Math.max(HAND_MADE.idp_sequence[0].lastIDPID, extra.lastIDPID ?? 0) }],
+  };
+  return seedCache;
+}
+
+// The first time any table is read, every table gets its starting data at once,
+// so views, likes and IDPs all share the same dates.
+function seedAllTables() {
+  for (const [table, rows] of Object.entries(seed())) {
+    const key = KEY_PREFIX + table;
+    if (window.localStorage.getItem(key) === null) window.localStorage.setItem(key, JSON.stringify(rows));
+  }
+}
 
 export function readTable(table) {
   if (typeof window === "undefined") return [];
@@ -118,11 +139,12 @@ export function readTable(table) {
   try {
     const raw = window.localStorage.getItem(key);
     if (raw) return JSON.parse(raw);
-    window.localStorage.setItem(key, JSON.stringify(SEED[table] ?? []));
+    seedAllTables();
+    return JSON.parse(window.localStorage.getItem(key) ?? "[]");
   } catch {
     // storage blocked or corrupted: fall back to the seed data
   }
-  return SEED[table] ?? [];
+  return seed()[table] ?? [];
 }
 
 export function writeTable(table, rows) {
