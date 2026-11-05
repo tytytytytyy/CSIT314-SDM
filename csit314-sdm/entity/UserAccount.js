@@ -39,4 +39,13 @@ export class UserAccount {
     const row = readTable("user_account").find((r) => r.accountID === accountID);
     return row ? new UserAccount(row) : null;
   }
+
+  static async countNewAccounts(profileID, startDate, endDate) {
+  return readTable("user_account").filter(
+    (r) =>
+      r.profileID === profileID &&
+      r.createdAt >= startDate &&
+      r.createdAt <= endDate,
+  ).length;
+  }
 }

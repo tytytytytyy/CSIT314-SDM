@@ -43,4 +43,14 @@ export class DesignerVerification {
     );
     return row ? new DesignerVerification(row) : null;
   }
+
+  static async countVerified(startDate, endDate) {
+  return readTable("designer_verification").filter(
+    (r) =>
+      r.status === "approved" &&
+      r.reviewedAt &&
+      r.reviewedAt >= startDate &&
+      r.reviewedAt <= endDate,
+  ).length;
+  }
 }

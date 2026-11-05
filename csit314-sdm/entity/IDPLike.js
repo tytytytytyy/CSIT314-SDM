@@ -53,11 +53,11 @@ export class IDPLike {
   static async countLikes(idpID, startDate, endDate) {
     return readTable("idp_like").filter(
       (r) =>
-        r.idpID === idpID &&
+        (!idpID || r.idpID === idpID) &&
         (!startDate || r.likedAt >= startDate) &&
         (!endDate || r.likedAt <= endDate),
     ).length;
-  }
+}
 
   static async getLikesByCustomer(customerID) {
     return readTable("idp_like")

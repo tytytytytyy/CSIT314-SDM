@@ -11,3 +11,18 @@
 // - createView(view)
 // - countViews(idpID, startDate, endDate)
 // - getViewsByIDPs(idpIDs, startDate, endDate)          dashboard (raw events; the controller groups by day)
+
+export class IDPView {
+    //attributes
+
+    //constructor
+
+    static async countViews(idpID, startDate, endDate) {
+    return readTable("idp_view").filter(
+        (r) =>
+        (!idpID || r.idpID === idpID) &&
+        (!startDate || r.viewedAt >= startDate) &&
+        (!endDate || r.viewedAt <= endDate),
+    ).length;
+    }
+}
