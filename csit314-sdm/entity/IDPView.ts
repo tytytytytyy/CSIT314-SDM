@@ -10,4 +10,4 @@
 // Methods:
 // - createView(view)
 // - countViews(idpID, startDate, endDate)
-// - getDailyViewCounts(idpID, startDate, endDate)       dashboard
+// - getViewsByIDPs(idpIDs, startDate, endDate)          dashboard (raw events; the controller groups by day)

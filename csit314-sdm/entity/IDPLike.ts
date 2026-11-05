@@ -14,9 +14,9 @@
 // - addLike(customerID, idpID)                          true once the like is saved
 // - getLikesByCustomer(customerID)                      newest first
 // - countLikes(idpID, startDate, endDate)
-// - getDailyLikeCounts(idpID, startDate, endDate)       dashboard
+// - getLikesByIDPs(idpIDs, startDate, endDate)          dashboard (raw events; the controller groups by day)
 //
-// countLikes and getDailyLikeCounts are not implemented yet.
+// countLikes and getLikesByIDPs are not implemented yet.
 import { readTable, writeTable } from "./LocalStore";
 
 export interface IDPLikeData {
