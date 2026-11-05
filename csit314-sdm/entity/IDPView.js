@@ -10,7 +10,7 @@
 // Methods:
 // - createView(idpID, customerID)                       View IDP records one view
 // - getViewsByIDPs(idpIDs, startDate, endDate)          dashboard (raw events; the controller groups by day)
-// - countViews(idpID, startDate, endDate)               platform report (not implemented yet)
+
 import { readTable, writeTable } from "./LocalStore";
 import { isWithinDates } from "@/lib/dates";
 
@@ -43,4 +43,14 @@ export class IDPView {
       .filter((r) => idpIDs.includes(r.idpID) && isWithinDates(r.viewedAt, startDate, endDate))
       .map((r) => new IDPView(r));
   }
+  
+  //Counts views between the dates for report
+  static async countViews(idpID, startDate, endDate) {
+    return readTable("idp_view").filter(
+        (r) =>
+        (!idpID || r.idpID === idpID) &&
+        (!startDate || r.viewedAt >= startDate) &&
+        (!endDate || r.viewedAt <= endDate),
+    ).length;
+    }
 }
