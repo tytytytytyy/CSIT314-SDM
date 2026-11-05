@@ -9,5 +9,6 @@ export default defineConfig({
     // jsdom gives the tests a browser-like localStorage, which LocalStore uses.
     environment: "jsdom",
     include: ["tests/**/*.test.js"],
+    setupFiles: ["tests/setup.js"],
   },
 });

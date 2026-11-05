@@ -1,5 +1,6 @@
 // Boundary: NavBar
-// Shared nav bar with the "Browse Designers" link (Browse Interior Designers trigger) and the
+// Shared nav bar with the "Browse Designers" link (Browse Interior Designers trigger), the
+// "Recommended Designers" link (Get Designer Recommendations trigger) and the
 // "Favourites List" link (View Favourites List trigger).
 // The log in / log out button is a TEST helper for the stub SessionController.
 // Designer pages (/designer/...) show DesignerNavBar instead, since designers have no
@@ -21,7 +22,9 @@ export default function NavBar() {
   );
   const pathname = usePathname();
 
-  if (pathname?.startsWith("/designer")) return <DesignerNavBar />;
+  // "/designer" and "/designer/..." only, so the customer page "/designers" keeps this bar.
+  const isDesignerPage = pathname === "/designer" || pathname?.startsWith("/designer/");
+  if (isDesignerPage) return <DesignerNavBar />;
 
   const toggleTestLogin = () => {
     if (loggedIn) SessionController.logout();
@@ -35,6 +38,7 @@ export default function NavBar() {
         IDP Platform
       </Link>
       <Link href="/designers">Browse Designers</Link>
+      <Link href="/customer/recommendations">Recommended Designers</Link>
       <Link href="/customer/favourites">Favourites List</Link>
       <button
         type="button"

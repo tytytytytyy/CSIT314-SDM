@@ -14,6 +14,7 @@ export default function DesignerNavBar() {
         <span className="font-normal text-zinc-500">for Designers</span>
       </Link>
       <Link href="/designer/idp">My IDPs</Link>
+      <Link href="/designer/dashboard">Performance Dashboard</Link>
       <span className="ml-auto rounded border px-3 py-1 text-sm text-zinc-600">
         Test: logged in as designer {SessionController.getLoggedInDesignerID()}
       </span>
