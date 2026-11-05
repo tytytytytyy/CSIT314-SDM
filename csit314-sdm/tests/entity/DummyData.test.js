@@ -7,11 +7,12 @@ const { generateDummyData } = await vi.importActual("@/entity/DummyData");
 
 const TODAY = new Date("2026-11-05T12:00:00.000Z");
 const data = generateDummyData(TODAY);
-// The hand-made IDPs in LocalStore: D1 owns 1 (completed) and 2 (in progress), D2 owns 3 (completed).
+// The hand-made IDPs in LocalStore: D1 owns 1 (completed, Scandinavian) and 2 (in progress, Industrial),
+// D2 owns 3 (completed, Minimalist office).
 const allIDPs = [
-  { idpID: 1, designerID: "D1", status: "completed" },
-  { idpID: 2, designerID: "D1", status: "ongoing" },
-  { idpID: 3, designerID: "D2", status: "completed" },
+  { idpID: 1, designerID: "D1", status: "completed", style: "Scandinavian", category: "Residential" },
+  { idpID: 2, designerID: "D1", status: "ongoing", style: "Industrial", category: "Residential" },
+  { idpID: 3, designerID: "D2", status: "completed", style: "Minimalist", category: "Commercial" },
   ...data.idp,
 ];
 
@@ -22,6 +23,32 @@ describe("generateDummyData", () => {
     for (const idp of allIDPs) perDesigner[idp.designerID] = (perDesigner[idp.designerID] ?? 0) + 1;
     expect(Object.keys(perDesigner)).toHaveLength(99);
     expect(new Set(Object.values(perDesigner))).toEqual(new Set([10]));
+  });
+
+  it("keeps every designer to 1 to 3 specialty styles, like a real firm", () => {
+    const stylesOf = {};
+    for (const idp of allIDPs) (stylesOf[idp.designerID] ??= new Set()).add(idp.style);
+    for (const styles of Object.values(stylesOf)) {
+      expect(styles.size).toBeGreaterThanOrEqual(1);
+      expect(styles.size).toBeLessThanOrEqual(3);
+    }
+  });
+
+  it("matches the hand-made designers' company descriptions", () => {
+    const stylesOf = (id) => [...new Set(allIDPs.filter((i) => i.designerID === id).map((i) => i.style))].sort();
+    expect(stylesOf("D1")).toEqual(["Industrial", "Scandinavian"]); // "Scandinavian and industrial touches"
+    expect(stylesOf("D2")).toEqual(["Minimalist"]); // "Minimalist offices and retail spaces"
+    expect(stylesOf("D3")).toEqual(["Japandi", "Tropical"]); // "Tropical and Japandi homes"
+    expect(stylesOf("D5")).toEqual(["Industrial"]); // "Bold industrial lofts and bars"
+    // D2 only does offices and retail spaces
+    expect(allIDPs.filter((i) => i.designerID === "D2").every((i) => i.category === "Commercial")).toBe(true);
+  });
+
+  it("describes each generated company by its real specialty styles", () => {
+    for (const company of data.company_information) {
+      const styles = new Set(data.idp.filter((i) => i.designerID === company.designerID).map((i) => i.style));
+      for (const style of styles) expect(company.description).toContain(style);
+    }
   });
 
   it("gives no IDPs to D4, who is still waiting for verification", () => {

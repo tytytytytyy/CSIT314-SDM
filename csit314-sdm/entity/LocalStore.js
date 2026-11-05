@@ -13,7 +13,7 @@
 
 import { generateDummyData, placeholderPhoto, placeholderLogo } from "./DummyData";
 
-const KEY_PREFIX = "idp_platform_v5_";
+const KEY_PREFIX = "idp_platform_v6_";
 
 const HAND_MADE = {
   // Login accounts. Passwords are left out until the Login feature exists.

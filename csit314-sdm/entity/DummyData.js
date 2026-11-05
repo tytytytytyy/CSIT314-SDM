@@ -7,6 +7,8 @@
 // - 100 interior designers (D1 to D100). D1 to D5 are hand-made in LocalStore (accounts,
 //   verification, company info); D6 to D100 are generated here as verified, active designers
 //   with their own company info, so Browse Interior Designers shows them too.
+// - Each designer specialises in 1 to 3 styles, and all their IDPs use those styles (like a
+//   real firm). D1, D2, D3 and D5 follow their hand-made company descriptions in LocalStore.
 // - 10 IDPs per designer: 9 Completed and 1 In Progress (90% completed). D1's and D2's hand-made
 //   IDPs (1, 2 and 3) count towards their 10. D4 is still waiting for verification, so it has none.
 //   That gives 990 IDPs.
@@ -28,6 +30,15 @@ const DAYS_OF_ACTIVITY = 90;
 const FIRST_NEW_IDP_ID = 5; // 1 to 3 are hand-made, 4 was deleted
 const HAND_MADE_DESIGNERS = 5; // D1 to D5 already have accounts and company info in LocalStore
 const UNVERIFIED_DESIGNERS = ["D4"]; // waiting for verification, so cannot have IDPs yet
+
+// The hand-made designers' specialties, matching their company descriptions in LocalStore.
+const HAND_MADE_SPECIALTIES = {
+  D1: ["Scandinavian", "Industrial"], // "Warm, light-filled homes with Scandinavian and industrial touches."
+  D2: ["Minimalist"], // "Minimalist offices and retail spaces that work hard."
+  D3: ["Tropical", "Japandi"], // "Tropical and Japandi homes for young families."
+  D5: ["Industrial"], // "Bold industrial lofts and bars."
+};
+const COMMERCIAL_ONLY = ["D2"]; // D2 only does offices and retail spaces
 
 const COMPANY_WORDS = {
   first: ["Nordic", "Urban", "Haven", "Oak", "Lumen", "Terra", "Atelier", "Canvas", "Maple", "Willow", "Slate", "Ember", "Harbour", "Cove", "Linen", "Stone"],
@@ -84,6 +95,16 @@ export function generateDummyData(today = new Date()) {
   const end = new Date(today);
   const randomTimeInLast = (days) => new Date(end.getTime() - random() * days * 86_400_000).toISOString();
 
+  // Each designer's 1 to 3 specialty styles, chosen once and reused for their IDPs and company description.
+  const specialtiesByDesigner = {};
+  const specialtiesOf = (designerID) => {
+    if (!specialtiesByDesigner[designerID]) {
+      const shuffled = [...Object.keys(STYLES)].sort(() => random() - 0.5);
+      specialtiesByDesigner[designerID] = HAND_MADE_SPECIALTIES[designerID] ?? shuffled.slice(0, between(1, 3));
+    }
+    return specialtiesByDesigner[designerID];
+  };
+
   // Hand-made IDPs already owned by D1 and D2 (see LocalStore): they count towards the 10 each.
   const handMade = { D1: { completed: 1, ongoing: 1 }, D2: { completed: 1, ongoing: 0 } };
 
@@ -96,15 +117,16 @@ export function generateDummyData(today = new Date()) {
     const designerID = `D${d}`;
     if (UNVERIFIED_DESIGNERS.includes(designerID)) continue;
     const already = handMade[designerID] ?? { completed: 0, ongoing: 0 };
+    const specialties = specialtiesOf(designerID);
     const toMake = IDPS_PER_DESIGNER - already.completed - already.ongoing;
     // Exactly one In Progress IDP per designer.
     const ongoingSlot = already.ongoing > 0 ? -1 : Math.floor(random() * toMake);
 
     for (let i = 0; i < toMake; i++) {
-      const category = random() < 0.8 ? "Residential" : "Commercial";
+      const category = COMMERCIAL_ONLY.includes(designerID) ? "Commercial" : random() < 0.8 ? "Residential" : "Commercial";
       const { types, rooms, budget } = PROPERTY[category];
       const propertyType = pick(types);
-      const style = pick(Object.keys(STYLES));
+      const style = pick(specialties);
       const room = pick(rooms);
       const size = pick(HOME_SIZES[propertyType]);
       const idpID = nextIDP++;
@@ -183,13 +205,14 @@ export function generateDummyData(today = new Date()) {
       verificationID: `V${d}`, designerID, status: "approved", submittedAt: createdAt,
       reviewedBy: "A1", reviewedAt: reviewedAt > end.toISOString() ? end.toISOString() : reviewedAt, rejectReason: null,
     });
-    const myStyles = [...new Set(idp.filter((i) => i.designerID === designerID).map((i) => i.style))].slice(0, 2);
+    const myStyles = specialtiesOf(designerID);
+    const styleText = myStyles.length === 1 ? myStyles[0] : `${myStyles.slice(0, -1).join(", ")} and ${myStyles.at(-1)}`;
     company_information.push({
       companyID: `CO${d}`,
       designerID,
       companyName,
       registrationNumber: `20${between(10, 26)}${String(between(0, 99999)).padStart(5, "0")}${"ABCDEFGHJKLMNPQRSTUVWXYZ"[between(0, 23)]}`,
-      description: `${myStyles.join(" and ")} interiors for homes and businesses.`,
+      description: `${styleText} interiors for homes and businesses.`,
       location: pick(LOCATIONS),
       phone: `+65 6${between(100, 999)} ${between(1000, 9999)}`,
       website: `https://${slug}${d}.example.com`,
