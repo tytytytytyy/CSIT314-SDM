@@ -1,10 +1,10 @@
 // Boundary helper: IDPFormFields
-// The form fields shared by IDCreateIDPPg (Create IDP) and IDUpdateIDPPg (Update IDP):
+// The form fields shared by CreateIDPPg (Create IDP) and UpdateIDPPg (Update IDP):
 // title, description, status, style, category, property type, budget.
 // Also holds small UI helpers both pages use. No business rules here.
 "use client";
 
-import type { NewPhotoUpload, UpdateFormData, UpdateIDPInput } from "@/controller/IDUpdateIDPController";
+import type { NewPhotoUpload, UpdateFormData, UpdateIDPInput } from "@/controller/UpdateIDPController";
 
 // What the form holds while the designer types. Budget stays text until it is submitted.
 export type IDPFormValues = Omit<UpdateIDPInput, "budget"> & { budget: string };

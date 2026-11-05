@@ -9,7 +9,7 @@
 //
 // What goes here:
 // - Title, status, photos with captions, style, property type, category, budget, description.
-// - "Edit IDP" button that opens IDUpdateIDPPg (Update IDP).
+// - "Edit IDP" button that opens UpdateIDPPg (Update IDP).
 // - "IDP created" / "IDP updated" message after Create IDP / Update IDP saves.
 //
 // Methods:

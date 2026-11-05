@@ -1,5 +1,5 @@
-import IDCreateIDPPg from "@/boundary/IDCreateIDPPg";
+import CreateIDPPg from "@/boundary/CreateIDPPg";
 
 export default function Page() {
-  return <IDCreateIDPPg />;
+  return <CreateIDPPg />;
 }

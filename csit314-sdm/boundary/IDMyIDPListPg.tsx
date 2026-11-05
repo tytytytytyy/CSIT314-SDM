@@ -8,7 +8,7 @@
 // - The logged-in designer's IDPs: main photo, title, property type, category, status.
 // - How many are completed out of the total.
 // - Empty message when the designer has no IDPs yet.
-// - "Create IDP" button that opens IDCreateIDPPg (Create IDP).
+// - "Create IDP" button that opens CreateIDPPg (Create IDP).
 //
 // Methods:
 // - displayMyIDPs(myIDPs)

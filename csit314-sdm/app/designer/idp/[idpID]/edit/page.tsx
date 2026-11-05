@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import IDUpdateIDPPg from "@/boundary/IDUpdateIDPPg";
+import UpdateIDPPg from "@/boundary/UpdateIDPPg";
 
 // Same set-up as app/designer/idp/[idpID]/page.tsx.
 export function generateStaticParams() {
@@ -16,5 +16,5 @@ export default function Page({ params }: { params: Promise<{ idpID: string }> })
 
 async function UpdateIDPRoute({ params }: { params: Promise<{ idpID: string }> }) {
   const { idpID } = await params;
-  return <IDUpdateIDPPg idpID={Number(idpID)} />;
+  return <UpdateIDPPg idpID={Number(idpID)} />;
 }

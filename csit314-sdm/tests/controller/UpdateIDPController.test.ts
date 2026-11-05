@@ -1,4 +1,4 @@
-// Unit tests for IDUpdateIDPController (Interior Designer: Update IDP).
+// Unit tests for UpdateIDPController (Interior Designer: Update IDP).
 // Uses the dummy data in entity/LocalStore.ts:
 // - IDP 1 (D1, completed) has photos P1 (main) and P2
 // - IDP 2 (D1, ongoing) has photo P3
@@ -6,11 +6,11 @@
 // localStorage is cleared before each test, so every test starts from that same data.
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { IDUpdateIDPController, type UpdateIDPInput, type NewPhotoUpload } from "@/controller/IDUpdateIDPController";
+import { UpdateIDPController, type UpdateIDPInput, type NewPhotoUpload } from "@/controller/UpdateIDPController";
 import { IDP } from "@/entity/IDP";
 import { IDPPhoto } from "@/entity/IDPPhoto";
 
-const C = IDUpdateIDPController;
+const C = UpdateIDPController;
 
 function validInput(overrides: Partial<UpdateIDPInput> = {}): UpdateIDPInput {
   return {
