@@ -19,7 +19,7 @@
 // Attributes: none
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ViewIDPController } from "@/controller/ViewIDPController";
 import { LikeIDPController } from "@/controller/LikeIDPController";
 import { SessionController } from "@/controller/SessionController";
@@ -28,6 +28,9 @@ export default function IDPViewPg({ idpID }) {
   const [view, setView] = useState({ kind: "loading" });
   const [isLiked, setIsLiked] = useState(false);
   const [likeMessage, setLikeMessage] = useState(null);
+  // Remembers which IDP was already loaded, so one visit records one view
+  // (React runs effects twice in development mode).
+  const loadedIDP = useRef(null);
 
   const displayIDP = (idpDetails) =>
     setView({ kind: "idp", details: idpDetails });
@@ -65,9 +68,14 @@ export default function IDPViewPg({ idpID }) {
   };
 
   useEffect(() => {
-    // Customer clicks an IDP -> the page asks the controller for its details.
+    if (loadedIDP.current === idpID) return;
+    loadedIDP.current = idpID;
+    // Customer clicks an IDP -> the page asks the controller for its details (this records a view).
     const load = async () => {
-      const idpDetails = await ViewIDPController.viewIDP(idpID);
+      const idpDetails = await ViewIDPController.viewIDP(
+        idpID,
+        SessionController.getLoggedInCustomerID(),
+      );
       if (idpDetails) displayIDP(idpDetails);
       else displayErrorPg("IDP not found");
     };
