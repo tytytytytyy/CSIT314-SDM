@@ -296,11 +296,13 @@ function roundedTop(x, top, width, height) {
   return `M${x},${top + height} V${top + r} Q${x},${top} ${x + r},${top} H${x + width - r} Q${x + width},${top} ${x + width},${top + r} V${top + height} Z`;
 }
 
-// Rounds the top of the axis up to a tidy number (e.g. 37 -> 40), never 0.
+// Rounds the top of the axis up to a tidy even number (e.g. 13 -> 16, 37 -> 40), never 0,
+// so the middle gridline is a whole number too.
 function niceMax(value) {
   if (value <= 4) return 4;
-  const step = 10 ** Math.floor(Math.log10(value));
-  return Math.ceil(value / (step / 2)) * (step / 2);
+  const step = 10 ** Math.floor(Math.log10(value)) / 2;
+  const rounded = Math.ceil(value / step) * step;
+  return rounded % 2 === 0 ? rounded : rounded + 1;
 }
 
 function formatRate(rate) {
