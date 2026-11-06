@@ -111,3 +111,18 @@ describe("getHomePage", () => {
     expect(LoginController.getHomePage()).toBe("/designer/idp");
   });
 });
+
+describe("getLoggedInDesignerCompany", () => {
+  it("gives the logged-in designer's company name and logo, for the menu bar", async () => {
+    await LoginController.login("hello@nordicnest.example.com", PASSWORD);
+    const company = await LoginController.getLoggedInDesignerCompany();
+    expect(company.companyName).toBe("Nordic Nest Interiors");
+    expect(company.logoURL).toBeTruthy();
+  });
+
+  it("gives null when no designer is logged in", async () => {
+    expect(await LoginController.getLoggedInDesignerCompany()).toBeNull();
+    await LoginController.login("customer1@example.com", PASSWORD);
+    expect(await LoginController.getLoggedInDesignerCompany()).toBeNull();
+  });
+});
