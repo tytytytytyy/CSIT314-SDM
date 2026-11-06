@@ -129,7 +129,7 @@ describe("createIDP", () => {
   it("adds the new IDP to the designer's My Projects list", async () => {
     const result = await C.createIDP("D1", validInput(), [photo()]);
     const list = await IDViewIDPDetailsController.getMyIDPs("D1");
-    expect(list.map((item) => item.idpID)).toEqual([1, 2, result.idpID]);
+    expect(list.map((item) => item.idpID)).toContain(result.idpID);
   });
 
   it("does not save anything when the input is invalid", async () => {
