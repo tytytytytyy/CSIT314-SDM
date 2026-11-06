@@ -16,6 +16,7 @@
 const SESSION_KEY = "idp_platform_session_customerID";
 const DEMO_CUSTOMER_ID = "C1";
 const DEMO_DESIGNER_ID = "D1";
+const DEMO_ADMIN_ID = "A1";
 
 export class SessionController {
   // Logged in by default so the features can be tried straight away.
@@ -31,6 +32,10 @@ export class SessionController {
   static getLoggedInDesignerID() {
     return DEMO_DESIGNER_ID;
   }
+
+   static getLoggedInDesignerID() {    
+     return DEMO_ADMIN_ID;
+}
 
   static loginAsDemoCustomer() {
     window.localStorage.setItem(SESSION_KEY, DEMO_CUSTOMER_ID);
