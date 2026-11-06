@@ -1,7 +1,7 @@
-// Boundary: IDPViewPg
+// Boundary: ViewIDPPg
 // Features: View IDP and Like IDP (Customer). The Like button lives on the IDP page.
 //
-// Route: /idp/[idpID]   (app/idp/[idpID]/page.jsx renders this)
+// Route: /customer/idp/[idpID]   (app/customer/idp/[idpID]/page.jsx renders this)
 //
 // What goes here:
 // - View IDP: title, photos, style, property type, category, budget, description. No login needed.
@@ -23,9 +23,9 @@ import { useEffect, useRef, useState } from "react";
 import { ViewIDPController } from "@/controller/ViewIDPController";
 import { LikeIDPController } from "@/controller/LikeIDPController";
 import { SessionController } from "@/controller/SessionController";
-import { PHOTO_NOT_FOUND } from "@/entity/DummyData";
+import { PHOTO_NOT_FOUND } from "@/boundary/PhotoFallback";
 
-export default function IDPViewPg({ idpID }) {
+export default function ViewIDPPg({ idpID }) {
   const [view, setView] = useState({ kind: "loading" });
   const [isLiked, setIsLiked] = useState(false);
   const [likeMessage, setLikeMessage] = useState(null);

@@ -23,7 +23,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { GetDesignerRecommendationsController } from "@/controller/GetDesignerRecommendationsController";
 import { SessionController } from "@/controller/SessionController";
-import { PHOTO_NOT_FOUND } from "@/entity/DummyData";
+import { PHOTO_NOT_FOUND } from "@/boundary/PhotoFallback";
 
 export default function GetDesignerRecommendationsPg() {
   const [view, setView] = useState({ kind: "loading" });
@@ -126,7 +126,7 @@ export default function GetDesignerRecommendationsPg() {
               {d.samplePhotos.length > 0 ? (
                 <div className="mt-3 grid grid-cols-3 gap-2">
                   {d.samplePhotos.map((p) => (
-                    <Link key={p.idpID} href={`/idp/${p.idpID}`} title={p.title}>
+                    <Link key={p.idpID} href={`/customer/idp/${p.idpID}`} title={p.title}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={p.photoURL}

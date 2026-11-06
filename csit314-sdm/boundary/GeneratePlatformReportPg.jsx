@@ -3,7 +3,7 @@
 // User story: As a platform manager, I want to generate a platform report for a chosen
 // period (e.g. daily, weekly, monthly), so that I can track how the platform is performing.
 //
-// Suggested route: /platform-manager/report
+// Route: /platform-manager/report   (app/platform-manager/report/page.jsx renders this)
 //
 // What goes here:
 // - Period selector (daily / weekly / monthly) and a reference date.

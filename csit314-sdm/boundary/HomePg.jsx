@@ -1,6 +1,6 @@
 // Boundary: HomePg  (TEMPORARY - replace with the real IDP list / search page)
 // Route: /
-// Carousel of IDP cards (main photo + title). Each card links to IDPViewPg.
+// Carousel of IDP cards (main photo + title). Each card links to ViewIDPPg.
 //
 // Methods:
 // - displayIDPCards(cards)
@@ -62,7 +62,7 @@ export default function HomePg() {
                 key={card.idpID}
                 className="w-64 shrink-0 snap-start overflow-hidden rounded border"
               >
-                <Link href={`/idp/${card.idpID}`}>
+                <Link href={`/customer/idp/${card.idpID}`}>
                   {card.mainPhotoURL && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img

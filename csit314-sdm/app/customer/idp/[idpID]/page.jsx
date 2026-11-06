@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import IDPViewPg from "@/boundary/IDPViewPg";
+import ViewIDPPg from "@/boundary/ViewIDPPg";
 
 // Cache Components needs at least one known param for a dynamic route. These are the seeded
 // dummy IDPs; any other id still renders on demand (the IDP itself is read in the browser).
@@ -18,5 +18,5 @@ export default function Page({ params }) {
 
 async function IDPRoute({ params }) {
   const { idpID } = await params;
-  return <IDPViewPg idpID={Number(idpID)} />;
+  return <ViewIDPPg idpID={Number(idpID)} />;
 }

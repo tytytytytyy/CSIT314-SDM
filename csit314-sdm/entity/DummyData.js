@@ -88,10 +88,6 @@ export function placeholderLogo(initials, colour) {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
-// Shown by <img onError> in the boundary pages when a real photo hasn't been downloaded into
-// public/demo-photos/ yet (see the team's photo download guide).
-export const PHOTO_NOT_FOUND = placeholderPhoto("Photo coming soon", "#c7c7c7");
-
 // File names match the team's photo download guide exactly: lowercase, hyphenated, "<style>-<room>.jpg"
 // for residential, "commercial-<room>-<1 or 2>.jpg" for commercial. Real files live in public/demo-photos/;
 // Next.js serves that folder at the site root, so this path alone is enough to show one once it's added.

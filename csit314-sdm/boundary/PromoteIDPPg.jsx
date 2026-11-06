@@ -3,7 +3,7 @@
 // User story: As a platform manager, I want to promote an IDP for a set period,
 // so that high-quality projects get more visibility.
 //
-// Suggested route: /platform-manager/promote-idp/[idpID]
+// Route: /platform-manager/promote-idp/[idpID]   (app/platform-manager/promote-idp/[idpID]/page.jsx renders this)
 //
 // What goes here:
 // - Form showing the selected IDP with a start date and end date picker.

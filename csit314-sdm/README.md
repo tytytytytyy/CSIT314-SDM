@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Code structure
 
-## Getting Started
+The code follows the **B-C-E** (Boundary, Control, Entity) pattern. Each use case has one boundary page and one controller, named the same way, e.g. `CreateIDPPg` + `CreateIDPController`.
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+csit314-sdm/
+├── app/            URLs only. Each page.jsx just shows a boundary page.
+│   ├── page.jsx              /
+│   ├── customer/             /customer/...
+│   ├── designer/             /designer/...
+│   ├── user-admin/           /user-admin/...
+│   └── platform-manager/     /platform-manager/...
+├── boundary/       B: what the user sees (pages and shared UI parts such as NavBar)
+├── controller/     C: one controller per use case; business rules and checks
+├── entity/         E: data classes, plus LocalStore (storage) and DummyData (test data generator)
+├── lib/            small shared helpers (dates)
+├── public/
+│   └── demo-photos/  interior photos used by the generated IDPs
+└── tests/          unit tests, same folders as the code
+    ├── controller/
+    └── entity/
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Rules
 
-You can start editing the page by modifying `app/page.jsx`. The page auto-updates as you edit the file.
+- **Boundary** only talks to its **controller**. It never reads storage directly.
+- **Controller** only talks to **entities** (and `SessionController` for the logged-in user).
+- **Entity** is the only layer that reads or writes storage, through `entity/LocalStore.js`.
+- **Pages in `app/`** go in the folder of the actor who uses them. Folder names are lowercase with hyphens, no spaces.
+- **Tests** are written before the code (TDD) and live in `tests/`, in the same folder as the class they test, named `<ClassName>.test.js`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Data
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`entity/LocalStore.js` keeps one table per entity (`idp`, `idp_photo`, `idp_view`, `idp_like`, ...) in the browser's localStorage. On the first visit it fills them with the hand-made rows plus the rows from `entity/DummyData.js` (fixed seed, so everyone gets the same data). Changing `KEY_PREFIX` in `LocalStore.js` makes every browser reload fresh data.

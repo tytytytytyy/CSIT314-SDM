@@ -3,11 +3,11 @@
 // User story: As a customer, I want to browse verified interior designers,
 // so that I can compare firms before choosing one.
 //
-// Route: /designers   (app/designers/page.jsx renders this). No login needed.
+// Route: /customer/designers   (app/customer/designers/page.jsx renders this). No login needed.
 //
 // What goes here:
 // - Grid of designer cards: company name, logo, location, styles, number of IDPs, total likes,
-//   and up to 3 sample IDP photos (each links to IDPViewPg).
+//   and up to 3 sample IDP photos (each links to ViewIDPPg).
 // - Filters: keyword, location, style, category.
 // - Sort dropdown: name, most IDPs, most liked, newest.
 // - The page opens with every verified designer listed (no filters, sorted by name);
@@ -25,7 +25,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BrowseInteriorDesignersController } from "@/controller/BrowseInteriorDesignersController";
-import { PHOTO_NOT_FOUND } from "@/entity/DummyData";
+import { PHOTO_NOT_FOUND } from "@/boundary/PhotoFallback";
 
 const SORT_LABELS = {
   name: "Name (A-Z)",
@@ -230,7 +230,7 @@ export default function BrowseInteriorDesignersPg() {
               {d.samplePhotos.length > 0 ? (
                 <div className="mt-3 grid grid-cols-3 gap-2">
                   {d.samplePhotos.map((p) => (
-                    <Link key={p.idpID} href={`/idp/${p.idpID}`} title={p.title}>
+                    <Link key={p.idpID} href={`/customer/idp/${p.idpID}`} title={p.title}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={p.photoURL}

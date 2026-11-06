@@ -2,7 +2,7 @@ Real interior photos for the demo. Everything in this folder is served at `/demo
 by Next.js automatically — nothing else needs to change once a file lands here with the right name.
 
 The app already builds these exact paths (see `demoPhotoURL` in `entity/DummyData.js`); until a
-file exists, the `<img>` falls back to a grey placeholder via `onError` (see `PHOTO_NOT_FOUND`).
+file exists, the `<img>` falls back to a grey placeholder via `onError` (see `boundary/PhotoFallback.js`).
 
 Drop in files with these exact names (lowercase, hyphenated, ends in `.jpg`, each under ~300 KB —
 see the team's photo download guide for where to source them and full naming rules):

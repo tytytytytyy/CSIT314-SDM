@@ -22,8 +22,8 @@ export default function NavBar() {
   );
   const pathname = usePathname();
 
-  // "/designer" and "/designer/..." only, so the customer page "/designers" keeps this bar.
-  const isDesignerPage = pathname === "/designer" || pathname?.startsWith("/designer/");
+  // Every designer page lives under "/designer/".
+  const isDesignerPage = pathname?.startsWith("/designer/");
   if (isDesignerPage) return <DesignerNavBar />;
 
   const toggleTestLogin = () => {
@@ -37,7 +37,7 @@ export default function NavBar() {
       <Link href="/" className="font-semibold">
         IDP Platform
       </Link>
-      <Link href="/designers">Browse Designers</Link>
+      <Link href="/customer/designers">Browse Designers</Link>
       <Link href="/customer/recommendations">Recommended Designers</Link>
       <Link href="/customer/favourites">Favourites List</Link>
       <button

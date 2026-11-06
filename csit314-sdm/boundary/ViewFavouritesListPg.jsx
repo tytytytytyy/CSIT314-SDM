@@ -5,7 +5,7 @@
 //
 // What goes here:
 // - List of IDPs the customer has liked: title, main photo and style.
-// - Each item links to IDPViewPg.
+// - Each item links to ViewIDPPg.
 // - Empty message when nothing has been liked yet.
 // - Needs a logged-in customer.
 //
@@ -60,7 +60,7 @@ export default function ViewFavouritesListPg() {
         <ul className="mt-6 grid gap-4 sm:grid-cols-2">
           {view.favourites.map((item) => (
             <li key={item.idpID} className="overflow-hidden rounded border">
-              <Link href={`/idp/${item.idpID}`}>
+              <Link href={`/customer/idp/${item.idpID}`}>
                 {item.mainPhotoURL && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img

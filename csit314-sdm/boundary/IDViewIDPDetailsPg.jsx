@@ -1,7 +1,7 @@
 // Boundary: IDViewIDPDetailsPg
 // Feature: View IDP Details (Interior Designer) - step 2, one IDP in full.
 // Opened from IDMyIDPListPg.
-// Not the same as IDPViewPg (Customer): only the owner can open it, it shows the status
+// Not the same as ViewIDPPg (Customer): only the owner can open it, it shows the status
 // (In Progress / Completed) and photo captions, and it has an Edit button instead of a
 // Like button (designers cannot like IDPs).
 //
@@ -23,7 +23,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { IDViewIDPDetailsController } from "@/controller/IDViewIDPDetailsController";
-import { PHOTO_NOT_FOUND } from "@/entity/DummyData";
+import { PHOTO_NOT_FOUND } from "@/boundary/PhotoFallback";
 import { SessionController } from "@/controller/SessionController";
 import StatusBadge from "@/boundary/StatusBadge";
 
