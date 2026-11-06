@@ -8,9 +8,10 @@
 // - The list only shows the logged-in designer's IDPs.
 // - The IDP must exist (not deleted).
 // - The IDP must belong to the logged-in designer.
+// - The list shows In Progress IDPs first, then Completed ones.
 //
 // Methods:
-// - getMyIDPs(designerID)                       the designer's IDP list
+// - getMyIDPs(designerID)                       the designer's IDP list, In Progress first
 //     -> IDP.getIDPsByDesigner(designerID)
 //     -> IDPPhoto.getPhotos(idpID) for each      first photo is the main photo
 // - viewIDPDetails(designerID, idpID)          one IDP in full
@@ -42,7 +43,8 @@ export class IDViewIDPDetailsController {
         mainPhotoURL: photos[0]?.photoURL ?? null,
       });
     }
-    return items;
+    // In Progress first, then Completed. sort() keeps the original order within each group.
+    return items.sort((a, b) => (a.status === "ongoing" ? 0 : 1) - (b.status === "ongoing" ? 0 : 1));
   }
 
   static async viewIDPDetails(designerID, idpID) {
