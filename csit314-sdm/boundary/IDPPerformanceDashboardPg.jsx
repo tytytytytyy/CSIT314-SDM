@@ -151,7 +151,7 @@ function DashboardBody({ dashboard, chartIDP, onChartIDPChange }) {
           <label className="text-sm">
             <span className="sr-only">Show chart for</span>
             <select id="chartIDP" value={chartIDP} onChange={(e) => onChartIDPChange(e.target.value)} className={inputClass}>
-              <option value="all">All my IDPs</option>
+              <option value="all">All my projects</option>
               {idpStats.map((s) => (
                 <option key={s.idpID} value={String(s.idpID)}>
                   {s.title}
