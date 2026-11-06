@@ -52,7 +52,7 @@ describe("getRequiredProfile", () => {
 
   it("needs nobody for the login page and the pages that still use their own test login", () => {
     expect(SessionController.getRequiredProfile("/login")).toBeNull();
-    expect(SessionController.getRequiredProfile("/user-admin/verify-accounts")).toBeNull();
+    expect(SessionController.getRequiredProfile("/user-admin/verify-id-accounts")).toBeNull();
     expect(SessionController.getRequiredProfile("/platform-manager/report")).toBeNull();
   });
 });

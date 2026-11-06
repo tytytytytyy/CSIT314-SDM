@@ -43,7 +43,7 @@ npm test
 | Interior Designer | Create IDP | `/designer/idp/create` |
 | Interior Designer | Update IDP | `/designer/idp/[idpID]/edit` |
 | Interior Designer | IDP Performance Dashboard | `/designer/dashboard` |
-| User Admin | Verify ID Accounts | `/user-admin/verify-accounts` |
+| User Admin | Verify ID Accounts | `/user-admin/verify-id-accounts` |
 | Platform Manager | Promote IDP | `/platform-manager/promote-idp/[idpID]` |
 | Platform Manager | Generate Platform Report | `/platform-manager/report` |
 

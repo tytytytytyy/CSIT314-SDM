@@ -3,7 +3,7 @@
 // User story: As a user admin, I want to verify pending interior designer accounts,
 // so that only genuine firms can post IDPs.
 //
-// Route: /user-admin/verify-accounts   (app/user-admin/verify-accounts/page.jsx renders this)
+// Route: /user-admin/verify-id-accounts   (app/user-admin/verify-id-accounts/page.jsx renders this)
 //
 // What goes here:
 // - Page that lists pending interior designer accounts (firm name, contact, submitted date).
