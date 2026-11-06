@@ -63,7 +63,7 @@ export default function IDViewIDPDetailsPg({ idpID }) {
   const { idp, photos } = view.details;
   return (
     <main className="mx-auto w-full max-w-3xl p-8">
-      <p className="text-sm text-zinc-500">My IDP #{idp.idpID}</p>
+      <p className="text-sm text-zinc-500">My Project #{idp.idpID}</p>
       <div className="mt-1 flex flex-wrap items-center gap-3">
         <h1 className="text-3xl font-semibold">{idp.title}</h1>
         <StatusBadge status={idp.status} />
@@ -86,7 +86,7 @@ export default function IDViewIDPDetailsPg({ idpID }) {
           Edit IDP
         </Link>
         <Link href="/designer/idp" className="rounded border px-4 py-2">
-          Back to My IDPs
+          Back to My Projects
         </Link>
       </div>
 

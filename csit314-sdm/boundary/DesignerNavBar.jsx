@@ -23,7 +23,7 @@ export default function DesignerNavBar() {
         IDP Platform{" "}
         <span className="font-normal text-zinc-500">for Designers</span>
       </Link>
-      <Link href="/designer/idp">My IDPs</Link>
+      <Link href="/designer/idp">My Projects</Link>
       <Link href="/designer/dashboard">Performance Dashboard</Link>
       {account && (
         <span className="ml-auto flex items-center gap-3 text-sm">

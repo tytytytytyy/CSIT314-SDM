@@ -93,7 +93,7 @@ export default function CreateIDPPg() {
 
   return (
     <main className="mx-auto w-full max-w-3xl p-8">
-      <p className="text-sm text-zinc-500">My IDPs</p>
+      <p className="text-sm text-zinc-500">My Projects</p>
       <h1 className="text-3xl font-semibold">Create IDP</h1>
 
       <ErrorList messages={errors} />

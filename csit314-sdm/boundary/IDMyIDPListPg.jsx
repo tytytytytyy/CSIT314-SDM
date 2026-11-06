@@ -43,7 +43,7 @@ export default function IDMyIDPListPg() {
   return (
     <main className="mx-auto w-full max-w-4xl p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-3xl font-semibold">My IDPs</h1>
+        <h1 className="text-3xl font-semibold">My Projects</h1>
         <Link
           href="/designer/idp/create"
           className="rounded bg-zinc-900 px-4 py-2 text-white"

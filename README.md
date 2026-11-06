@@ -39,7 +39,7 @@ npm test
 | Customer | Like IDP | Like button on `/customer/idp/[idpID]` |
 | Customer | View Favourites List | `/customer/favourites` |
 | Customer | Get Designer Recommendations | `/customer/recommendations` |
-| Interior Designer | View IDP Details (My IDPs list) | `/designer/idp`, `/designer/idp/[idpID]` |
+| Interior Designer | View IDP Details (My Projects list) | `/designer/idp`, `/designer/idp/[idpID]` |
 | Interior Designer | Create IDP | `/designer/idp/create` |
 | Interior Designer | Update IDP | `/designer/idp/[idpID]/edit` |
 | Interior Designer | IDP Performance Dashboard | `/designer/dashboard` |
