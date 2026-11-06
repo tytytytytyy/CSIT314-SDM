@@ -23,6 +23,7 @@ import { useEffect, useRef, useState } from "react";
 import { ViewIDPController } from "@/controller/ViewIDPController";
 import { LikeIDPController } from "@/controller/LikeIDPController";
 import { SessionController } from "@/controller/SessionController";
+import { PHOTO_NOT_FOUND } from "@/entity/DummyData";
 
 export default function IDPViewPg({ idpID }) {
   const [view, setView] = useState({ kind: "loading" });
@@ -114,6 +115,10 @@ export default function IDPViewPg({ idpID }) {
             src={photo.photoURL}
             alt={photo.caption}
             className="rounded"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = PHOTO_NOT_FOUND;
+            }}
           />
         ))}
       </div>

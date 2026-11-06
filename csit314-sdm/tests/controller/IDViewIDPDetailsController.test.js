@@ -25,7 +25,7 @@ describe("getMyIDPs", () => {
       status: "completed",
       propertyType: "HDB",
     });
-    expect(list[0].mainPhotoURL).toMatch(/^data:image\/svg\+xml/);
+    expect(list[0].mainPhotoURL).toMatch(/^\/demo-photos\/.+\.jpg$/);
     expect(list[1]).toMatchObject({ idpID: 2, status: "ongoing" });
   });
 
