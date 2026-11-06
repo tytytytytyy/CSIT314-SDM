@@ -88,6 +88,56 @@ export function placeholderLogo(initials, colour) {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
+// Shown by <img onError> in the boundary pages when a real photo hasn't been downloaded into
+// public/demo-photos/ yet (see the team's photo download guide).
+export const PHOTO_NOT_FOUND = placeholderPhoto("Photo coming soon", "#c7c7c7");
+
+// File names match the team's photo download guide exactly: lowercase, hyphenated, "<style>-<room>.jpg"
+// for residential, "commercial-<room>-<1 or 2>.jpg" for commercial. Real files live in public/demo-photos/;
+// Next.js serves that folder at the site root, so this path alone is enough to show one once it's added.
+const STYLE_SLUG = {
+  Scandinavian: "scandinavian",
+  Industrial: "industrial",
+  Minimalist: "minimalist",
+  "Modern Luxury": "modern-luxury",
+  Japandi: "japandi",
+  Contemporary: "contemporary",
+  Tropical: "tropical",
+  "Mid-Century Modern": "mid-century-modern",
+  Peranakan: "peranakan",
+};
+const RESIDENTIAL_ROOM_SLUGS = ["living-room", "kitchen", "bedroom", "bathroom", "study"];
+const RESIDENTIAL_ROOM_SLUG = {
+  "Living Room": "living-room",
+  Kitchen: "kitchen",
+  "Master Bedroom": "bedroom",
+  Study: "study",
+  Bathroom: "bathroom",
+  Balcony: "living-room", // no dedicated photo in the guide; closest match
+  "Whole Unit": "living-room",
+};
+const COMMERCIAL_ROOM_SLUG = {
+  Reception: "reception",
+  "Meeting Room": "meeting-room",
+  "Open Office": "office",
+  Shopfront: "retail",
+  "Dining Area": "cafe",
+  "Bar Counter": "cafe",
+};
+
+export function demoPhotoURL(category, style, room, variant = 1) {
+  if (category === "Commercial") {
+    const slug = COMMERCIAL_ROOM_SLUG[room] ?? "office";
+    return `/demo-photos/commercial-${slug}-${variant === 2 ? 2 : 1}.jpg`;
+  }
+  const primarySlug = RESIDENTIAL_ROOM_SLUG[room] ?? "living-room";
+  const roomSlug =
+    variant === 2
+      ? RESIDENTIAL_ROOM_SLUGS[(RESIDENTIAL_ROOM_SLUGS.indexOf(primarySlug) + 1) % RESIDENTIAL_ROOM_SLUGS.length]
+      : primarySlug;
+  return `/demo-photos/${STYLE_SLUG[style]}-${roomSlug}.jpg`;
+}
+
 export function generateDummyData(today = new Date()) {
   const random = makeRandom(314);
   const pick = (list) => list[Math.floor(random() * list.length)];
@@ -146,7 +196,7 @@ export function generateDummyData(today = new Date()) {
         idp_photo.push({
           photoID: `P${nextPhoto++}`,
           idpID,
-          photoURL: placeholderPhoto(p === 1 ? style : `${style} ${p}`, STYLES[style]),
+          photoURL: demoPhotoURL(category, style, room, p),
           caption: p === 1 ? room : `${room} detail`,
           sortOrder: p,
           uploadedAt: randomTimeInLast(180),

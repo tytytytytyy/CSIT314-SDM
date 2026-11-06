@@ -54,7 +54,7 @@ describe("browseDesigners - designer card", () => {
     const result = await browse({}, "name");
     const d1 = result.designers.find((d) => d.designerID === "D1");
     expect(d1.samplePhotos.map((p) => p.idpID)).toEqual([1, 2]);
-    expect(d1.samplePhotos[0].photoURL).toMatch(/^data:image\/svg\+xml/);
+    expect(d1.samplePhotos[0].photoURL).toMatch(/^\/demo-photos\/.+\.jpg$/);
   });
 
   it("shows a designer with no IDPs with zero counts and no photos", async () => {
