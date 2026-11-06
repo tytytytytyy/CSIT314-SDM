@@ -23,6 +23,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { IDViewIDPDetailsController } from "@/controller/IDViewIDPDetailsController";
+import { PHOTO_NOT_FOUND } from "@/entity/DummyData";
 import { SessionController } from "@/controller/SessionController";
 import StatusBadge from "@/boundary/StatusBadge";
 
@@ -93,7 +94,15 @@ export default function IDViewIDPDetailsPg({ idpID }) {
         {photos.map((photo, index) => (
           <figure key={photo.photoID}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={photo.photoURL} alt={photo.caption} className="rounded" />
+            <img
+              src={photo.photoURL}
+              alt={photo.caption}
+              className="rounded"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = PHOTO_NOT_FOUND;
+              }}
+            />
             <figcaption className="mt-1 text-sm text-zinc-500">
               {index === 0 ? "Main photo: " : ""}
               {photo.caption}

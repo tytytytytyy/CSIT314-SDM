@@ -11,9 +11,9 @@
 //
 // Bump KEY_PREFIX when the seed data or the row shapes change, so old browser data is ignored.
 
-import { generateDummyData, placeholderPhoto, placeholderLogo } from "./DummyData";
+import { generateDummyData, placeholderLogo, demoPhotoURL } from "./DummyData";
 
-const KEY_PREFIX = "idp_platform_v6_";
+const KEY_PREFIX = "idp_platform_v7_";
 
 const HAND_MADE = {
   // Login accounts. Passwords are left out until the Login feature exists.
@@ -211,7 +211,7 @@ const HAND_MADE = {
     {
       photoID: "P1",
       idpID: 1,
-      photoURL: placeholderPhoto("Scandinavian - main", "#8aa5b8"),
+      photoURL: demoPhotoURL("Residential", "Scandinavian", "Living Room"),
       caption: "Living room",
       sortOrder: 1,
       uploadedAt: "2026-09-01T10:00:00.000Z",
@@ -219,7 +219,7 @@ const HAND_MADE = {
     {
       photoID: "P2",
       idpID: 1,
-      photoURL: placeholderPhoto("Scandinavian - detail", "#a8bfa0"),
+      photoURL: demoPhotoURL("Residential", "Scandinavian", "Study"),
       caption: "Reading corner",
       sortOrder: 2,
       uploadedAt: "2026-09-01T10:00:00.000Z",
@@ -227,7 +227,7 @@ const HAND_MADE = {
     {
       photoID: "P3",
       idpID: 2,
-      photoURL: placeholderPhoto("Industrial - main", "#6b5b52"),
+      photoURL: demoPhotoURL("Residential", "Industrial", "Living Room"),
       caption: "Loft",
       sortOrder: 1,
       uploadedAt: "2026-09-01T10:00:00.000Z",
@@ -235,7 +235,7 @@ const HAND_MADE = {
     {
       photoID: "P4",
       idpID: 3,
-      photoURL: placeholderPhoto("Minimalist - main", "#9a9a9a"),
+      photoURL: demoPhotoURL("Commercial", "Minimalist", "Open Office"),
       caption: "Open office",
       sortOrder: 1,
       uploadedAt: "2026-09-01T10:00:00.000Z",

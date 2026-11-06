@@ -25,6 +25,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { BrowseInteriorDesignersController } from "@/controller/BrowseInteriorDesignersController";
+import { PHOTO_NOT_FOUND } from "@/entity/DummyData";
 
 const SORT_LABELS = {
   name: "Name (A-Z)",
@@ -235,6 +236,10 @@ export default function BrowseInteriorDesignersPg() {
                         src={p.photoURL}
                         alt={p.title}
                         className="aspect-[8/5] w-full rounded object-cover"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = PHOTO_NOT_FOUND;
+                        }}
                       />
                     </Link>
                   ))}

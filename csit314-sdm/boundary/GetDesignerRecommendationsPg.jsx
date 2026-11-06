@@ -23,6 +23,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { GetDesignerRecommendationsController } from "@/controller/GetDesignerRecommendationsController";
 import { SessionController } from "@/controller/SessionController";
+import { PHOTO_NOT_FOUND } from "@/entity/DummyData";
 
 export default function GetDesignerRecommendationsPg() {
   const [view, setView] = useState({ kind: "loading" });
@@ -131,6 +132,10 @@ export default function GetDesignerRecommendationsPg() {
                         src={p.photoURL}
                         alt={p.title}
                         className="aspect-[8/5] w-full rounded object-cover"
+                        onError={(e) => {
+                          e.currentTarget.onerror = null;
+                          e.currentTarget.src = PHOTO_NOT_FOUND;
+                        }}
                       />
                     </Link>
                   ))}
