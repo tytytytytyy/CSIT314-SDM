@@ -15,18 +15,26 @@ beforeEach(() => {
 describe("getMyIDPs", () => {
   it("lists only the logged-in designer's own IDPs", async () => {
     const list = await IDViewIDPDetailsController.getMyIDPs("D1");
-    expect(list.map((item) => item.idpID)).toEqual([1, 2]);
+    expect(list.map((item) => item.idpID).sort()).toEqual([1, 2]);
+  });
+
+  it("lists In Progress IDPs first, then Completed", async () => {
+    // IDP 1 is completed and IDP 2 is ongoing, so 2 comes first.
+    const list = await IDViewIDPDetailsController.getMyIDPs("D1");
+    expect(list.map((item) => item.status)).toEqual(["ongoing", "completed"]);
+    expect(list.map((item) => item.idpID)).toEqual([2, 1]);
   });
 
   it("gives each IDP its status and main photo", async () => {
     const list = await IDViewIDPDetailsController.getMyIDPs("D1");
-    expect(list[0]).toMatchObject({
+    const idp1 = list.find((item) => item.idpID === 1);
+    expect(idp1).toMatchObject({
       idpID: 1,
       status: "completed",
       propertyType: "HDB",
     });
-    expect(list[0].mainPhotoURL).toMatch(/^\/demo-photos\/.+\.jpg$/);
-    expect(list[1]).toMatchObject({ idpID: 2, status: "ongoing" });
+    expect(idp1.mainPhotoURL).toMatch(/^\/demo-photos\/.+\.jpg$/);
+    expect(list.find((item) => item.idpID === 2)).toMatchObject({ status: "ongoing" });
   });
 
   it("does not show other designers' IDPs", async () => {
