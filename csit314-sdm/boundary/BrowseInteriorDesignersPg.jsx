@@ -8,7 +8,9 @@
 // What goes here:
 // - Grid of designer cards: company name, logo, location, styles, number of IDPs, total likes,
 //   and up to 3 sample IDP photos (each links to ViewIDPPg).
-// - Filters: keyword, location, style, category.
+// - Filters: keyword (name, description or designer ID), location, style, category.
+// - "/customer/designers?designer=D1" (the "By ..." link on an IDP page) shows only that
+//   designer, with a "Show all designers" link.
 // - Sort dropdown: name, most IDPs, most liked, newest.
 // - The page opens with every verified designer listed (no filters, sorted by name);
 //   the customer clicks Search to apply filters and sort.
@@ -24,6 +26,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { BrowseInteriorDesignersController } from "@/controller/BrowseInteriorDesignersController";
 import { PHOTO_NOT_FOUND } from "@/boundary/PhotoFallback";
 
@@ -41,6 +44,9 @@ export default function BrowseInteriorDesignersPg() {
   const [filters, setFilters] = useState(EMPTY_FILTERS);
   const [sortBy, setSortBy] = useState("name");
   const options = BrowseInteriorDesignersController.getFilterOptions();
+  const router = useRouter();
+  // "/customer/designers?designer=D1" (the "By ..." link on an IDP page) shows just that designer.
+  const onlyDesignerID = useSearchParams().get("designer") || null;
 
   const displayDesigners = (designers) => setView({ kind: "list", designers });
   const displayNoResults = () => setView({ kind: "empty" });
@@ -73,24 +79,34 @@ export default function BrowseInteriorDesignersPg() {
 
   useEffect(() => {
     // Customer clicks "Browse Designers" in the nav bar: show every verified designer.
+    // From an IDP page's "By ..." link: show just that designer.
     const load = async () => {
-      const result = await loadDesigners(EMPTY_FILTERS, "name");
+      const startFilters = onlyDesignerID
+        ? { ...EMPTY_FILTERS, designerID: onlyDesignerID }
+        : EMPTY_FILTERS;
+      const result = await loadDesigners(startFilters, "name");
       if (result.status === "invalid") displayErrorPg(result.message);
       else if (result.designers.length === 0) displayNoResults();
       else displayDesigners(result.designers);
     };
     load();
-  }, []);
+  }, [onlyDesignerID]);
 
   const onSubmit = (e) => {
     e.preventDefault();
-    submitFilters(filters, sortBy);
+    submitFilters(
+      onlyDesignerID ? { ...filters, designerID: onlyDesignerID } : filters,
+      sortBy,
+    );
   };
 
+  // Back to every designer. When only one designer is shown, dropping "?designer=" from the
+  // URL reloads the list through the effect above.
   const onClear = () => {
     setFilters(EMPTY_FILTERS);
     setSortBy("name");
-    submitFilters(EMPTY_FILTERS, "name");
+    if (onlyDesignerID) router.replace("/customer/designers");
+    else submitFilters(EMPTY_FILTERS, "name");
   };
 
   const setField = (field) => (e) =>
@@ -111,7 +127,7 @@ export default function BrowseInteriorDesignersPg() {
       >
         <input
           type="search"
-          placeholder="Search by name or description"
+          placeholder="Search by name, description or ID (e.g. D1)"
           aria-label="Keyword"
           value={filters.keyword}
           onChange={setField("keyword")}
@@ -182,6 +198,15 @@ export default function BrowseInteriorDesignersPg() {
         </div>
       </form>
 
+      {onlyDesignerID && (
+        <p className="mt-6 flex flex-wrap items-center gap-3 rounded border px-4 py-2 text-sm">
+          Showing only designer {onlyDesignerID}.
+          <button type="button" onClick={onClear} className="underline">
+            Show all designers
+          </button>
+        </p>
+      )}
+
       {view.kind === "loading" && <p className="mt-6">Loading...</p>}
       {view.kind === "error" && (
         <p className="mt-6 text-red-600">{view.message}</p>
@@ -203,7 +228,10 @@ export default function BrowseInteriorDesignersPg() {
                   className="h-14 w-14 shrink-0 rounded"
                 />
                 <div className="min-w-0">
-                  <h2 className="text-lg font-semibold">{d.companyName}</h2>
+                  <h2 className="text-lg font-semibold">
+                    {d.companyName}{" "}
+                    <span className="text-sm font-normal text-zinc-500">{d.designerID}</span>
+                  </h2>
                   <p className="text-sm text-zinc-500">{d.location}</p>
                   <p className="mt-1 text-sm">{d.description}</p>
                 </div>

@@ -1,6 +1,6 @@
 // Entity: UserAccount
 // Stores login accounts for all roles. Shared by every feature.
-// Used by: Verify ID Accounts, Create IDP, Browse Interior Designers,
+// Used by: Log in, Verify ID Accounts, Create IDP, Browse Interior Designers,
 //          Get Designer Recommendations, Generate Platform Report
 //
 // Fixed values:
@@ -14,12 +14,14 @@
 //
 // Methods:
 // - getAccount(accountID)                               null if there is no such account
+// - getAccountByEmail(email)                            log in; null if no account uses it
 // - updateStatus(accountID, status)
 // - searchAccounts(keyword)
 // - countNewAccounts(profileID, startDate, endDate)     platform report
 //
-// Implemented so far: getAccount (Browse Interior Designers).
-// password is not in the dummy data yet; it arrives with the Login feature.
+// Implemented so far: getAccount (Browse Interior Designers), getAccountByEmail (Log in),
+// countNewAccounts (Generate Platform Report).
+// Only the demo login accounts in LocalStore have a password (stored as plain TEST data).
 import { readTable } from "./LocalStore";
 
 export class UserAccount {
@@ -27,6 +29,7 @@ export class UserAccount {
 
   accountID;
   email;
+  password;
   profileID;
   status;
   createdAt;
@@ -37,6 +40,13 @@ export class UserAccount {
 
   static async getAccount(accountID) {
     const row = readTable("user_account").find((r) => r.accountID === accountID);
+    return row ? new UserAccount(row) : null;
+  }
+
+  // Emails are compared in lower case, so "Customer1@Example.com" finds customer1@example.com.
+  static async getAccountByEmail(email) {
+    const wanted = email.toLowerCase();
+    const row = readTable("user_account").find((r) => r.email.toLowerCase() === wanted);
     return row ? new UserAccount(row) : null;
   }
 

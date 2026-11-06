@@ -13,23 +13,45 @@
 
 import { generateDummyData, placeholderLogo, demoPhotoURL } from "./DummyData";
 
-const KEY_PREFIX = "idp_platform_v7_";
+const KEY_PREFIX = "idp_platform_v8_";
+
+// Password of every demo login account below (TEST data: a real system stores a hash, never
+// the password itself). Generated accounts (C4+, D6+) have no password, so they cannot log in.
+const DEMO_PASSWORD = "password123";
 
 const HAND_MADE = {
-  // Login accounts. Passwords are left out until the Login feature exists.
+  // Login accounts. C1-C3 and D1-D3 are the demo logins listed on the login page.
   // D1-D3 are verified designers. D4 is still waiting for verification and D5 was suspended,
-  // so Browse Interior Designers must hide both.
+  // so Browse Interior Designers must hide both, and Log in must turn both away.
   user_account: [
     {
       accountID: "C1",
       email: "customer1@example.com",
+      password: DEMO_PASSWORD,
       profileID: "customer",
       status: "active",
       createdAt: "2026-01-15T08:00:00.000Z",
     },
     {
+      accountID: "C2",
+      email: "customer2@example.com",
+      password: DEMO_PASSWORD,
+      profileID: "customer",
+      status: "active",
+      createdAt: "2026-02-03T08:00:00.000Z",
+    },
+    {
+      accountID: "C3",
+      email: "customer3@example.com",
+      password: DEMO_PASSWORD,
+      profileID: "customer",
+      status: "active",
+      createdAt: "2026-04-22T08:00:00.000Z",
+    },
+    {
       accountID: "D1",
       email: "hello@nordicnest.example.com",
+      password: DEMO_PASSWORD,
       profileID: "designer",
       status: "active",
       createdAt: "2026-03-01T08:00:00.000Z",
@@ -37,6 +59,7 @@ const HAND_MADE = {
     {
       accountID: "D2",
       email: "studio@linea.example.com",
+      password: DEMO_PASSWORD,
       profileID: "designer",
       status: "active",
       createdAt: "2026-05-10T08:00:00.000Z",
@@ -44,6 +67,7 @@ const HAND_MADE = {
     {
       accountID: "D3",
       email: "team@habitatco.example.com",
+      password: DEMO_PASSWORD,
       profileID: "designer",
       status: "active",
       createdAt: "2026-08-20T08:00:00.000Z",
@@ -51,6 +75,7 @@ const HAND_MADE = {
     {
       accountID: "D4",
       email: "hi@freshstart.example.com",
+      password: DEMO_PASSWORD,
       profileID: "designer",
       status: "pending",
       createdAt: "2026-10-28T08:00:00.000Z",
@@ -58,6 +83,7 @@ const HAND_MADE = {
     {
       accountID: "D5",
       email: "info@urbanedge.example.com",
+      password: DEMO_PASSWORD,
       profileID: "designer",
       status: "suspended",
       createdAt: "2026-02-11T08:00:00.000Z",
@@ -284,6 +310,11 @@ function seed() {
   for (const table of new Set([...Object.keys(HAND_MADE), ...Object.keys(extraTables)])) {
     seedCache[table] = [...(HAND_MADE[table] ?? []), ...(extraTables[table] ?? [])];
   }
+  // DummyData also generates C2 and C3; the hand-made demo logins above replace those rows.
+  const handMadeIDs = new Set(HAND_MADE.user_account.map((a) => a.accountID));
+  seedCache.user_account = seedCache.user_account.filter(
+    (a, i) => i < HAND_MADE.user_account.length || !handMadeIDs.has(a.accountID),
+  );
   seedCache.idp_sequence = [{ lastIDPID: Math.max(HAND_MADE.idp_sequence[0].lastIDPID, lastIDPID ?? 0) }];
   return seedCache;
 }

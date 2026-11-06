@@ -6,6 +6,7 @@ The code follows the **B-C-E** (Boundary, Control, Entity) pattern. Each use cas
 csit314-sdm/
 ├── app/            URLs only. Each page.jsx just shows a boundary page.
 │   ├── page.jsx              /
+│   ├── login/                /login
 │   ├── customer/             /customer/...
 │   ├── designer/             /designer/...
 │   ├── user-admin/           /user-admin/...
@@ -26,6 +27,7 @@ csit314-sdm/
 - **Boundary** only talks to its **controller**. It never reads storage directly.
 - **Controller** only talks to **entities** (and `SessionController` for the logged-in user).
 - **Entity** is the only layer that reads or writes storage, through `entity/LocalStore.js`.
+- **Logged-in user:** `LoginGate` (wrapped around every page in `app/layout.jsx`) sends logged-out users to `/login` and keeps customers and designers out of each other's pages. Pages get the logged-in ID from `SessionController.getLoggedInCustomerID()` / `getLoggedInDesignerID()`. A page that needs a login sets `export const instant = false`, because it is only shown after the session is read in the browser.
 - **Pages in `app/`** go in the folder of the actor who uses them. Folder names are lowercase with hyphens, no spaces.
 - **Tests** are written before the code (TDD) and live in `tests/`, in the same folder as the class they test, named `<ClassName>.test.js`.
 

@@ -1,9 +1,13 @@
 // Boundary: HomePg  (TEMPORARY - replace with the real IDP list / search page)
-// Route: /
-// Carousel of IDP cards (main photo + title). Each card links to ViewIDPPg.
+// Route: /   (customers only)
+// Every IDP as a grid of cards (main photo, title, style, designer). The next page of IDPs loads
+// by itself when the customer scrolls near the bottom, until there are no more.
+// Each card links to ViewIDPPg, and its designer name to Browse Interior Designers.
 //
 // Methods:
-// - displayIDPCards(cards)
+// - loadNextPage()                   -> HomeController.getIDPFeed(offset)
+// - displayIDPCards(cards)           adds a page of cards under the ones already shown
+// - displayEndOfList()
 // - displayEmptyList()
 //
 // Attributes: none
@@ -12,80 +16,108 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { HomeController } from "@/controller/HomeController";
+import { PHOTO_NOT_FOUND } from "@/boundary/PhotoFallback";
 
 export default function HomePg() {
-  const [cards, setCards] = useState(null);
-  const track = useRef(null);
+  const [cards, setCards] = useState([]);
+  const [status, setStatus] = useState("loading"); // loading | more | end | empty
+  const bottomMarker = useRef(null);
 
-  const displayIDPCards = (idpCards) => setCards(idpCards);
-  const displayEmptyList = () => setCards([]);
+  const displayIDPCards = (pageCards) => setCards((shown) => [...shown, ...pageCards]);
+  const displayEndOfList = () => setStatus("end");
+  const displayEmptyList = () => setStatus("empty");
 
   useEffect(() => {
-    const load = async () => {
-      const idpCards = await HomeController.getFeaturedIDPs();
-      if (idpCards.length === 0) displayEmptyList();
-      else displayIDPCards(idpCards);
+    const marker = bottomMarker.current;
+    let nextOffset = 0;
+    let busy = false;
+    let finished = false;
+    let cancelled = false; // the page was left (or React re-ran this effect)
+
+    const loadNextPage = async () => {
+      if (busy || finished) return;
+      busy = true;
+      const page = await HomeController.getIDPFeed(nextOffset);
+      if (cancelled) return;
+      nextOffset += page.cards.length;
+      displayIDPCards(page.cards);
+      busy = false;
+      if (!page.hasMore) {
+        finished = true;
+        if (nextOffset === 0) displayEmptyList();
+        else displayEndOfList();
+        return;
+      }
+      setStatus("more");
+      // Watch the bottom again once the new cards are on screen: if it is still in view
+      // (a tall screen), the observer reports it and the next page loads.
+      requestAnimationFrame(() => {
+        if (cancelled) return;
+        observer.unobserve(marker);
+        observer.observe(marker);
+      });
     };
-    load();
+
+    // Start loading a little before the customer reaches the bottom.
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) loadNextPage();
+      },
+      { rootMargin: "600px 0px" },
+    );
+    observer.observe(marker);
+    return () => {
+      cancelled = true;
+      observer.disconnect();
+    };
   }, []);
 
-  const scrollBy = (direction) => {
-    const el = track.current;
-    if (el)
-      el.scrollBy({
-        left: direction * el.clientWidth * 0.8,
-        behavior: "smooth",
-      });
-  };
-
   return (
-    <main className="mx-auto w-full max-w-4xl p-8">
+    <main className="mx-auto w-full max-w-5xl p-8">
       <h1 className="text-3xl font-semibold">IDPs</h1>
-      {cards === null && <p className="mt-6">Loading...</p>}
-      {cards?.length === 0 && <p className="mt-6">No IDPs available.</p>}
-      {cards && cards.length > 0 && (
-        <div className="relative mt-6">
-          <button
-            type="button"
-            aria-label="Previous"
-            onClick={() => scrollBy(-1)}
-            className="absolute left-0 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 rounded-full border bg-background px-3 py-1"
-          >
-            ‹
-          </button>
-          <ul
-            ref={track}
-            className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2"
-          >
-            {cards.map((card) => (
-              <li
-                key={card.idpID}
-                className="w-64 shrink-0 snap-start overflow-hidden rounded border"
-              >
-                <Link href={`/customer/idp/${card.idpID}`}>
-                  {card.mainPhotoURL && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={card.mainPhotoURL}
-                      alt={card.title}
-                      className="aspect-[8/5] w-full object-cover"
-                    />
-                  )}
-                  <p className="p-3 font-medium">{card.title}</p>
+
+      {cards.length > 0 && (
+        <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {cards.map((card) => (
+            <li key={card.idpID} className="overflow-hidden rounded border">
+              <Link href={`/customer/idp/${card.idpID}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={card.mainPhotoURL ?? PHOTO_NOT_FOUND}
+                  alt={card.title}
+                  loading="lazy"
+                  className="aspect-[8/5] w-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = PHOTO_NOT_FOUND;
+                  }}
+                />
+                <p className="px-3 pt-3 font-medium">{card.title}</p>
+              </Link>
+              <p className="px-3 pb-3 text-sm text-zinc-500">
+                {card.style} · by{" "}
+                <Link
+                  href={`/customer/designers?designer=${encodeURIComponent(card.designerID)}`}
+                  className="underline"
+                >
+                  {card.companyName ?? card.designerID}
                 </Link>
-              </li>
-            ))}
-          </ul>
-          <button
-            type="button"
-            aria-label="Next"
-            onClick={() => scrollBy(1)}
-            className="absolute right-0 top-1/2 z-10 translate-x-1/2 -translate-y-1/2 rounded-full border bg-background px-3 py-1"
-          >
-            ›
-          </button>
-        </div>
+              </p>
+            </li>
+          ))}
+        </ul>
       )}
+
+      <div ref={bottomMarker} aria-hidden="true" />
+      {(status === "loading" || status === "more") && (
+        <p className="mt-6 text-center text-zinc-500">Loading more IDPs...</p>
+      )}
+      {status === "end" && (
+        <p className="mt-6 text-center text-zinc-500">
+          That&apos;s all {cards.length} IDPs.
+        </p>
+      )}
+      {status === "empty" && <p className="mt-6">No IDPs available.</p>}
     </main>
   );
 }

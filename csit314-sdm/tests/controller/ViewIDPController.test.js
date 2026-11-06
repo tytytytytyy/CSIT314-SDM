@@ -16,6 +16,14 @@ describe("viewIDP", () => {
     expect(details.photos.map((p) => p.photoID)).toEqual(["P1", "P2"]);
   });
 
+  it("says which designer made the IDP, so the customer can find them", async () => {
+    expect((await ViewIDPController.viewIDP(1, "C1")).designer).toEqual({
+      designerID: "D1",
+      companyName: "Nordic Nest Interiors",
+    });
+    expect((await ViewIDPController.viewIDP(3, "C1")).designer.companyName).toBe("Studio Linea");
+  });
+
   it("records one view for the IDP, with the customer who opened it", async () => {
     await ViewIDPController.viewIDP(1, "C1");
     const views = readTable("idp_view");

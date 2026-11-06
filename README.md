@@ -32,7 +32,9 @@ npm test
 
 | Actor | Feature | URL |
 |---|---|---|
-| Customer | Browse Interior Designers | `/customer/designers` |
+| Customer, Interior Designer | Log in / Log out | `/login`, Log out button in the nav bar |
+| Customer | Home: every IDP, more load as you scroll | `/` |
+| Customer | Browse Interior Designers (search by name, description or ID such as `D1`) | `/customer/designers`, or `/customer/designers?designer=D1` for one designer |
 | Customer | View IDP | `/customer/idp/[idpID]` |
 | Customer | Like IDP | Like button on `/customer/idp/[idpID]` |
 | Customer | View Favourites List | `/customer/favourites` |
@@ -47,6 +49,15 @@ npm test
 
 `[idpID]` is the IDP number, e.g. `/customer/idp/7`.
 
-**Demo logins:** there is no real login. Customer pages have a test "Log in" button in the nav bar (customer C1), and designer pages are always logged in as designer D1.
+**Demo logins:** customer and designer pages need you to log in first; opening any of them while logged out takes you to `/login`. The login page lists the demo accounts (click one to fill in the form):
+
+| Account | Role | Email |
+|---|---|---|
+| C1, C2, C3 | Customer | `customer1@example.com`, `customer2@example.com`, `customer3@example.com` |
+| D1 Nordic Nest Interiors | Interior designer | `hello@nordicnest.example.com` |
+| D2 Studio Linea | Interior designer | `studio@linea.example.com` |
+| D3 Habitat & Co | Interior designer | `team@habitatco.example.com` |
+
+The password for all of them is on the login page and in `entity/LocalStore.js`. Designers D4 (waiting for verification) and D5 (suspended) are turned away. Customers and designers share the same data: an IDP that designer D1 creates or edits is what customers see at `/customer/idp/...`. To be logged in as a customer and a designer at the same time, use a second (private) browser window. The user admin and platform manager pages still use their own test log in buttons.
 
 See [`csit314-sdm/README.md`](csit314-sdm/README.md) for how the code is organised.

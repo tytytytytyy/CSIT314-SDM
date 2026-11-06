@@ -5,6 +5,7 @@
 //
 // What goes here:
 // - View IDP: title, photos, style, property type, category, budget, description. No login needed.
+// - "By <company> (D1)" links to Browse Interior Designers showing just that designer.
 // - Like IDP: a Like button. Clicking it calls LikeIDPController, then shows a success message and
 //   the liked state, or the "already in favourites" message.
 //
@@ -19,6 +20,7 @@
 // Attributes: none
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ViewIDPController } from "@/controller/ViewIDPController";
 import { LikeIDPController } from "@/controller/LikeIDPController";
@@ -87,10 +89,19 @@ export default function ViewIDPPg({ idpID }) {
   if (view.kind === "error")
     return <p className="p-8 text-red-600">{view.message}</p>;
 
-  const { idp, photos } = view.details;
+  const { idp, photos, designer } = view.details;
   return (
     <main className="mx-auto w-full max-w-3xl p-8">
       <h1 className="text-3xl font-semibold">{idp.title}</h1>
+      <p className="mt-1 text-zinc-500">
+        By{" "}
+        <Link
+          href={`/customer/designers?designer=${encodeURIComponent(designer.designerID)}`}
+          className="underline"
+        >
+          {designer.companyName ?? "Interior designer"} ({designer.designerID})
+        </Link>
+      </p>
       <div className="mt-4">
         <button
           type="button"

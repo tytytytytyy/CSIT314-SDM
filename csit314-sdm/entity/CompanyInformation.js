@@ -12,7 +12,7 @@
 // Methods:
 // - getCompanyInfo(designerID)                          null if the designer has no company details
 // - searchCompanies(filters)                            keyword / location filters for browsing
-//     keyword  matches companyName or description, ignoring case
+//     keyword  matches companyName or description, or is the designer ID, ignoring case
 //     location matches part of the location, ignoring case
 //     an empty filter matches every company
 import { readTable } from "./LocalStore";
@@ -51,7 +51,8 @@ export class CompanyInformation {
         (r) =>
           !keyword ||
           contains(r.companyName, keyword) ||
-          contains(r.description, keyword),
+          contains(r.description, keyword) ||
+          r.designerID.toLowerCase() === keyword.toLowerCase(),
       )
       .filter((r) => !location || contains(r.location, location))
       .map((r) => new CompanyInformation(r));

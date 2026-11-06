@@ -16,11 +16,12 @@
 // - updateIDP(idp)
 // - searchIDPs(criteria)                                active promotions listed first
 // - getIDPsByDesigner(designerID)
+// - listIDPs(offset, limit)                             home page feed, in idpID order
 // - countIDPs(startDate, endDate)                       platform report
 // - deleteIDP(idpID)                                    used to undo a failed Create IDP
 //
 // Implemented so far: getIDP (View IDP, Like IDP, View Favourites List),
-// getIDPsByDesigner (ID View IDP Details), updateIDP (ID Update IDP),
+// getIDPsByDesigner (ID View IDP Details), listIDPs (home page), updateIDP (ID Update IDP),
 // createIDP and deleteIDP (ID Create IDP).
 //
 // Fixed values:
@@ -73,6 +74,14 @@ export class IDP {
     return readTable("idp")
       .filter((r) => r.designerID === designerID)
       .sort((a, b) => a.idpID - b.idpID)
+      .map((r) => new IDP(r));
+  }
+
+  // One page of all IDPs, in idpID order: skips the first `offset`, returns up to `limit`.
+  static async listIDPs(offset, limit) {
+    return readTable("idp")
+      .toSorted((a, b) => a.idpID - b.idpID)
+      .slice(offset, offset + limit)
       .map((r) => new IDP(r));
   }
 
