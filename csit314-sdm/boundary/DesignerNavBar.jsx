@@ -1,16 +1,24 @@
 // Boundary: DesignerNavBar
 // Nav bar for interior designer pages (/designer/...). NavBar shows this one instead of the
-// customer bar. Shows which designer is logged in, and Log out.
+// customer bar. Shows the logged-in designer's company logo and name, and Log out.
 "use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { LoginController } from "@/controller/LoginController";
 import { useSession } from "@/boundary/useSession";
 
 export default function DesignerNavBar() {
   const router = useRouter();
   const account = useSession();
+  const [company, setCompany] = useState(null);
+
+  // Reload the company whenever a different designer logs in.
+  useEffect(() => {
+    if (!account) return;
+    LoginController.getLoggedInDesignerCompany().then(setCompany);
+  }, [account?.accountID]);
 
   const logout = () => {
     LoginController.logout();
@@ -27,7 +35,15 @@ export default function DesignerNavBar() {
       <Link href="/designer/dashboard">Performance Dashboard</Link>
       {account && (
         <span className="ml-auto flex items-center gap-3 text-sm">
-          <span className="text-zinc-500">Logged in as designer {account.accountID}</span>
+          {company ? (
+            <span className="flex items-center gap-2 font-medium">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={company.logoURL} alt="" className="h-7 w-7 rounded object-cover" />
+              {company.companyName}
+            </span>
+          ) : (
+            <span className="text-zinc-500">Logged in as designer {account.accountID}</span>
+          )}
           <button type="button" onClick={logout} className="rounded border px-3 py-1">
             Log out
           </button>

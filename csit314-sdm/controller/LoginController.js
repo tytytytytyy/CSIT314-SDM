@@ -20,11 +20,16 @@
 // - logout()
 //     -> SessionController.logout()
 // - getHomePage()                           where the logged-in user starts; "/login" when logged out
+// - getLoggedInDesignerCompany()            company name and logo for the designer menu bar;
+//                                           null unless a designer is logged in
+//     -> SessionController.getLoggedInDesignerID()
+//     -> CompanyInformation.getCompanyInfo(designerID)
 //
-// Entities used: UserAccount
+// Entities used: UserAccount, CompanyInformation
 //
 // Attributes: none
 import { UserAccount } from "@/entity/UserAccount";
+import { CompanyInformation } from "@/entity/CompanyInformation";
 import { SessionController } from "@/controller/SessionController";
 
 const HOME_PAGES = { customer: "/", designer: "/designer/idp" };
@@ -64,5 +69,12 @@ export class LoginController {
   static getHomePage() {
     const account = SessionController.getLoggedInAccount();
     return account ? HOME_PAGES[account.profileID] ?? "/login" : "/login";
+  }
+
+  static async getLoggedInDesignerCompany() {
+    const designerID = SessionController.getLoggedInDesignerID();
+    if (!designerID) return null;
+    const company = await CompanyInformation.getCompanyInfo(designerID);
+    return company ? { companyName: company.companyName, logoURL: company.logoURL } : null;
   }
 }
