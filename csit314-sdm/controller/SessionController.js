@@ -33,7 +33,7 @@ export class SessionController {
     return DEMO_DESIGNER_ID;
   }
 
-   static getLoggedInDesignerID() {    
+   static getLoggedInADMINID() {    
      return DEMO_ADMIN_ID;
 }
 
