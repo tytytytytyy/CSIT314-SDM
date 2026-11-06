@@ -27,3 +27,36 @@
 // Entities used: DesignerVerification, UserAccount, CompanyInformation
 //
 // Attributes: none
+
+import { InteriorDesignerAccount } from "@/entity/InteriorDesignerAccount";
+import { SessionController } from "@/controller/SessionController";
+import { UserAccount } from "@/entity/UserAccount";
+
+export class VerifyIDAccountsController {
+  static async getAdminID() {
+    const id = SessionController.getLoggedInAdminID();
+    const admin = id ? await UserAccount.getAccount(id) : null;
+    if (!admin || admin.profileID !== "admin" || admin.status !== "active") throw new Error("Please log in as an active user admin.");
+    return id;
+  }
+  static async getPendingAccounts() {
+    await this.getAdminID();
+    return InteriorDesignerAccount.getPendingAccounts();
+  }
+  static async getAccountDetails(accountID) {
+    await this.getAdminID();
+    return InteriorDesignerAccount.getAccountDetails(accountID);
+  }
+  static async decide(accountID, status, reason) {
+    try {
+      const adminID = await this.getAdminID();
+      const verification = InteriorDesignerAccount.updateVerification(accountID, status, adminID, reason);
+      return { success: true, verification };
+    } catch (error) {
+      return { success: false, error: error instanceof Error && /required|reviewed|pending|log in|not found|Invalid/.test(error.message) ? error.message : "Update failed. Account status is unchanged. Please try again." };
+    }
+  }
+  static approveAccount(accountID) { return this.decide(accountID, "active"); }
+  static verifyAccount(accountID) { return this.approveAccount(accountID); }
+  static rejectAccount(accountID, reason) { return this.decide(accountID, "rejected", reason); }
+}
