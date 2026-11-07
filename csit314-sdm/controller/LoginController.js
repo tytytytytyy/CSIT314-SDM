@@ -32,7 +32,7 @@ import { UserAccount } from "@/entity/UserAccount";
 import { CompanyInformation } from "@/entity/CompanyInformation";
 import { SessionController } from "@/controller/SessionController";
 
-const HOME_PAGES = { customer: "/", designer: "/designer/idp" };
+const HOME_PAGES = { customer: "/", designer: "/designer/idp", admin: "/user-admin/verify-id-accounts" };
 
 const BLOCKED_MESSAGES = {
   pending: "Your account is waiting for verification",
@@ -50,7 +50,7 @@ export class LoginController {
     }
 
     const account = await UserAccount.getAccountByEmail(trimmedEmail);
-    // Only customers and designers log in on this page.
+    // All supported roles use the same credential and account-status checks.
     if (!account || !account.password || account.password !== password || !HOME_PAGES[account.profileID]) {
       return { status: "invalid", message: "Incorrect email or password" };
     }
