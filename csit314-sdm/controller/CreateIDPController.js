@@ -23,6 +23,7 @@
 //
 // Attributes: none
 import { IDP } from "@/entity/IDP";
+import { InteriorDesignerAccount } from "@/entity/InteriorDesignerAccount";
 import { IDPPhoto } from "@/entity/IDPPhoto";
 import { UpdateIDPController } from "@/controller/UpdateIDPController";
 
@@ -39,6 +40,15 @@ export class CreateIDPController {
   }
 
   static async createIDP(designerID, input, photos) {
+    // Verify Accounts rule: only active, approved firms may publish projects.
+    try {
+      const { account, verification } = InteriorDesignerAccount.getAccountDetails(designerID);
+      if (account.status !== "active" || verification?.status !== "approved") {
+        return { success: false, errors: ["Only active, verified interior designers can publish IDPs."] };
+      }
+    } catch {
+      return { success: false, errors: ["Interior designer account not found."] };
+    }
     const errors = CreateIDPController.validateIDP(input, photos);
     if (errors.length > 0) return { success: false, errors };
 
