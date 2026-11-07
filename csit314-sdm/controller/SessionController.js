@@ -69,7 +69,8 @@ export class SessionController {
   }
 
   static getLoggedInADMINID() {
-    return DEMO_ADMIN_ID;
+    const account = this.getLoggedInAccount();
+    if (account) return account.profileID === "admin" ? account.accountID : null;
   }
 
   static getRequiredProfile(pathname) {
