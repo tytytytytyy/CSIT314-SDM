@@ -9,6 +9,15 @@ export class InteriorDesignerAccount {
       verification: readTable("designer_verification").find(r => r.designerID === accountID) ?? null };
   }
 
+  static getAccounts(status = "all") {
+    if (!["all", "pending", "active", "rejected", "suspended"].includes(status)) {
+      throw new Error("Invalid account status.");
+    }
+    return readTable("user_account")
+      .filter(row => row.profileID === "designer" && (status === "all" || row.status === status))
+      .map(row => this.getAccountDetails(row.accountID));
+  }
+
   static getPendingAccounts() {
     return readTable("user_account").filter(r => r.profileID === "designer" && r.status === "pending")
       .map(r => this.getAccountDetails(r.accountID)).filter(r => r.verification?.status === "pending");
