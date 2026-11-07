@@ -71,7 +71,7 @@ export default function LoginPg() {
   return (
     <main className="mx-auto w-full max-w-md p-8">
       <h1 className="text-3xl font-semibold">Log in</h1>
-      <p className="mt-2 text-zinc-500">For customers and interior designers.</p>
+      <p className="mt-2 text-zinc-500">For customers, interior designers and user admins.</p>
 
       <form onSubmit={submitLogin} className="mt-6 grid gap-4" noValidate>
         <label htmlFor="login-email" className="grid gap-1">
