@@ -34,6 +34,7 @@ const DEMO_ACCOUNTS = [
   { role: "Interior designer", label: "D1 Nordic Nest Interiors", email: "hello@nordicnest.example.com" },
   { role: "Interior designer", label: "D2 Studio Linea", email: "studio@linea.example.com" },
   { role: "Interior designer", label: "D3 Habitat & Co", email: "team@habitatco.example.com" },
+  { role: "User Admin", label: "A1", email: "admin@example.com" },
 ];
 
 export default function LoginPg() {
