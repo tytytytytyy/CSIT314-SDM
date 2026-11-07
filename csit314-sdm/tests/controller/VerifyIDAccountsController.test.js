@@ -1,9 +1,14 @@
+import React, { act } from "react";
+import { createRoot } from "react-dom/client";
+import NavBar from "@/boundary/NavBar";
+import VerifyIDAccountsPg from "@/boundary/VerifyIDAccountsPg";
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import { VerifyIDAccountsController as C } from "@/controller/VerifyIDAccountsController";
 import { SessionController } from "@/controller/SessionController";
 import { readTable, writeTable } from "@/entity/LocalStore";
+import { LoginController } from "@/controller/LoginController";
 import { CreateIDPController } from "@/controller/CreateIDPController";
-beforeEach(() => { localStorage.clear(); SessionController.loginAsDemoAdmin(); });
+beforeEach(() => { localStorage.clear(); SessionController.login("A1", "admin"); });
 afterEach(() => vi.restoreAllMocks());
 describe("Verify accounts", () => {
   it("lists pending designers and company details", async () => {
@@ -35,7 +40,7 @@ describe("Verify accounts", () => {
     expect((await C.getAccountDetails("D4")).verification.status).toBe("approved");
   });
   it("denies logged-out and non-admin sessions", async () => {
-    SessionController.logoutAdmin();
+    SessionController.logout();
     expect((await C.approveAccount("D4")).success).toBe(false);
     localStorage.setItem("idp_platform_session_adminID", "C1");
     await expect(C.getPendingAccounts()).rejects.toThrow("user admin");
@@ -59,4 +64,128 @@ describe("Verify accounts", () => {
     expect((await CreateIDPController.createIDP("D4",input,photos)).success).toBe(false);
     expect((await CreateIDPController.createIDP("D1",input,photos)).success).toBe(true);
   });
+});
+
+describe("Admin login and account lists", () => {
+  it("logs in through the existing login page flow", async () => {
+    SessionController.logout();
+    expect((await LoginController.login("admin@example.com", "wrong")).status).toBe("invalid");
+    expect(SessionController.getLoggedInAdminID()).toBeNull();
+    expect(await LoginController.login("admin@example.com", "password123")).toEqual({
+      status: "ok", profileID: "admin", homePage: "/user-admin/verify-id-accounts",
+    });
+    expect(LoginController.getHomePage()).toBe("/user-admin/verify-id-accounts");
+    expect(SessionController.getLoggedInADMINID()).toBe("A1");
+  });
+  it("lists active and rejected accounts with read-only review details", async () => {
+    await C.rejectAccount("D4", "Invalid registration");
+    const rejected = await C.getAccounts("rejected");
+    expect(rejected.map(row => row.account.accountID)).toEqual(["D4"]);
+    expect(rejected[0].verification.rejectReason).toBe("Invalid registration");
+    expect((await C.getAccounts("active")).every(row => row.account.status === "active")).toBe(true);
+    expect((await C.getAccountDetails("D1")).company.companyName).toBe("Nordic Nest Interiors");
+    expect((await C.approveAccount("D1")).success).toBe(false);
+    expect((await C.getAccounts()).some(row => row.account.accountID === "D5")).toBe(true);
+  });
+  it.each([null, "customer", "designer"])("denies list and details for %s", async role => {
+    if (role) SessionController.login(role === "customer" ? "C1" : "D1", role);
+    else SessionController.logout();
+    await expect(C.getAccounts()).rejects.toThrow("user admin");
+    await expect(C.getAccountDetails("D4")).rejects.toThrow("user admin");
+  });
+  it("restores the account if the second table cannot be written", async () => {
+    const before = await C.getAccountDetails("D4");
+    const original = Storage.prototype.setItem;
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(function(key, value) {
+      if (key.endsWith("designer_verification")) throw new Error("quota");
+      return original.call(this, key, value);
+    });
+    expect((await C.approveAccount("D4")).success).toBe(false);
+    expect(await C.getAccountDetails("D4")).toEqual(before);
+  });
+  it("preserves customer data while approving and enables the approved designer login", async () => {
+    const customer = readTable("user_account").find(row => row.accountID === "C1");
+    const projects = readTable("idp");
+    await C.approveAccount("D4");
+    expect(readTable("user_account").find(row => row.accountID === "C1")).toEqual(customer);
+    expect(readTable("idp")).toEqual(projects);
+    expect((await LoginController.login("hi@freshstart.example.com", "password123")).status).toBe("ok");
+  });
+});
+
+vi.mock('next/navigation', () => ({ usePathname: () => '/user-admin/verify-id-accounts', useRouter: () => ({replace: vi.fn()}) }));
+vi.mock('next/link', async () => {
+  const React = await import('react');
+  return {default: ({children, ...props}) => React.createElement('a', props, children)};
+});
+vi.mock('@/boundary/DesignerNavBar', () => ({default: () => null}));
+
+describe("Verify Accounts page interactions", () => {
+let host, root;
+beforeEach(() => {
+  globalThis.React = React;
+  globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+  localStorage.clear();
+  host = document.createElement('div'); document.body.append(host);
+  root = createRoot(host);
+});
+afterEach(async () => { await act(async () => root.unmount()); host.remove(); });
+const render = async Component => { await act(async () => { root.render(React.createElement(Component)); }); };
+const click = async text => {
+  const button = [...host.querySelectorAll('button')].find(b => b.textContent.startsWith(text));
+  expect(button, text).toBeTruthy();
+  await act(async () => button.click());
+};
+it('updates the admin-only navigation on login and logout', async () => {
+  await render(NavBar);
+  expect(host.textContent).not.toContain('Verify ID Accounts');
+  await act(async () => SessionController.login('C1','customer'));
+  expect(host.textContent).not.toContain('Verify ID Accounts');
+  await act(async () => SessionController.login('A1','admin'));
+  expect(host.querySelector('a[href="/user-admin/verify-id-accounts"]').textContent).toBe('IDP Platform');
+  expect(host.textContent).toContain('Verify ID Accounts');
+  await click('Log out');
+  expect(host.textContent).not.toContain('Verify ID Accounts');
+});
+it('shows active details and approves pending firms through the page', async () => {
+  SessionController.login('A1','admin');
+  await render(VerifyIDAccountsPg);
+  await click('Active ('); await click('Nordic Nest Interiors');
+  expect(host.textContent).toContain('202601234A');
+  expect(host.textContent).toContain('This account is read-only');
+  await click('Pending ('); await click('Fresh Start Design');
+  await click('Approve account');
+  expect(host.textContent).toContain('Account approved and activated');
+  expect(host.textContent).toContain('No pending accounts');
+  await click('Active ('); await click('Fresh Start Design');
+  expect(host.textContent).toContain('A1');
+  expect(host.textContent).toContain('This account is read-only');
+});
+it('requires a reason and displays the rejected account details', async () => {
+  SessionController.login('A1','admin');
+  await render(VerifyIDAccountsPg);
+  await click('Fresh Start Design'); await click('Reject account');
+  await click('Confirm rejection');
+  expect(host.querySelector('[role="alert"]').textContent).toContain('reason is required');
+  const input = host.querySelector('textarea');
+  await act(async () => {
+    Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(input, 'Invalid registration');
+    input.dispatchEvent(new Event('input', {bubbles: true}));
+  });
+  await click('Confirm rejection');
+  expect(host.textContent).toContain('Account rejected.');
+  await click('Rejected ('); await click('Fresh Start Design');
+  expect(host.textContent).toContain('Invalid registration');
+  expect(host.textContent).toContain('This account is read-only');
+});
+it('clears visible accounts when the admin session ends', async () => {
+  SessionController.login('A1','admin');
+  await render(VerifyIDAccountsPg);
+  await click('Fresh Start Design');
+  await act(async () => SessionController.logout());
+  expect(host.textContent).not.toContain('Fresh Start Design');
+  expect(host.textContent).toContain('Log in as User Admin');
+  expect((await C.approveAccount('D4')).success).toBe(false);
+});
+
 });
