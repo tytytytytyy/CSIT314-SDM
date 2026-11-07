@@ -25,6 +25,7 @@ export default function NavBar() {
     router.replace("/login");
   };
 
+  const isAdmin = account?.profileID === "admin";
   const isCustomer = account?.profileID === "customer";
 
   return (
@@ -32,6 +33,9 @@ export default function NavBar() {
       <Link href={isCustomer ? "/" : "/login"} className="font-semibold">
         IDP Platform
       </Link>
+      {isAdmin && (
+        <Link href="/user-admin/verify-id-accounts">Verify ID Accounts</Link>
+      )}
       {isCustomer && (
         <>
           <Link href="/customer/designers">Browse Designers</Link>
