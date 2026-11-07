@@ -28,6 +28,8 @@ import { SessionController } from "@/controller/SessionController";
 
 export default function VerifyIDAccountsPg() {
   const [accounts, setAccounts] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("pending");
+  const visibleAccounts = accounts.filter(row => statusFilter === "all" || row.account.status === statusFilter);
   const [selected, setSelected] = useState(null);
   const [reason, setReason] = useState("");
   const [rejecting, setRejecting] = useState(false);
@@ -38,18 +40,29 @@ export default function VerifyIDAccountsPg() {
   async function refresh() {
     try {
       setAdmin(await Controller.getAdminID());
-      setAccounts(await Controller.getPendingAccounts());
+      const rows = await Controller.getAccounts();
+      setAccounts(rows);
+      setSelected(current => current ? rows.find(row => row.account.accountID === current.account.accountID) ?? null : null);
       setError("");
     } catch (e) { setAdmin(null); setAccounts([]); setSelected(null); setError(e.message); }
   }
   useEffect(() => {
     let cancelled = false;
     Controller.getAdminID().then(async id => {
-      const rows = await Controller.getPendingAccounts();
+      const rows = await Controller.getAccounts();
       if (!cancelled) { setAdmin(id); setAccounts(rows); }
     }).catch(e => { if (!cancelled) setError(e.message); });
     return () => { cancelled = true; };
   }, []);
+  async function toggleAdmin() {
+    setBusy(true); setMessage(""); setError(""); setSelected(null);
+    try {
+      if (admin) SessionController.logoutAdmin();
+      else SessionController.loginAsDemoAdmin();
+      await refresh();
+    } catch { setError("Unable to change admin session. Please allow browser storage and try again."); }
+    finally { setBusy(false); }
+  }
   async function select(id) {
     setBusy(true); setError(""); setMessage("");
     try { setSelected(await Controller.getAccountDetails(id)); setRejecting(false); setReason(""); }
@@ -59,39 +72,44 @@ export default function VerifyIDAccountsPg() {
   async function decide(reject) {
     setBusy(true); setError(""); setMessage("");
     try {
+      if (!selected) return;
       const result = reject ? await Controller.rejectAccount(selected.account.accountID, reason) : await Controller.approveAccount(selected.account.accountID);
       if (!result.success) { setError(result.error); return; }
       setSelected(null); setReason(""); setRejecting(false);
       await refresh();
       setMessage(`Account ${reject ? "rejected" : "approved and activated"}. Reviewed by ${result.verification.reviewedBy} at ${new Date(result.verification.reviewedAt).toLocaleString()}.`);
-    } finally { setBusy(false); }
+    } catch { setError("Unable to complete the review. Please refresh and try again."); }
+    finally { setBusy(false); }
   }
   return <main className="mx-auto max-w-6xl space-y-6 p-8">
     <h1 className="text-3xl font-bold">Verify Interior Designer Accounts</h1>
     <p>Review company information before allowing a firm to publish IDPs.</p>
-    <div className="flex gap-4 items-center rounded border p-4">
-      <span>{admin ? `Demo user admin: ${admin}` : "Admin login required"}</span>
-      <button className="rounded border px-4 py-2" disabled={busy} onClick={async () => { if (admin) SessionController.logoutAdmin(); else SessionController.loginAsDemoAdmin(); setMessage(""); await refresh(); }}>{admin ? "Log out admin" : "Test: log in as admin A1"}</button>
-      {admin && <button disabled={busy} onClick={refresh}>Refresh list</button>}
-    </div>
-    <p className="text-sm text-zinc-500">Demonstration only: this project uses browser storage and a test login.</p>
     {error && <p role="alert" className="rounded border border-red-400 p-4 text-red-700">{error}</p>}
     {message && <p role="status" className="rounded border border-green-500 p-4 text-green-800">{message}</p>}
     {admin && <div className="grid gap-6 md:grid-cols-2">
-      <section className="space-y-3"><h2 className="text-xl font-semibold">Pending accounts ({accounts.length})</h2>
-        {accounts.length === 0 && <p>No pending accounts.</p>}
-        {accounts.map(({account, company, verification}) => <button key={account.accountID} disabled={busy} onClick={() => select(account.accountID)} className="block w-full rounded border p-4 text-left hover:bg-zinc-100" aria-pressed={selected?.account.accountID === account.accountID}>
-          <strong>{company?.companyName ?? account.accountID}</strong><span className="block">{account.email}</span><span className="block text-sm">Submitted: {new Date(verification.submittedAt).toLocaleString()}</span>
+      <section className="space-y-3"><h2 className="text-xl font-semibold">Interior designer accounts</h2>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Filter accounts by status">
+          {["pending", "active", "rejected", "all"].map(status => <button key={status} disabled={busy} aria-pressed={statusFilter === status}
+            className={`rounded border px-3 py-2 capitalize ${statusFilter === status ? "bg-zinc-900 text-white" : ""}`}
+            onClick={() => { setStatusFilter(status); setSelected(null); setRejecting(false); setReason(""); }}>
+            {status === "all" ? "All" : status[0].toUpperCase() + status.slice(1)} ({accounts.filter(row => status === "all" || row.account.status === status).length})
+          </button>)}
+        </div>
+        {visibleAccounts.length === 0 && <p>No {statusFilter === "all" ? "designer" : statusFilter} accounts.</p>}
+        {visibleAccounts.map(({account, company, verification}) => <button key={account.accountID} disabled={busy} onClick={() => select(account.accountID)} className="block w-full rounded border p-4 text-left hover:bg-zinc-100" aria-pressed={selected?.account.accountID === account.accountID}>
+          <strong>{company?.companyName ?? account.accountID}</strong><span className="block">{account.email}</span><span className="block capitalize">Status: {account.status}</span><span className="block text-sm">Submitted: {verification?.submittedAt ? new Date(verification.submittedAt).toLocaleString() : "Not recorded"}</span>
         </button>)}
       </section>
       <section className="space-y-4 rounded border p-5"><h2 className="text-xl font-semibold">Account details</h2>
-        {!selected ? <p>Select a pending account to review.</p> : <>
-          <dl className="space-y-3">{Object.entries({"Account ID":selected.account.accountID, "Email":selected.account.email, "Account status":selected.account.status, "Company":selected.company?.companyName,"Registration number":selected.company?.registrationNumber,"Description":selected.company?.description,"Location":selected.company?.location,"Phone":selected.company?.phone,"Website":selected.company?.website}).map(([label,value]) => <div key={label}><dt className="font-semibold">{label}</dt><dd className="break-words">{value || "Not supplied"}</dd></div>)}</dl>
+        {!selected ? <p>Select an account to view its details.</p> : <>
+          <dl className="space-y-3">{Object.entries({"Account ID":selected.account.accountID, "Email":selected.account.email, "Account status":selected.account.status, "Company":selected.company?.companyName,"Registration number":selected.company?.registrationNumber,"Description":selected.company?.description,"Location":selected.company?.location,"Phone":selected.company?.phone,"Website":selected.company?.website,"Verification status":selected.verification?.status,"Reviewed by":selected.verification?.reviewedBy,"Reviewed at":selected.verification?.reviewedAt ? new Date(selected.verification.reviewedAt).toLocaleString() : null,"Rejection reason":selected.verification?.rejectReason}).map(([label,value]) => <div key={label}><dt className="font-semibold">{label}</dt><dd className="break-words">{value || "Not supplied"}</dd></div>)}</dl>
+          {selected.account.status === "pending" && selected.verification?.status === "pending" ? <>
           <div className="flex gap-3"><button disabled={busy} onClick={() => decide(false)} className="rounded bg-green-700 px-4 py-2 text-white">Approve account</button><button disabled={busy} onClick={() => setRejecting(true)} className="rounded border px-4 py-2">Reject account</button></div>
           {rejecting && <form onSubmit={e => { e.preventDefault(); void decide(true); }} className="space-y-3">
             <label htmlFor="rejection-reason" className="block">Rejection reason (required)</label><textarea id="rejection-reason" value={reason} onChange={e => setReason(e.target.value)} className="w-full rounded border p-2" rows={4} disabled={busy}/>
             <button disabled={busy} className="rounded bg-red-700 px-4 py-2 text-white">Confirm rejection</button><button type="button" disabled={busy} onClick={() => setRejecting(false)} className="ml-4">Cancel</button>
           </form>}
+          </> : <p className="text-sm text-zinc-500">This account is read-only. Only pending accounts can be approved or rejected.</p>}
         </>}
       </section>
     </div>}
