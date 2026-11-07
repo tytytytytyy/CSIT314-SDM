@@ -24,6 +24,14 @@ const HAND_MADE = {
   // D1-D3 are verified designers. D4 is still waiting for verification and D5 was suspended,
   // so Browse Interior Designers must hide both, and Log in must turn both away.
   user_account: [
+    { 
+      accountID: "A1", 
+      email: "admin@example.com", 
+      password: DEMO_PASSWORD, 
+      profileID: "admin", 
+      status: "active", 
+      createdAt: "2026-01-01T00:00:00.000Z" 
+    },
     {
       accountID: "C1",
       email: "customer1@example.com",
