@@ -353,3 +353,26 @@ export function readTable(table) {
 export function writeTable(table, rows) {
   window.localStorage.setItem(KEY_PREFIX + table, JSON.stringify(rows));
 }
+
+// Save the account and its verification together; restore written rows if saving fails.
+// Existing readTable / writeTable behavior is unchanged for other features.
+export function writeTables(tables) {
+  const updates = Object.entries(tables).map(([table, rows]) => ({
+    key: KEY_PREFIX + table,
+    value: JSON.stringify(rows),
+    previous: window.localStorage.getItem(KEY_PREFIX + table),
+  }));
+  const written = [];
+  try {
+    for (const update of updates) {
+      window.localStorage.setItem(update.key, update.value);
+      written.push(update);
+    }
+  } catch (error) {
+    for (const update of written.reverse()) {
+      if (update.previous === null) window.localStorage.removeItem(update.key);
+      else window.localStorage.setItem(update.key, update.previous);
+    }
+    throw error;
+  }
+}
