@@ -30,7 +30,7 @@ export default function NavBar() {
 
   return (
     <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b px-8 py-3 [&_a]:whitespace-nowrap">
-      <Link href={isCustomer ? "/" : "/login"} className="font-semibold">
+      <Link href={isCustomer ? "/" : isAdmin ? "/user-admin/verify-id-accounts" : "/login"} className="font-semibold">
         IDP Platform
       </Link>
       {isAdmin && (
