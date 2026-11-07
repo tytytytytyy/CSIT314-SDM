@@ -22,11 +22,17 @@
 // Attributes: none
 
 "use client";
+
 import { useEffect, useState } from "react";
 import { VerifyIDAccountsController as Controller } from "@/controller/VerifyIDAccountsController";
-import { SessionController } from "@/controller/SessionController";
+import { useSession } from "@/boundary/useSession";
+import Link from "next/link";
 
 export default function VerifyIDAccountsPg() {
+  const session = useSession();
+  const sessionLoaded = session !== undefined;
+  const sessionID = session?.accountID;
+  const sessionProfile = session?.profileID;
   const [accounts, setAccounts] = useState([]);
   const [statusFilter, setStatusFilter] = useState("pending");
   const visibleAccounts = accounts.filter(row => statusFilter === "all" || row.account.status === statusFilter);
@@ -44,25 +50,29 @@ export default function VerifyIDAccountsPg() {
       setAccounts(rows);
       setSelected(current => current ? rows.find(row => row.account.accountID === current.account.accountID) ?? null : null);
       setError("");
-    } catch (e) { setAdmin(null); setAccounts([]); setSelected(null); setError(e.message); }
+    } catch (e) { setAdmin(null); setAccounts([]); setSelected(null); setError(e.message); } 
   }
   useEffect(() => {
     let cancelled = false;
-    Controller.getAdminID().then(async id => {
-      const rows = await Controller.getAccounts();
-      if (!cancelled) { setAdmin(id); setAccounts(rows); }
-    }).catch(e => { if (!cancelled) setError(e.message); });
+    async function load() {
+      try {
+        if (!sessionID || sessionProfile !== "admin") throw new Error("Please log in as an active user admin.");
+        const id = await Controller.getAdminID();
+        const rows = await Controller.getAccounts();
+        if (!cancelled) {
+          setAdmin(id); setAccounts(rows); setSelected(null);
+          setRejecting(false); setReason(""); setMessage(""); setError("");
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setAdmin(null); setAccounts([]); setSelected(null);
+          setReason(""); setRejecting(false); setMessage(""); setError(e.message);
+        }
+      }
+    }
+    if (sessionLoaded) void load();
     return () => { cancelled = true; };
-  }, []);
-  async function toggleAdmin() {
-    setBusy(true); setMessage(""); setError(""); setSelected(null);
-    try {
-      if (admin) SessionController.logoutAdmin();
-      else SessionController.loginAsDemoAdmin();
-      await refresh();
-    } catch { setError("Unable to change admin session. Please allow browser storage and try again."); }
-    finally { setBusy(false); }
-  }
+  }, [sessionID, sessionProfile, sessionLoaded]);
   async function select(id) {
     setBusy(true); setError(""); setMessage("");
     try { setSelected(await Controller.getAccountDetails(id)); setRejecting(false); setReason(""); }
@@ -86,7 +96,8 @@ export default function VerifyIDAccountsPg() {
     <p>Review company information before allowing a firm to publish IDPs.</p>
     {error && <p role="alert" className="rounded border border-red-400 p-4 text-red-700">{error}</p>}
     {message && <p role="status" className="rounded border border-green-500 p-4 text-green-800">{message}</p>}
-    {admin && <div className="grid gap-6 md:grid-cols-2">
+    {!admin && session !== undefined && <Link href="/login" className="inline-block rounded border px-4 py-2">Log in as User Admin</Link>}
+    {admin && session?.profileID === "admin" && session.accountID === admin && <div className="grid gap-6 md:grid-cols-2">
       <section className="space-y-3"><h2 className="text-xl font-semibold">Interior designer accounts</h2>
         <div className="flex flex-wrap gap-2" role="group" aria-label="Filter accounts by status">
           {["pending", "active", "rejected", "all"].map(status => <button key={status} disabled={busy} aria-pressed={statusFilter === status}
