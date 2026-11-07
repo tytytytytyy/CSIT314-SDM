@@ -17,7 +17,7 @@
 // - getLoggedInAccount()                    { accountID, profileID }, or null when logged out
 // - getLoggedInCustomerID()                 null unless a customer is logged in
 // - getLoggedInDesignerID()                 null unless a designer is logged in
-// - getLoggedInADMINID()                    always A1 for now (Verify ID Accounts)
+// - getLoggedInADMINID()                    null unless a user admin is logged in
 // - getRequiredProfile(pathname)            "customer", "designer" or null (no login needed)
 // - onChange(callback)                      calls back when the session changes, in this tab or
 //                                           another; returns a function that stops listening
@@ -25,7 +25,6 @@
 // Attributes: none
 const SESSION_KEY = "idp_platform_session";
 const CHANGE_EVENT = "idp-platform-session-change";
-const DEMO_ADMIN_ID = "A1";
 
 export class SessionController {
   static login(accountID, profileID) {
@@ -68,9 +67,14 @@ export class SessionController {
     return account?.profileID === "designer" ? account.accountID : null;
   }
 
-  static getLoggedInADMINID() {
+  static getLoggedInAdminID() {
     const account = this.getLoggedInAccount();
-    if (account) return account.profileID === "admin" ? account.accountID : null;
+    return account?.profileID === "admin" ? account.accountID : null;
+  }
+
+  // Keep the existing spelling for callers that already use it.
+  static getLoggedInADMINID() {
+    return this.getLoggedInAdminID();
   }
 
   static getRequiredProfile(pathname) {
@@ -79,3 +83,4 @@ export class SessionController {
     return null;
   }
 }
+
