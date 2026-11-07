@@ -39,6 +39,10 @@ export class VerifyIDAccountsController {
     if (!admin || admin.profileID !== "admin" || admin.status !== "active") throw new Error("Please log in as an active user admin.");
     return id;
   }
+  static async getAccounts(status = "all") {
+    await this.getAdminID();
+    return InteriorDesignerAccount.getAccounts(status);
+  }
   static async getPendingAccounts() {
     await this.getAdminID();
     return InteriorDesignerAccount.getPendingAccounts();
