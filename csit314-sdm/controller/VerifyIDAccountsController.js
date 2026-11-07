@@ -11,6 +11,8 @@
 // - A reject reason is required (not empty) when rejecting.
 //
 // Methods:
+// - getAccounts(status = "all")
+//     -> DesignerVerification.getPendingVerifications(status)
 // - getPendingAccounts()
 //     -> DesignerVerification.getPendingVerifications()
 // - validateDecision(verificationID, decision, rejectReason)
