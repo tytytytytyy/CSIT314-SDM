@@ -34,6 +34,9 @@ const DEMO_ACCOUNTS = [
   { role: "Interior designer", label: "D1 Nordic Nest Interiors", email: "hello@nordicnest.example.com" },
   { role: "Interior designer", label: "D2 Studio Linea", email: "studio@linea.example.com" },
   { role: "Interior designer", label: "D3 Habitat & Co", email: "team@habitatco.example.com" },
+  // These two cannot log in yet: they show the blocked-login messages.
+  { role: "Interior designer", label: "D4 Fresh Start Design (pending verification)", email: "hi@freshstart.example.com" },
+  { role: "Interior designer", label: "D5 Urban Edge Interiors (suspended)", email: "info@urbanedge.example.com" },
   { role: "User Admin", label: "A1", email: "admin@example.com" },
 ];
 
