@@ -12,6 +12,10 @@ on:
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
+    env:
+      # The app works in Singapore time (see lib/dates.js), and so do the date tests.
+      # GitHub's servers default to UTC, which shifts late-evening timestamps to the next day.
+      TZ: Asia/Singapore
     defaults:
       run:
         working-directory: csit314-sdm
