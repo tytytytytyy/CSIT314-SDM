@@ -32,11 +32,6 @@ describe("generateReport", () => {
     );
 
     expect(report.status).toBe("ok");
-    expect(report.customerAccounts.current).toBe(1);
-    expect(report.verifiedDesigners.current).toBe(1);
-    expect(report.idps.current).toBe(1);
-    expect(report.views.current).toBe(1);
-    expect(report.likes.current).toBe(1);
     expect(report.periods).toHaveLength(5);
     expect(report.periods.map(({ range }) => range.startDate)).toEqual([
       new Date("2026-11-01"),
@@ -45,7 +40,13 @@ describe("generateReport", () => {
       new Date("2026-11-04"),
       new Date("2026-11-05"),
     ]);
-    expect(report.periods.at(-1).customerAccounts).toBe(1);
+    expect(report.periods.at(-1)).toMatchObject({
+      customerAccounts: 1,
+      verifiedDesigners: 1,
+      idps: 1,
+      views: 1,
+      likes: 1,
+    });
   });
 
   it("assigns a creation timestamp when a new IDP is saved", async () => {

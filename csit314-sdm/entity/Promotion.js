@@ -6,10 +6,11 @@
 // Database table: promotion
 //
 // Attributes:
-// - promotionID, idpID, startDate, endDate, createdBy (platform manager accountID), createdAt
+// - promotionID, idpID, startDate, endDate, createdBy (platform manager accountID)
 //
 // Methods:
 // - createPromotion(promotion)
+// - getPromotions()
 
 import { readTable, writeTable } from "./LocalStore";
 
@@ -19,8 +20,6 @@ export class Promotion {
     startDate;
     endDate;
     createdBy;
-    createdAt;
-
     constructor(data) { 
         Object.assign(this, data);
     }
@@ -30,11 +29,7 @@ export class Promotion {
 
         const nextID = Math.max(0, ...rows.map((r) => r.promotionID ?? 0)) + 1;
 
-        const created = {
-            promotionID: nextID,
-            ...promotion,
-            createdAt: promotion.createdAt ?? new Date().toISOString(),
-        };
+        const created = { promotionID: nextID, ...promotion };
 
         writeTable("promotion", [...rows, created]);
 

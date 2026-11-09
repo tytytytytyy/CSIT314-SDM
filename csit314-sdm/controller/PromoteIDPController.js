@@ -17,12 +17,13 @@
 // - Active promotions must be below MAX_ACTIVE_PROMOTIONS.
 //
 // Methods:
+// - getIDPs()                            list IDPs for selection
+// - getIDP(idpID)                        find the selected IDP
 // - validatePromotion(idpID, startDate, endDate)
 //     -> IDP.getIDP(idpID)
-//     -> Promotion.countActivePromotions() - changed to getPromotions
-//     -> Promotion.getActivePromotions()   (overlap check) - changed to getPromotions
-// - promoteIDP(idpID, startDate, endDate)
-//     createdBy = logged-in platform manager ID from the session
+//     -> Promotion.getPromotions()
+// - promoteIDP(idpID, startDate, endDate, createdBy)
+//     -> validatePromotion(...)
 //     -> Promotion.createPromotion(promotion)
 //
 // Entities used: Promotion, IDP
@@ -34,11 +35,11 @@ const MAX_ACTIVE_PROMOTIONS = 10;
 
 export class PromoteIDPController {
     static async getIDPs() {
-        return await IDP.listIDPs(0, Number.MAX_SAFE_INTEGER);
+        return IDP.listIDPs(0, Number.MAX_SAFE_INTEGER);
     }
 
     static async getIDP(idpID) {
-        return await IDP.getIDP(idpID);
+        return IDP.getIDP(idpID);
     }
     
     static async validatePromotion(idpID, startDate, endDate) {
@@ -90,4 +91,3 @@ export class PromoteIDPController {
         return { status: "ok" };
     }
 }
-
