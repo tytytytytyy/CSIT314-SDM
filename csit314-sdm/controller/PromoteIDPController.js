@@ -1,4 +1,22 @@
 // Control: PromoteIDPController
+// Feature: Promote IDP (Platform Manager)
+// The platform manager features an IDP between two dates. While a promotion is running, the
+// home feed shows that IDP first with a "Featured" badge (HomeController.getIDPFeed).
+//
+// Rules (validatePromotion):
+// - the IDP must exist                                         -> "notFound"
+// - the start date cannot be in the past                       -> "invalidStartDate"
+// - the end date must be after the start date                  -> "invalidEndDate"
+// - at most 10 promotions running on any one day                -> "maxPromotionsReached"
+// - the same IDP cannot have overlapping promotions             -> "dateOverlap"
+//
+// Methods:
+// - getIDPs(), getIDP(idpID)                                   -> IDP.listIDPs, IDP.getIDP
+// - validatePromotion(idpID, startDate, endDate)               -> IDP.getIDP, Promotion.getPromotions
+// - promoteIDP(idpID, startDate, endDate, createdBy)           -> Promotion.createPromotion
+//
+// Entities used: IDP, Promotion
+// Control: PromoteIDPController
 // Feature: Promote IDP (Platform Management)
 //
 // What goes here:

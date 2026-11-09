@@ -333,8 +333,25 @@ export function generateDummyData(today = new Date()) {
     };
   });
 
+  // Sample promotions by the platform manager (M12345), relative to today: 3 running now (so the
+  // home feed shows Featured IDPs straight away), 1 finished and 1 upcoming. No random numbers.
+  const dayKey = (days) => {
+    const d = new Date(end.getTime() + days * 86_400_000);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+  const firstIDPOf = (designerID) => idp.find((i) => i.designerID === designerID).idpID;
+  const promotion = [
+    [1, -3, 27], // D1's "Bright Scandinavian Living Room"
+    [3, -10, 20], // D2's office
+    [firstIDPOf("D3"), -1, 13],
+    [firstIDPOf("D5"), -40, -20], // finished
+    [firstIDPOf("D6"), 7, 21], // upcoming
+  ].map(([idpID, from, to], i) => ({
+    promotionID: i + 1, idpID, startDate: dayKey(from), endDate: dayKey(to), createdBy: "M12345",
+  }));
+
   return {
-    idp, idp_photo, idp_view, idp_like,
+    idp, idp_photo, idp_view, idp_like, promotion,
     user_account, designer_verification, company_information, acra_registry,
     lastIDPID: nextIDP - 1,
   };

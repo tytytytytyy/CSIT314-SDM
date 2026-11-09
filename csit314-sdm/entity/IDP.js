@@ -14,7 +14,6 @@
 // - getIDP(idpID)                                       null if there is no such IDP (e.g. the designer deleted it)
 // - createIDP(idp)
 // - updateIDP(idp)
-// - searchIDPs(criteria)                                active promotions listed first
 // - getIDPsByDesigner(designerID)
 // - listIDPs(offset, limit)                             home page feed, in idpID order
 // - countIDPs(startDate, endDate)                       platform report
