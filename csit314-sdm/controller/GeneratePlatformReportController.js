@@ -30,6 +30,7 @@ import { DesignerVerification } from "@/entity/DesignerVerification";
 import { IDP } from "@/entity/IDP";
 import { IDPView } from "@/entity/IDPView";
 import { IDPLike } from "@/entity/IDPLike";
+import { toDateKey } from "@/lib/dates";
 
 export class GeneratePlatformReportController {
     static REPORT_PERIODS = ["daily", "weekly", "monthly"];
@@ -38,10 +39,9 @@ export class GeneratePlatformReportController {
         if (!this.REPORT_PERIODS.includes(period))
             return "Invalid report period";
 
-        const date = new Date(referenceDate);
-        const today = new Date();
-
-        if (date > today)
+        // Compare calendar days as "YYYY-MM-DD" text in local time. new Date("2026-11-10") would be
+        // midnight UTC (8 am in Singapore), so today's date counted as "the future" before 8 am.
+        if (String(referenceDate).slice(0, 10) > toDateKey(new Date()))
             return "Reference date cannot be in the future";
 
         return null;
