@@ -136,6 +136,14 @@ describe("generateDummyData", () => {
     for (const id of d1IDs) expect(data.idp_view.some((v) => v.idpID === id)).toBe(true);
   });
 
+  it("registers every generated company with ACRA under its own name and UEN (live)", () => {
+    expect(data.acra_registry).toHaveLength(95);
+    for (const company of data.company_information) {
+      const record = data.acra_registry.find((r) => r.uen === company.registrationNumber);
+      expect(record).toMatchObject({ entityName: `${company.companyName.toUpperCase()} PTE. LTD.`, status: "live" });
+    }
+  });
+
   it("makes the same data every time", () => {
     expect(generateDummyData(TODAY)).toEqual(data);
   });

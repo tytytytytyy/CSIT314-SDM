@@ -13,7 +13,7 @@ afterEach(() => vi.restoreAllMocks());
 describe("Verify accounts", () => {
   it("lists pending designers and company details", async () => {
     const rows = await C.getPendingAccounts();
-    expect(rows.map(r => r.account.accountID)).toEqual(["D4"]);
+    expect(rows.map(r => r.account.accountID)).toEqual(["D4", "D101", "D102", "D103"]);
     expect(rows[0].company.registrationNumber).toBe("202610001D");
   });
   it("approves with reviewer and time and removes pending entry", async () => {
@@ -22,7 +22,7 @@ describe("Verify accounts", () => {
     expect(details.account.status).toBe("active");
     expect(details.verification).toMatchObject({status:"approved", reviewedBy:"A1", rejectReason:null});
     expect(Number.isNaN(Date.parse(details.verification.reviewedAt))).toBe(false);
-    expect(await C.getPendingAccounts()).toEqual([]);
+    expect((await C.getPendingAccounts()).map(r => r.account.accountID)).toEqual(["D101", "D102", "D103"]);
   });
   it("rejects with a trimmed reason and audit record", async () => {
     expect((await C.rejectAccount("D4", "  Invalid registration  ")).success).toBe(true);
@@ -63,6 +63,63 @@ describe("Verify accounts", () => {
     await C.rejectAccount("D4","Invalid firm");
     expect((await CreateIDPController.createIDP("D4",input,photos)).success).toBe(false);
     expect((await CreateIDPController.createIDP("D1",input,photos)).success).toBe(true);
+  });
+});
+
+describe("ACRA check", () => {
+  it("compares company names without case, punctuation or company endings", () => {
+    expect(C.normaliseCompanyName("Fresh Start Design Pte. Ltd.")).toBe(C.normaliseCompanyName("FRESH START DESIGN"));
+    expect(C.normaliseCompanyName("Habitat & Co")).toBe(C.normaliseCompanyName("HABITAT & CO. PTE. LTD."));
+    expect(C.normaliseCompanyName("Seaside Homes LLP")).toBe("SEASIDE HOMES");
+  });
+  it("matches a live UEN registered under the same name", async () => {
+    expect(await C.checkUENWithACRA("D4")).toMatchObject({
+      result: "matched", registeredName: "FRESH START DESIGN PTE. LTD.", registryStatus: "live",
+    });
+  });
+  it("flags a UEN registered under a different name", async () => {
+    expect(await C.checkUENWithACRA("D101")).toMatchObject({
+      result: "nameMismatch", registeredName: "SEASIDE HOMES PTE. LTD.", registryStatus: "live",
+    });
+  });
+  it("flags a UEN that is not in the registry", async () => {
+    expect(await C.checkUENWithACRA("D102")).toMatchObject({ result: "notFound", registeredName: null });
+  });
+  it("flags a company that has been struck off", async () => {
+    expect(await C.checkUENWithACRA("D103")).toMatchObject({
+      result: "struckOff", registeredName: "OAKLINE INTERIORS PTE. LTD.", registryStatus: "struck off",
+    });
+  });
+  it("approves only the matched pending accounts, reviewed by SYSTEM", async () => {
+    const result = await C.runACRACheck();
+    expect(result.success).toBe(true);
+    expect(result.approved.map(a => a.accountID)).toEqual(["D4"]);
+    expect(result.flagged.map(f => [f.accountID, f.result])).toEqual([
+      ["D101", "nameMismatch"], ["D102", "notFound"], ["D103", "struckOff"],
+    ]);
+    const d4 = await C.getAccountDetails("D4");
+    expect(d4.account.status).toBe("active");
+    expect(d4.verification).toMatchObject({ status: "approved", reviewedBy: "SYSTEM", rejectReason: null });
+    expect((await C.getPendingAccounts()).map(r => r.account.accountID)).toEqual(["D101", "D102", "D103"]);
+  });
+  it("does not touch accounts that are already reviewed", async () => {
+    await C.rejectAccount("D4", "Invalid firm");
+    const result = await C.runACRACheck();
+    expect(result.approved).toEqual([]);
+    expect((await C.getAccountDetails("D4")).verification.status).toBe("rejected");
+    expect((await C.getAccountDetails("D1")).verification.reviewedBy).toBe("A1");
+  });
+  it("can only be run by an active user admin", async () => {
+    SessionController.logout();
+    expect((await C.runACRACheck()).success).toBe(false);
+    await expect(C.checkUENWithACRA("D4")).rejects.toThrow("user admin");
+    SessionController.login("A1", "admin");
+    expect((await C.getAccountDetails("D4")).account.status).toBe("pending");
+  });
+  it("still lets the admin decide a flagged account by hand", async () => {
+    await C.runACRACheck();
+    expect((await C.approveAccount("D101")).success).toBe(true);
+    expect((await C.rejectAccount("D103", "Company is struck off")).success).toBe(true);
   });
 });
 
@@ -156,7 +213,7 @@ it('shows active details and approves pending firms through the page', async () 
   await click('Pending ('); await click('Fresh Start Design');
   await click('Approve account');
   expect(host.textContent).toContain('Account approved and activated');
-  expect(host.textContent).toContain('No pending accounts');
+  expect(host.textContent).toContain('Pending (3)');
   await click('Active ('); await click('Fresh Start Design');
   expect(host.textContent).toContain('A1');
   expect(host.textContent).toContain('This account is read-only');
@@ -177,6 +234,23 @@ it('requires a reason and displays the rejected account details', async () => {
   await click('Rejected ('); await click('Fresh Start Design');
   expect(host.textContent).toContain('Invalid registration');
   expect(host.textContent).toContain('This account is read-only');
+});
+it('runs the ACRA check and shows the result for each flagged firm', async () => {
+  SessionController.login('A1','admin');
+  await render(VerifyIDAccountsPg);
+  await click('Fresh Start Design');
+  expect(host.textContent).toContain('UEN found: FRESH START DESIGN PTE. LTD. (live). Name matches.');
+  await click('Run ACRA check');
+  expect(host.textContent).toContain('1 account approved automatically. 3 need review.');
+  expect(host.textContent).toContain('Pending (3)');
+  await click('Coastline Living');
+  expect(host.textContent).toContain('UEN found, but the registered name is SEASIDE HOMES PTE. LTD.');
+  await click('Brightwall Studio');
+  expect(host.textContent).toContain('UEN not found. Check on Bizfile before approving.');
+  await click('Oakline Interiors');
+  expect(host.textContent).toContain('OAKLINE INTERIORS PTE. LTD. is struck off. It should normally be rejected.');
+  await click('Active ('); await click('Fresh Start Design');
+  expect(host.textContent).toContain('SYSTEM');
 });
 it('clears visible accounts when the admin session ends', async () => {
   SessionController.login('A1','admin');
