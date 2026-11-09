@@ -2,6 +2,7 @@
 // tests/setup.js switches the generator off for the other tests, so this file loads the real one.
 
 import { describe, it, expect, vi } from "vitest";
+import { readTable } from "@/entity/LocalStore";
 
 const { generateDummyData } = await vi.importActual("@/entity/DummyData");
 
@@ -141,6 +142,31 @@ describe("generateDummyData", () => {
     for (const company of data.company_information) {
       const record = data.acra_registry.find((r) => r.uen === company.registrationNumber);
       expect(record).toMatchObject({ entityName: `${company.companyName.toUpperCase()} PTE. LTD.`, status: "live" });
+    }
+  });
+
+  it("keeps dates in a sensible order, so reports by date make sense", () => {
+    // With the generator switched off (tests/setup.js), LocalStore returns only the hand-made rows.
+    const handMadeIDPs = readTable("idp");
+    const verifiedAt = {}, joinedAt = {}, createdAt = {};
+    for (const v of [...readTable("designer_verification"), ...data.designer_verification])
+      if (v.reviewedAt) verifiedAt[v.designerID] = v.reviewedAt;
+    for (const a of [...data.user_account, ...readTable("user_account")]) joinedAt[a.accountID] = a.createdAt;
+    for (const i of [...handMadeIDPs, ...data.idp]) createdAt[i.idpID] = i.createdAt;
+    const now = TODAY.toISOString();
+
+    for (const idp of data.idp) {
+      expect(idp.createdAt >= verifiedAt[idp.designerID], `IDP ${idp.idpID} before its designer was verified`).toBe(true);
+      expect(idp.createdAt <= now).toBe(true);
+    }
+    for (const photo of data.idp_photo) expect(photo.uploadedAt >= createdAt[photo.idpID]).toBe(true);
+    for (const v of data.idp_view) {
+      expect(v.viewedAt >= createdAt[v.idpID], `view ${v.viewID} before IDP ${v.idpID} existed`).toBe(true);
+      if (v.customerID) expect(v.viewedAt >= joinedAt[v.customerID], `view ${v.viewID} before ${v.customerID} joined`).toBe(true);
+    }
+    for (const l of data.idp_like) {
+      expect(l.likedAt >= createdAt[l.idpID], `like ${l.likeID} before IDP ${l.idpID} existed`).toBe(true);
+      expect(l.likedAt >= joinedAt[l.customerID], `like ${l.likeID} before ${l.customerID} joined`).toBe(true);
     }
   });
 
