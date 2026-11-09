@@ -1,10 +1,13 @@
 // Boundary: HomePg  (TEMPORARY - replace with the real IDP list / search page)
 // Route: /   (customers only)
-// Every IDP as a grid of cards (main photo, title, style, designer). The next page of IDPs loads
-// by itself when the customer scrolls near the bottom, until there are no more.
+// "Featured projects": IDPs a platform manager is promoting today (only shown when there are some).
+// "All projects": every other IDP as a grid of cards (main photo, title, style, designer). The next
+// page loads by itself when the customer scrolls near the bottom, until there are no more.
 // Each card links to ViewIDPPg, and its designer name to Browse Interior Designers.
 //
 // Methods:
+// - loadFeatured()                   -> HomeController.getFeaturedIDPs()
+// - displayFeaturedCards(cards)      the "Featured projects" section
 // - loadNextPage()                   -> HomeController.getIDPFeed(offset)
 // - displayIDPCards(cards)           adds a page of cards under the ones already shown
 // - displayEndOfList()
@@ -20,10 +23,12 @@ import { PHOTO_NOT_FOUND } from "@/boundary/PhotoFallback";
 
 export default function HomePg() {
   const [cards, setCards] = useState([]);
+  const [featuredCards, setFeaturedCards] = useState([]);
   const [status, setStatus] = useState("loading"); // loading | more | end | empty
   const bottomMarker = useRef(null);
 
   const displayIDPCards = (pageCards) => setCards((shown) => [...shown, ...pageCards]);
+  const displayFeaturedCards = (shown) => setFeaturedCards(shown);
   const displayEndOfList = () => setStatus("end");
   const displayEmptyList = () => setStatus("empty");
 
@@ -58,6 +63,12 @@ export default function HomePg() {
       });
     };
 
+    const loadFeatured = async () => {
+      const featured = await HomeController.getFeaturedIDPs();
+      if (!cancelled) displayFeaturedCards(featured);
+    };
+    loadFeatured();
+
     // Start loading a little before the customer reaches the bottom.
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -74,55 +85,63 @@ export default function HomePg() {
 
   return (
     <main className="mx-auto w-full max-w-5xl p-8">
-      <h1 className="text-3xl font-semibold">IDPs</h1>
-
-      {cards.length > 0 && (
-        <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {cards.map((card) => (
-            <li key={card.idpID} className="card card-hover overflow-hidden">
-              <Link href={`/customer/idp/${card.idpID}`}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={card.mainPhotoURL ?? PHOTO_NOT_FOUND}
-                  alt={card.title}
-                  loading="lazy"
-                  className="photo"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = PHOTO_NOT_FOUND;
-                  }}
-                />
-                {card.featured && (
-                  <span className="mx-4 mt-3 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
-                    Featured
-                  </span>
-                )}
-                <p className="px-4 pt-3 font-medium">{card.title}</p>
-              </Link>
-              <p className="px-4 pb-4 pt-1 text-sm text-zinc-500">
-                {card.style} · by{" "}
-                <Link
-                  href={`/customer/designers?designer=${encodeURIComponent(card.designerID)}`}
-                  className="link"
-                >
-                  {card.companyName ?? card.designerID}
-                </Link>
-              </p>
-            </li>
-          ))}
-        </ul>
+      {featuredCards.length > 0 && (
+        <section className="mb-10">
+          <h1 className="text-3xl font-semibold">Featured projects</h1>
+          <p className="mt-1 text-sm text-zinc-500">Hand-picked by the IDP Platform team.</p>
+          <CardGrid cards={featuredCards} />
+        </section>
       )}
+
+      <h2 className="text-3xl font-semibold">All projects</h2>
+
+      {cards.length > 0 && <CardGrid cards={cards} />}
 
       <div ref={bottomMarker} aria-hidden="true" />
       {(status === "loading" || status === "more") && (
-        <p className="mt-6 text-center text-zinc-500">Loading more IDPs...</p>
+        <p className="mt-6 text-center text-zinc-500">Loading more projects...</p>
       )}
       {status === "end" && (
         <p className="mt-6 text-center text-zinc-500">
-          That&apos;s all {cards.length} IDPs.
+          That&apos;s all {cards.length + featuredCards.length} projects.
         </p>
       )}
-      {status === "empty" && <p className="mt-6">No IDPs available.</p>}
+      {status === "empty" && <p className="mt-6">No other projects available.</p>}
     </main>
+  );
+}
+
+// One grid of IDP cards; used by both sections.
+function CardGrid({ cards }) {
+  return (
+    <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {cards.map((card) => (
+        <li key={card.idpID} className="card card-hover overflow-hidden">
+          <Link href={`/customer/idp/${card.idpID}`}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={card.mainPhotoURL ?? PHOTO_NOT_FOUND}
+              alt={card.title}
+              loading="lazy"
+              className="photo"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = PHOTO_NOT_FOUND;
+              }}
+            />
+            <p className="px-4 pt-3 font-medium">{card.title}</p>
+          </Link>
+          <p className="px-4 pb-4 pt-1 text-sm text-zinc-500">
+            {card.style} · by{" "}
+            <Link
+              href={`/customer/designers?designer=${encodeURIComponent(card.designerID)}`}
+              className="link"
+            >
+              {card.companyName ?? card.designerID}
+            </Link>
+          </p>
+        </li>
+      ))}
+    </ul>
   );
 }
