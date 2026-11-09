@@ -1,7 +1,6 @@
 # Continuous Integration: runs on every push and every pull request.
 # Lint -> unit tests (vitest) -> production build. A red check blocks the merge.
-# Continuous Delivery: Vercel is connected to this repo and deploys main automatically
-# after a merge, and gives each pull request its own preview URL.
+# Continuous Delivery: each merge to main is also packaged as a downloadable build
 name: CI
 
 on:
@@ -39,3 +38,17 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      # Continuous Delivery: every merge to main is packaged as a ready-to-run build.
+      # Download it from the run's "Artifacts" section, then run `npm ci --omit=dev && npm start`.
+      - name: Package release build
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: tar -czf ../csit314-sdm-build.tar.gz --exclude=.next/cache .next public package.json package-lock.json next.config.*
+
+      - name: Upload release build
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: csit314-sdm-build-${{ github.sha }}
+          path: csit314-sdm-build.tar.gz
+          retention-days: 30
