@@ -29,6 +29,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BrowseInteriorDesignersController } from "@/controller/BrowseInteriorDesignersController";
 import { PHOTO_NOT_FOUND } from "@/boundary/PhotoFallback";
+import BackButton from "@/boundary/BackButton";
 
 const SORT_LABELS = {
   name: "Name (A-Z)",
@@ -112,10 +113,11 @@ export default function BrowseInteriorDesignersPg() {
   const setField = (field) => (e) =>
     setFilters({ ...filters, [field]: e.target.value });
 
-  const inputClass = "rounded border px-3 py-2 text-sm";
+  const inputClass = "input";
 
   return (
     <main className="mx-auto w-full max-w-5xl p-8">
+      <BackButton fallbackHref="/" />
       <h1 className="text-3xl font-semibold">Browse Interior Designers</h1>
       <p className="mt-1 text-zinc-500">
         Compare verified interior design firms and their work.
@@ -182,26 +184,19 @@ export default function BrowseInteriorDesignersPg() {
           ))}
         </select>
         <div className="flex gap-2">
-          <button
-            type="submit"
-            className="rounded bg-black px-4 py-2 text-sm text-white"
-          >
+          <button type="submit" className="btn btn-primary">
             Search
           </button>
-          <button
-            type="button"
-            onClick={onClear}
-            className="rounded border px-4 py-2 text-sm"
-          >
+          <button type="button" onClick={onClear} className="btn">
             Clear
           </button>
         </div>
       </form>
 
       {onlyDesignerID && (
-        <p className="mt-6 flex flex-wrap items-center gap-3 rounded border px-4 py-2 text-sm">
+        <p className="card mt-6 flex flex-wrap items-center gap-3 px-4 py-2 text-sm">
           Showing only designer {onlyDesignerID}.
-          <button type="button" onClick={onClear} className="underline">
+          <button type="button" onClick={onClear} className="btn btn-sm">
             Show all designers
           </button>
         </p>
@@ -219,13 +214,17 @@ export default function BrowseInteriorDesignersPg() {
       {view.kind === "list" && (
         <ul className="mt-6 grid gap-6 md:grid-cols-2">
           {view.designers.map((d) => (
-            <li key={d.designerID} className="rounded border p-4">
+            <li key={d.designerID} className="card card-hover p-5">
               <div className="flex items-start gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={d.logoURL}
                   alt={`${d.companyName} logo`}
-                  className="h-14 w-14 shrink-0 rounded"
+                  className="h-14 w-14 shrink-0 rounded-lg border object-cover"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = PHOTO_NOT_FOUND;
+                  }}
                 />
                 <div className="min-w-0">
                   <h2 className="text-lg font-semibold">
@@ -240,10 +239,7 @@ export default function BrowseInteriorDesignersPg() {
               {d.styles.length > 0 && (
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {d.styles.map((s) => (
-                    <li
-                      key={s}
-                      className="rounded-full border px-2 py-0.5 text-xs"
-                    >
+                    <li key={s} className="chip">
                       {s}
                     </li>
                   ))}
@@ -263,7 +259,7 @@ export default function BrowseInteriorDesignersPg() {
                       <img
                         src={p.photoURL}
                         alt={p.title}
-                        className="aspect-[8/5] w-full rounded object-cover"
+                        className="photo rounded-md transition-opacity hover:opacity-85"
                         onError={(e) => {
                           e.currentTarget.onerror = null;
                           e.currentTarget.src = PHOTO_NOT_FOUND;

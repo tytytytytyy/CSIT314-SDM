@@ -139,7 +139,7 @@ export function ErrorList({ messages }) {
 
 export function UploadPhotosButton({ onFiles, label }) {
   return (
-    <label className="mt-3 inline-block cursor-pointer rounded border px-4 py-2 text-sm">
+    <label className="btn mt-3 border-dashed">
       {label}
       <input
         type="file"
@@ -157,16 +157,16 @@ export function UploadPhotosButton({ onFiles, label }) {
 
 export function NewPhotoCard({ photo, onRemove }) {
   return (
-    <li className="rounded border border-dashed border-green-500 p-2">
+    <li className="rounded-xl border border-dashed border-green-500 p-2">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={photo.dataURL}
         alt={photo.fileName}
-        className="aspect-[8/5] w-full rounded object-cover"
+        className="photo rounded-md"
       />
       <div className="mt-1 flex items-center justify-between gap-2 text-xs">
         <span className="truncate text-green-700">New: {photo.fileName}</span>
-        <button type="button" onClick={onRemove} className="shrink-0 underline">
+        <button type="button" onClick={onRemove} className="btn btn-sm btn-danger-outline shrink-0">
           Remove
         </button>
       </div>
@@ -174,8 +174,7 @@ export function NewPhotoCard({ photo, onRemove }) {
   );
 }
 
-const inputClass =
-  "w-full rounded border border-zinc-300 bg-white px-3 py-2 text-sm text-black";
+const inputClass = "input w-full";
 
 function Field({ label, htmlFor, children }) {
   return (

@@ -25,12 +25,22 @@ export default function NavBar() {
     router.replace("/login");
   };
 
+  // Highlights the link for the page the user is on.
+  const navLink = (href, label, matchPrefix = false) => {
+    const active = matchPrefix ? pathname?.startsWith(href) : pathname === href;
+    return (
+      <Link href={href} className="nav-link" aria-current={active ? "page" : undefined}>
+        {label}
+      </Link>
+    );
+  };
+
   const isAdmin = account?.profileID === "admin";
   const isPlatformManager = account?.profileID === "platformManager";
   const isCustomer = account?.profileID === "customer";
 
   return (
-    <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b px-8 py-3 [&_a]:whitespace-nowrap">
+    <nav className="sticky top-0 z-20 flex flex-wrap items-center gap-x-2 gap-y-2 border-b bg-[var(--surface)]/90 px-8 py-3 backdrop-blur [&_a]:whitespace-nowrap">
       <Link
         href={
           isCustomer
@@ -41,36 +51,23 @@ export default function NavBar() {
                 ? "/platform-manager/report"
                 : "/login"
         }
-        className="font-semibold"
+        className="mr-4 font-semibold"
       >
         IDP Platform
       </Link>
-      {isAdmin && (
-        <Link href="/user-admin/verify-id-accounts">Verify ID Accounts</Link>
-      )}
+      {isAdmin && navLink("/user-admin/verify-id-accounts", "Verify ID Accounts")}
       {isPlatformManager && (
         <>
-          <Link
-            href="/platform-manager/report"
-            aria-current={pathname === "/platform-manager/report" ? "page" : undefined}
-            className={pathname === "/platform-manager/report" ? "font-semibold underline underline-offset-4" : ""}
-          >
-            Generate Report
-          </Link>
-          <Link
-            href="/platform-manager/promote-idp"
-            aria-current={pathname?.startsWith("/platform-manager/promote-idp") ? "page" : undefined}
-            className={pathname?.startsWith("/platform-manager/promote-idp") ? "font-semibold underline underline-offset-4" : ""}
-          >
-            Promote IDP
-          </Link>
+          {navLink("/platform-manager/report", "Generate Report")}
+          {navLink("/platform-manager/promote-idp", "Promote IDP", true)}
         </>
       )}
       {isCustomer && (
         <>
-          <Link href="/customer/designers">Browse Designers</Link>
-          <Link href="/customer/recommendations">Recommended Designers</Link>
-          <Link href="/customer/favourites">Favourites List</Link>
+          {navLink("/", "Home")}
+          {navLink("/customer/designers", "Browse Designers")}
+          {navLink("/customer/recommendations", "Recommended Designers")}
+          {navLink("/customer/favourites", "Favourites List")}
         </>
       )}
       {account === undefined ? null : account ? (
@@ -78,13 +75,13 @@ export default function NavBar() {
           <span className="text-zinc-500">
             Logged in as {account.profileID} {account.accountID}
           </span>
-          <button type="button" onClick={logout} className="rounded border px-3 py-1">
+          <button type="button" onClick={logout} className="btn btn-sm">
             Log out
           </button>
         </span>
       ) : (
         pathname !== "/login" && (
-          <Link href="/login" className="ml-auto rounded border px-3 py-1 text-sm">
+          <Link href="/login" className="btn btn-sm btn-primary ml-auto">
             Log in
           </Link>
         )
