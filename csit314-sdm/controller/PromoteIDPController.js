@@ -33,6 +33,10 @@ import { Promotion } from "@/entity/Promotion";
 const MAX_ACTIVE_PROMOTIONS = 10;
 
 export class PromoteIDPController {
+    static async getIDPs() {
+        return await IDP.listIDPs(0, Number.MAX_SAFE_INTEGER);
+    }
+
     static async getIDP(idpID) {
         return await IDP.getIDP(idpID);
     }
@@ -86,5 +90,4 @@ export class PromoteIDPController {
         return { status: "ok" };
     }
 }
-
 

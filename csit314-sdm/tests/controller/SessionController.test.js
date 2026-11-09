@@ -50,9 +50,13 @@ describe("getRequiredProfile", () => {
     expect(SessionController.getRequiredProfile("/designer/dashboard")).toBe("designer");
   });
 
-  it("needs nobody for the login page and the pages that still use their own test login", () => {
+  it("needs nobody for the login page and user admin pages", () => {
     expect(SessionController.getRequiredProfile("/login")).toBeNull();
     expect(SessionController.getRequiredProfile("/user-admin/verify-id-accounts")).toBeNull();
-    expect(SessionController.getRequiredProfile("/platform-manager/report")).toBeNull();
+  });
+
+  it("requires a platform manager for platform manager pages", () => {
+    expect(SessionController.getRequiredProfile("/platform-manager/report")).toBe("platformManager");
+    expect(SessionController.getRequiredProfile("/platform-manager/promote-idp/1")).toBe("platformManager");
   });
 });

@@ -13,17 +13,25 @@
 
 import { generateDummyData, placeholderLogo, demoPhotoURL } from "./DummyData";
 
-const KEY_PREFIX = "idp_platform_v8_";
+const KEY_PREFIX = "idp_platform_v9_";
 
 // Password of every demo login account below (TEST data: a real system stores a hash, never
 // the password itself). Generated accounts (C4+, D6+) have no password, so they cannot log in.
 const DEMO_PASSWORD = "password123";
 
 const HAND_MADE = {
-  // Login accounts. C1-C3 and D1-D3 are the demo logins listed on the login page.
+  // Login accounts. C1-C3, D1-D3, A1 and M12345 are the demo logins listed on the login page.
   // D1-D3 are verified designers. D4 is still waiting for verification and D5 was suspended,
   // so Browse Interior Designers must hide both, and Log in must turn both away.
   user_account: [
+    {
+      accountID: "M12345",
+      email: "manager@example.com",
+      password: DEMO_PASSWORD,
+      profileID: "platformManager",
+      status: "active",
+      createdAt: "2026-01-01T00:00:00.000Z",
+    },
     { 
       accountID: "A1", 
       email: "admin@example.com", 
@@ -208,6 +216,7 @@ const HAND_MADE = {
     {
       idpID: 1,
       designerID: "D1",
+      createdAt: "2026-03-05T08:00:00.000Z",
       title: "Bright Scandinavian Living Room",
       description:
         "Light woods, soft textiles and plenty of natural light for a 3-room flat.",
@@ -220,6 +229,7 @@ const HAND_MADE = {
     {
       idpID: 2,
       designerID: "D1",
+      createdAt: "2026-03-05T08:00:00.000Z",
       title: "Industrial Loft Conversion",
       description:
         "Exposed brick, black steel and warm lighting for a condo loft.",
@@ -232,6 +242,7 @@ const HAND_MADE = {
     {
       idpID: 3,
       designerID: "D2",
+      createdAt: "2026-05-14T08:00:00.000Z",
       title: "Minimalist Co-working Office",
       description: "Clean lines and neutral tones for a 20-seat office.",
       style: "Minimalist",
@@ -336,14 +347,43 @@ function seedAllTables() {
   }
 }
 
+function addLegacyIDPCreationDates(rows) {
+  const knownSeedDates = {
+    1: "2026-03-05T08:00:00.000Z",
+    2: "2026-03-05T08:00:00.000Z",
+    3: "2026-05-14T08:00:00.000Z",
+  };
+  const storedPhotos = window.localStorage.getItem(KEY_PREFIX + "idp_photo");
+  const photos = storedPhotos ? JSON.parse(storedPhotos) : seed().idp_photo ?? [];
+  const firstUploadByIDP = new Map();
+  for (const photo of photos) {
+    if (!photo.uploadedAt) continue;
+    const firstUpload = firstUploadByIDP.get(photo.idpID);
+    if (!firstUpload || photo.uploadedAt < firstUpload) {
+      firstUploadByIDP.set(photo.idpID, photo.uploadedAt);
+    }
+  }
+
+  return rows.map((row) => {
+    if (row.createdAt) return row;
+    const createdAt =
+      knownSeedDates[row.idpID] ?? firstUploadByIDP.get(row.idpID);
+    return createdAt ? { ...row, createdAt } : row;
+  });
+}
+
 export function readTable(table) {
   if (typeof window === "undefined") return [];
   const key = KEY_PREFIX + table;
   try {
     const raw = window.localStorage.getItem(key);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const rows = JSON.parse(raw);
+      return table === "idp" ? addLegacyIDPCreationDates(rows) : rows;
+    }
     seedAllTables();
-    return JSON.parse(window.localStorage.getItem(key) ?? "[]");
+    const rows = JSON.parse(window.localStorage.getItem(key) ?? "[]");
+    return table === "idp" ? addLegacyIDPCreationDates(rows) : rows;
   } catch {
     // storage blocked or corrupted: fall back to the seed data
   }

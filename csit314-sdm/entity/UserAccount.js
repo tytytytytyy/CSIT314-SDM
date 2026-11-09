@@ -23,6 +23,7 @@
 // countNewAccounts (Generate Platform Report).
 // Only the demo login accounts in LocalStore have a password (stored as plain TEST data).
 import { readTable } from "./LocalStore";
+import { isWithinDateRange } from "@/lib/dates";
 
 export class UserAccount {
   static ACCOUNT_STATUS = ["pending", "active", "suspended", "rejected"];
@@ -51,11 +52,10 @@ export class UserAccount {
   }
 
   static async countNewAccounts(profileID, startDate, endDate) {
-  return readTable("user_account").filter(
-    (r) =>
-      r.profileID === profileID &&
-      r.createdAt >= startDate &&
-      r.createdAt <= endDate,
-  ).length;
+    return readTable("user_account").filter(
+      (row) =>
+        row.profileID === profileID &&
+        isWithinDateRange(row.createdAt, startDate, endDate),
+    ).length;
   }
 }

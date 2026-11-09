@@ -83,6 +83,12 @@ describe("generateDummyData", () => {
     expect(data.lastIDPID).toBe(Math.max(...ids));
   });
 
+  it("records creation timestamps for generated IDPs", () => {
+    for (const idp of data.idp) {
+      expect(Number.isNaN(new Date(idp.createdAt).getTime())).toBe(false);
+    }
+  });
+
   it("gives every generated IDP 1 or 2 photos, the first as the main photo", () => {
     for (const idp of data.idp) {
       const photos = data.idp_photo.filter((p) => p.idpID === idp.idpID);

@@ -1,9 +1,9 @@
 // Boundary: LoginGate
-// Wraps every page (app/layout.jsx). Customer pages need a logged-in customer and designer
-// pages a logged-in designer (rules in SessionController.getRequiredProfile):
+// Wraps every page (app/layout.jsx). Customer, designer and platform-manager pages require
+// their matching logged-in role (rules in SessionController.getRequiredProfile):
 // - nobody logged in        -> sent to /login
 // - logged in, wrong role   -> sent to their own home page (a customer cannot open /designer/...)
-// Pages that need no login (log in, user admin, platform manager) are shown straight away.
+// Pages that need no login (log in and user admin) are shown straight away.
 "use client";
 
 import { useEffect } from "react";

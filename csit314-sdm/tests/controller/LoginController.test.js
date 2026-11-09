@@ -29,6 +29,19 @@ describe("login", () => {
     expect(SessionController.getLoggedInCustomerID()).toBeNull();
   });
 
+  it("logs in the platform manager and sends them to the platform report", async () => {
+    const result = await LoginController.login("manager@example.com", PASSWORD);
+    expect(result).toEqual({
+      status: "ok",
+      profileID: "platformManager",
+      homePage: "/platform-manager/report",
+    });
+    expect(SessionController.getLoggedInAccount()).toEqual({
+      accountID: "M12345",
+      profileID: "platformManager",
+    });
+  });
+
   it("works for all three demo customers and all three demo designers", async () => {
     const accounts = {
       "customer1@example.com": "C1",

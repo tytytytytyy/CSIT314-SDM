@@ -15,6 +15,25 @@ export function isWithinDates(isoTimestamp, startDate, endDate) {
   return day >= startDate && day <= endDate; // "YYYY-MM-DD" strings sort like dates
 }
 
+// True if a timestamp falls within either bound, inclusive. Bounds may be date keys or Dates.
+export function isWithinDateRange(timestamp, startDate, endDate) {
+  if (!timestamp) return false;
+  const day = toDateKey(timestamp);
+  const startKey =
+    startDate == null
+      ? null
+      : typeof startDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(startDate)
+        ? startDate
+        : toDateKey(startDate);
+  const endKey =
+    endDate == null
+      ? null
+      : typeof endDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(endDate)
+        ? endDate
+        : toDateKey(endDate);
+  return (!startKey || day >= startKey) && (!endKey || day <= endKey);
+}
+
 // True for a real "YYYY-MM-DD" date, e.g. not "" or "2026-02-31".
 export function isValidDateKey(dateKey) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey ?? "")) return false;

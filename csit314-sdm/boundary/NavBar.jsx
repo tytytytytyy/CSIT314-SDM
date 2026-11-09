@@ -26,15 +26,45 @@ export default function NavBar() {
   };
 
   const isAdmin = account?.profileID === "admin";
+  const isPlatformManager = account?.profileID === "platformManager";
   const isCustomer = account?.profileID === "customer";
 
   return (
     <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b px-8 py-3 [&_a]:whitespace-nowrap">
-      <Link href={isCustomer ? "/" : isAdmin ? "/user-admin/verify-id-accounts" : "/login"} className="font-semibold">
+      <Link
+        href={
+          isCustomer
+            ? "/"
+            : isAdmin
+              ? "/user-admin/verify-id-accounts"
+              : isPlatformManager
+                ? "/platform-manager/report"
+                : "/login"
+        }
+        className="font-semibold"
+      >
         IDP Platform
       </Link>
       {isAdmin && (
         <Link href="/user-admin/verify-id-accounts">Verify ID Accounts</Link>
+      )}
+      {isPlatformManager && (
+        <>
+          <Link
+            href="/platform-manager/report"
+            aria-current={pathname === "/platform-manager/report" ? "page" : undefined}
+            className={pathname === "/platform-manager/report" ? "font-semibold underline underline-offset-4" : ""}
+          >
+            Generate Report
+          </Link>
+          <Link
+            href="/platform-manager/promote-idp"
+            aria-current={pathname?.startsWith("/platform-manager/promote-idp") ? "page" : undefined}
+            className={pathname?.startsWith("/platform-manager/promote-idp") ? "font-semibold underline underline-offset-4" : ""}
+          >
+            Promote IDP
+          </Link>
+        </>
       )}
       {isCustomer && (
         <>
