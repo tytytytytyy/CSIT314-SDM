@@ -13,7 +13,7 @@
 
 import { generateDummyData, placeholderLogo, demoPhotoURL } from "./DummyData";
 
-const KEY_PREFIX = "idp_platform_v10_";
+const KEY_PREFIX = "idp_platform_v11_";
 
 // Password of every demo login account below (TEST data: a real system stores a hash, never
 // the password itself). Generated accounts (C4+, D6+) have no password, so they cannot log in.
