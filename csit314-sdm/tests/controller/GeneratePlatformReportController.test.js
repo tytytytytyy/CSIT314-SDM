@@ -66,11 +66,11 @@ describe("generateReport", () => {
 
   it("counts older IDPs using their first saved photo date", async () => {
     window.localStorage.setItem(
-      "idp_platform_v9_idp",
+      "idp_platform_v10_idp",
       JSON.stringify([{ idpID: 20, title: "Older project" }]),
     );
     window.localStorage.setItem(
-      "idp_platform_v9_idp_photo",
+      "idp_platform_v10_idp_photo",
       JSON.stringify([
         { idpID: 20, uploadedAt: "2026-11-05T09:00:00.000Z" },
       ]),
