@@ -6,6 +6,8 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { HomeController } from "@/controller/HomeController";
+import { writeTable } from "@/entity/LocalStore";
+import { toDateKey } from "@/lib/dates";
 
 beforeEach(() => {
   window.localStorage.clear();
@@ -60,5 +62,36 @@ describe("getIDPFeed", () => {
     expect(HomeController.PAGE_SIZE).toBe(12);
     const page = await HomeController.getIDPFeed(0);
     expect(page.cards.length).toBeLessThanOrEqual(HomeController.PAGE_SIZE);
+  });
+});
+
+describe("getIDPFeed with promoted IDPs", () => {
+  const today = toDateKey(new Date());
+  const promote = (rows) => writeTable("promotion", rows.map((r, i) => ({ promotionID: i + 1, createdBy: "M12345", ...r })));
+
+  it("shows IDPs with a promotion running today first, marked as featured", async () => {
+    promote([{ idpID: 3, startDate: today, endDate: "2099-12-31" }]);
+    const page = await HomeController.getIDPFeed(0, 10);
+    expect(idpIDs(page)).toEqual([3, 1, 2]);
+    expect(page.cards.map((c) => c.featured)).toEqual([true, false, false]);
+  });
+
+  it("ignores promotions that have finished or not started, and deleted IDPs", async () => {
+    promote([
+      { idpID: 3, startDate: "2000-01-01", endDate: "2000-01-31" },
+      { idpID: 2, startDate: "2099-01-01", endDate: "2099-01-31" },
+      { idpID: 4, startDate: today, endDate: "2099-12-31" },
+    ]);
+    const page = await HomeController.getIDPFeed(0, 10);
+    expect(idpIDs(page)).toEqual([1, 2, 3]);
+    expect(page.cards.every((c) => !c.featured)).toBe(true);
+  });
+
+  it("keeps paging correct with featured IDPs first", async () => {
+    promote([{ idpID: 3, startDate: today, endDate: "2099-12-31" }]);
+    expect(idpIDs(await HomeController.getIDPFeed(0, 2))).toEqual([3, 1]);
+    const page2 = await HomeController.getIDPFeed(2, 2);
+    expect(idpIDs(page2)).toEqual([2]);
+    expect(page2.hasMore).toBe(false);
   });
 });

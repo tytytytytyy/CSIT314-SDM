@@ -170,6 +170,21 @@ describe("generateDummyData", () => {
     }
   });
 
+  it("adds sample promotions: 3 running today, 1 finished and 1 upcoming", () => {
+    const today = TODAY.toISOString().slice(0, 10);
+    const ids = new Set(data.idp.map((i) => i.idpID).concat([1, 2, 3]));
+    expect(data.promotion).toHaveLength(5);
+    for (const p of data.promotion) {
+      expect(ids.has(p.idpID)).toBe(true);
+      expect(p.endDate > p.startDate).toBe(true);
+      expect(p.createdBy).toBe("M12345");
+    }
+    const running = data.promotion.filter((p) => p.startDate <= today && today <= p.endDate);
+    expect(running).toHaveLength(3);
+    expect(data.promotion.filter((p) => p.endDate < today)).toHaveLength(1);
+    expect(data.promotion.filter((p) => p.startDate > today)).toHaveLength(1);
+  });
+
   it("makes the same data every time", () => {
     expect(generateDummyData(TODAY)).toEqual(data);
   });
