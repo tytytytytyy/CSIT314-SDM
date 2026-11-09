@@ -32,7 +32,12 @@ import { UserAccount } from "@/entity/UserAccount";
 import { CompanyInformation } from "@/entity/CompanyInformation";
 import { SessionController } from "@/controller/SessionController";
 
-const HOME_PAGES = { customer: "/", designer: "/designer/idp", admin: "/user-admin/verify-id-accounts" };
+const HOME_PAGES = {
+  customer: "/",
+  designer: "/designer/idp",
+  admin: "/user-admin/verify-id-accounts",
+  platformManager: "/platform-manager/report",
+};
 
 const BLOCKED_MESSAGES = {
   pending: "Your account is waiting for verification",

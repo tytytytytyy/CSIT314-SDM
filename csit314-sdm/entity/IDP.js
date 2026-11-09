@@ -7,7 +7,7 @@
 // Database table: idp
 //
 // Attributes:
-// - idpID, designerID, title, description, style, propertyType, category, budget, status
+// - idpID, designerID, title, description, style, propertyType, category, budget, status, createdAt
 //   (status = ongoing | completed)
 //
 // Methods:
@@ -30,6 +30,7 @@
 // - PROPERTY_TYPES = HDB, Condo, Landed (Residential); Office, Retail, F&B (Commercial)
 // - STYLES         = Scandinavian, Industrial, Minimalist, ...
 import { readTable, writeTable } from "./LocalStore";
+import { isWithinDateRange } from "@/lib/dates";
 
 export class IDP {
   static STATUSES = ["ongoing", "completed"];
@@ -59,6 +60,7 @@ export class IDP {
   category;
   budget;
   status;
+  createdAt;
 
   constructor(data) {
     Object.assign(this, data);
@@ -85,12 +87,22 @@ export class IDP {
       .map((r) => new IDP(r));
   }
 
+  static async countIDPs(startDate, endDate) {
+    return readTable("idp").filter((idp) =>
+      isWithinDateRange(idp.createdAt, startDate, endDate),
+    ).length;
+  }
+
   // Saves a new IDP with the next free idpID and returns it.
   static async createIDP(idp) {
     const sequence = readTable("idp_sequence")[0] ?? { lastIDPID: 0 };
     const rows = readTable("idp");
     const idpID = Math.max(sequence.lastIDPID, ...rows.map((r) => r.idpID)) + 1;
-    const created = { ...idp, idpID };
+    const created = {
+      ...idp,
+      idpID,
+      createdAt: idp.createdAt ?? new Date().toISOString(),
+    };
     writeTable("idp", [...rows, created]);
     writeTable("idp_sequence", [{ lastIDPID: idpID }]);
     return new IDP(created);

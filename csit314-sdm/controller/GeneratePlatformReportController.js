@@ -15,7 +15,6 @@
 // - new IDPs                                                -> IDP.countIDPs(...)
 // - IDP views                                               -> IDPView.countViews(...)
 // - IDP likes                                               -> IDPLike.countLikes(...)
-// - promotions created                                      -> Promotion.countPromotions(...)
 //
 // Methods:
 // - validateReportRequest(period, referenceDate)   valid period, date not in the future
@@ -28,14 +27,11 @@
 //
 // Attributes: none
 
-//TODOOOOOOO need check if can add createdAt top IDPs
-
 import { UserAccount } from "@/entity/UserAccount";
 import { DesignerVerification } from "@/entity/DesignerVerification";
 import { IDP } from "@/entity/IDP";
 import { IDPView } from "@/entity/IDPView";
 import { IDPLike } from "@/entity/IDPLike";
-import { Promotion } from "@/entity/Promotion";
 
 export class GeneratePlatformReportController {
     static REPORT_PERIODS = ["daily", "weekly", "monthly"];
@@ -123,6 +119,27 @@ export class GeneratePlatformReportController {
         return ((current - previous) / previous) * 100;
     }
 
+    static async getPeriodMetrics(range) {
+        const [customerAccounts, designerAccounts, verifiedDesigners, idps, views, likes] =
+            await Promise.all([
+                UserAccount.countNewAccounts("customer", range.startDate, range.endDate),
+                UserAccount.countNewAccounts("designer", range.startDate, range.endDate),
+                DesignerVerification.countVerified(range.startDate, range.endDate),
+                IDP.countIDPs(range.startDate, range.endDate),
+                IDPView.countViews(null, range.startDate, range.endDate),
+                IDPLike.countLikes(null, range.startDate, range.endDate)
+            ]);
+
+        return {
+            customerAccounts,
+            designerAccounts,
+            verifiedDesigners,
+            idps,
+            views,
+            likes
+        };
+    }
+
     static async generateReport(period, referenceDate) {
         const error = this.validateReportRequest(period, referenceDate);
 
@@ -132,75 +149,69 @@ export class GeneratePlatformReportController {
                 message: error
             };
 
-        const currentRange = this.calculateDateRange(period, referenceDate);
-        const previousRange = this.calculatePreviousRange(period, currentRange.startDate);
+        const newestFirstRanges = [this.calculateDateRange(period, referenceDate)];
+        while (newestFirstRanges.length < 5) {
+            const previousRange = this.calculatePreviousRange(
+                period,
+                newestFirstRanges[newestFirstRanges.length - 1].startDate,
+            );
+            newestFirstRanges.push(previousRange);
+        }
 
-        const customerAccountsCurrent = await UserAccount.countNewAccounts("customer", currentRange.startDate, currentRange.endDate);
-        const customerAccountsPrevious = await UserAccount.countNewAccounts("customer", previousRange.startDate, previousRange.endDate);
-
-        const designerAccountsCurrent = await UserAccount.countNewAccounts("designer", currentRange.startDate, currentRange.endDate);
-        const designerAccountsPrevious = await UserAccount.countNewAccounts("designer", previousRange.startDate, previousRange.endDate);
-
-        const verifiedCurrent = await DesignerVerification.countVerified(currentRange.startDate, currentRange.endDate);
-        const verifiedPrevious = await DesignerVerification.countVerified(previousRange.startDate, previousRange.endDate);
-
-        const idpsCurrent = await IDP.countIDPs(currentRange.startDate, currentRange.endDate);
-        const idpsPrevious = await IDP.countIDPs(previousRange.startDate, previousRange.endDate);
-
-        const viewsCurrent = await IDPView.countViews(null, currentRange.startDate, currentRange.endDate);
-        const viewsPrevious = await IDPView.countViews(null, previousRange.startDate, previousRange.endDate);
-
-        const likesCurrent = await IDPLike.countLikes(null, currentRange.startDate, currentRange.endDate);
-        const likesPrevious = await IDPLike.countLikes(null, previousRange.startDate, previousRange.endDate);
-
-        const promotionsCurrent = await Promotion.countPromotions(currentRange.startDate, currentRange.endDate);
-        const promotionsPrevious = await Promotion.countPromotions(previousRange.startDate, previousRange.endDate);
+        const newestFirstPeriods = await Promise.all(
+            newestFirstRanges.map(async (range) => ({
+                range,
+                metrics: await this.getPeriodMetrics(range)
+            })),
+        );
+        const [currentPeriod, previousPeriod] = newestFirstPeriods;
+        const currentRange = currentPeriod.range;
+        const previousRange = previousPeriod.range;
+        const currentMetrics = currentPeriod.metrics;
+        const previousMetrics = previousPeriod.metrics;
 
         return {
             status: "ok",
             currentRange,
             previousRange,
+            periods: [...newestFirstPeriods]
+                .reverse()
+                .map(({ range, metrics }) => ({ range, ...metrics })),
 
             customerAccounts: {
-                current: customerAccountsCurrent,
-                previous: customerAccountsPrevious,
-                change: this.calculateChange(customerAccountsCurrent, customerAccountsPrevious)
+                current: currentMetrics.customerAccounts,
+                previous: previousMetrics.customerAccounts,
+                change: this.calculateChange(currentMetrics.customerAccounts, previousMetrics.customerAccounts)
             },
 
             designerAccounts: {
-                current: designerAccountsCurrent,
-                previous: designerAccountsPrevious,
-                change: this.calculateChange(designerAccountsCurrent, designerAccountsPrevious)
+                current: currentMetrics.designerAccounts,
+                previous: previousMetrics.designerAccounts,
+                change: this.calculateChange(currentMetrics.designerAccounts, previousMetrics.designerAccounts)
             },
 
             verifiedDesigners: {
-                current: verifiedCurrent,
-                previous: verifiedPrevious,
-                change: this.calculateChange(verifiedCurrent, verifiedPrevious)
+                current: currentMetrics.verifiedDesigners,
+                previous: previousMetrics.verifiedDesigners,
+                change: this.calculateChange(currentMetrics.verifiedDesigners, previousMetrics.verifiedDesigners)
             },
 
             idps: {
-                current: idpsCurrent,
-                previous: idpsPrevious,
-                change: this.calculateChange(idpsCurrent, idpsPrevious)
+                current: currentMetrics.idps,
+                previous: previousMetrics.idps,
+                change: this.calculateChange(currentMetrics.idps, previousMetrics.idps)
             },
 
             views: {
-                current: viewsCurrent,
-                previous: viewsPrevious,
-                change: this.calculateChange(viewsCurrent, viewsPrevious)
+                current: currentMetrics.views,
+                previous: previousMetrics.views,
+                change: this.calculateChange(currentMetrics.views, previousMetrics.views)
             },
 
             likes: {
-                current: likesCurrent,
-                previous: likesPrevious,
-                change: this.calculateChange(likesCurrent, likesPrevious)
-            },
-
-            promotions: {
-                current: promotionsCurrent,
-                previous: promotionsPrevious,
-                change: this.calculateChange(promotionsCurrent, promotionsPrevious)
+                current: currentMetrics.likes,
+                previous: previousMetrics.likes,
+                change: this.calculateChange(currentMetrics.likes, previousMetrics.likes)
             }
         };
     }

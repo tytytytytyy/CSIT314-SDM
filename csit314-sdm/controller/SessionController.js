@@ -6,8 +6,8 @@
 // Rules / fixed values:
 // - Customer pages: "/" and "/customer/..."      need a logged-in customer
 // - Designer pages: "/designer/..."              need a logged-in designer
-// - Every other page (log in, user admin, platform manager) needs no login here; the user admin
-//   and platform manager pages still use their own test log in buttons.
+// - User admin pages need no login here and use their own test flow.
+// - Platform manager pages need a logged-in platform manager.
 // - DEMO_ADMIN_ID = A1                           the user admin side is always "logged in" as A1
 //                                                for now (TEST stub until admins use the login page)
 //
@@ -18,7 +18,7 @@
 // - getLoggedInCustomerID()                 null unless a customer is logged in
 // - getLoggedInDesignerID()                 null unless a designer is logged in
 // - getLoggedInADMINID()                    null unless a user admin is logged in
-// - getRequiredProfile(pathname)            "customer", "designer" or null (no login needed)
+// - getRequiredProfile(pathname)            "customer", "designer", "platformManager" or null
 // - onChange(callback)                      calls back when the session changes, in this tab or
 //                                           another; returns a function that stops listening
 //
@@ -80,7 +80,7 @@ export class SessionController {
   static getRequiredProfile(pathname) {
     if (pathname === "/" || pathname === "/customer" || pathname.startsWith("/customer/")) return "customer";
     if (pathname === "/designer" || pathname.startsWith("/designer/")) return "designer";
+    if (pathname === "/platform-manager" || pathname.startsWith("/platform-manager/")) return "platformManager";
     return null;
   }
 }
-

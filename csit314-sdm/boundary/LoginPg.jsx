@@ -1,6 +1,5 @@
 // Boundary: LoginPg
-// Feature: Log in (Customer and Interior Designer)
-// User stories: C02 / ID02 As a customer / interior designer, I want to log in to my account.
+// Feature: Log in (Customer, Interior Designer, User Admin and Platform Manager)
 //
 // Route: /login   (app/login/page.jsx renders this)
 //
@@ -37,6 +36,7 @@ const DEMO_ACCOUNTS = [
   // These two cannot log in yet: they show the blocked-login messages.
   { role: "Interior designer", label: "D4 Fresh Start Design (pending verification)", email: "hi@freshstart.example.com" },
   { role: "Interior designer", label: "D5 Urban Edge Interiors (suspended)", email: "info@urbanedge.example.com" },
+  { role: "Platform Manager", label: "M12345", email: "manager@example.com" },
   { role: "User Admin", label: "A1", email: "admin@example.com" },
 ];
 
@@ -74,7 +74,9 @@ export default function LoginPg() {
   return (
     <main className="mx-auto w-full max-w-md p-8">
       <h1 className="text-3xl font-semibold">Log in</h1>
-      <p className="mt-2 text-zinc-500">For customers, interior designers and user admins.</p>
+      <p className="mt-2 text-zinc-500">
+        For customers, interior designers, user admins and platform managers.
+      </p>
 
       <form onSubmit={submitLogin} className="mt-6 grid gap-4" noValidate>
         <label htmlFor="login-email" className="grid gap-1">

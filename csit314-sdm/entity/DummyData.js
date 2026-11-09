@@ -179,6 +179,7 @@ export function generateDummyData(today = new Date()) {
       idp.push({
         idpID,
         designerID,
+        createdAt: randomTimeInLast(365),
         title: `${style} ${room} - ${size} ${propertyType}`,
         description: `A ${style.toLowerCase()} design for the ${room.toLowerCase()} of a ${size.toLowerCase()} ${propertyType}.`,
         style,

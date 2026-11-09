@@ -24,6 +24,7 @@ csit314-sdm/
 
 ## Rules
 
+- **Platform manager:** navigation has separate Generate Report and Promote IDP tabs. The promotion tab lists IDPs before opening the date form for a selected project. Platform manager routes use the same `export const instant = false` session-gated behavior.
 - **Boundary** only talks to its **controller**. It never reads storage directly.
 - **Controller** only talks to **entities** (and `SessionController` for the logged-in user).
 - **Entity** is the only layer that reads or writes storage, through `entity/LocalStore.js`.

@@ -18,7 +18,7 @@
 //
 // countLikes: startDate / endDate are optional; leave them out to count every like.
 import { readTable, writeTable } from "./LocalStore";
-import { isWithinDates } from "@/lib/dates";
+import { isWithinDateRange, isWithinDates } from "@/lib/dates";
 
 export class IDPLike {
   likeID;
@@ -52,12 +52,11 @@ export class IDPLike {
   // (inclusive, ISO date strings).
   static async countLikes(idpID, startDate, endDate) {
     return readTable("idp_like").filter(
-      (r) =>
-        (!idpID || r.idpID === idpID) &&
-        (!startDate || r.likedAt >= startDate) &&
-        (!endDate || r.likedAt <= endDate),
+      (row) =>
+        (!idpID || row.idpID === idpID) &&
+        isWithinDateRange(row.likedAt, startDate, endDate),
     ).length;
-}
+  }
 
   static async getLikesByCustomer(customerID) {
     return readTable("idp_like")

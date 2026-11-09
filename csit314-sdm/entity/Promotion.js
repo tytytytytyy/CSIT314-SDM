@@ -6,7 +6,7 @@
 // Database table: promotion
 //
 // Attributes:
-// - promotionID, idpID, startDate, endDate, createdBy (platform manager accountID)
+// - promotionID, idpID, startDate, endDate, createdBy (platform manager accountID), createdAt
 //
 // Methods:
 // - createPromotion(promotion)
@@ -15,6 +15,7 @@
 // - countPromotions(startDate, endDate)                 platform report
 
 import { readTable, writeTable } from "./LocalStore";
+import { isWithinDateRange } from "@/lib/dates";
 
 export class Promotion {
     promotionID;
@@ -22,6 +23,7 @@ export class Promotion {
     startDate;
     endDate;
     createdBy;
+    createdAt;
 
     constructor(data) { 
         Object.assign(this, data);
@@ -32,7 +34,11 @@ export class Promotion {
 
         const nextID = Math.max(0, ...rows.map((r) => r.promotionID ?? 0)) + 1;
 
-        const created = { promotionID: nextID, ...promotion, };
+        const created = {
+            promotionID: nextID,
+            ...promotion,
+            createdAt: promotion.createdAt ?? new Date().toISOString(),
+        };
 
         writeTable("promotion", [...rows, created]);
 
@@ -44,12 +50,9 @@ export class Promotion {
     }
 
     static async countPromotions(startDate, endDate) {
-        return readTable("promotion").filter((r) => {
-            return (
-                r.startDate >= startDate &&
-                r.endDate <= endDate
-            );
-        }).length;
+        return readTable("promotion").filter((promotion) =>
+            isWithinDateRange(promotion.createdAt, startDate, endDate),
+        ).length;
     }
     
 }
