@@ -4,13 +4,14 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { LoginController } from "@/controller/LoginController";
 import { useSession } from "@/boundary/useSession";
 
 export default function DesignerNavBar() {
   const router = useRouter();
+  const pathname = usePathname();
   const account = useSession();
   const [company, setCompany] = useState(null);
 
@@ -26,13 +27,25 @@ export default function DesignerNavBar() {
   };
 
   return (
-    <nav className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b px-8 py-3 [&_a]:whitespace-nowrap">
-      <Link href="/designer/idp" className="font-semibold">
+    <nav className="sticky top-0 z-20 flex flex-wrap items-center gap-x-2 gap-y-2 border-b bg-[var(--surface)]/90 px-8 py-3 backdrop-blur [&_a]:whitespace-nowrap">
+      <Link href="/designer/idp" className="mr-4 font-semibold">
         IDP Platform{" "}
         <span className="font-normal text-zinc-500">for Designers</span>
       </Link>
-      <Link href="/designer/idp">My Projects</Link>
-      <Link href="/designer/dashboard">Performance Dashboard</Link>
+      <Link
+        href="/designer/idp"
+        className="nav-link"
+        aria-current={pathname?.startsWith("/designer/idp") ? "page" : undefined}
+      >
+        My Projects
+      </Link>
+      <Link
+        href="/designer/dashboard"
+        className="nav-link"
+        aria-current={pathname === "/designer/dashboard" ? "page" : undefined}
+      >
+        Performance Dashboard
+      </Link>
       {account && (
         <span className="ml-auto flex items-center gap-3 text-sm">
           {company ? (
@@ -44,7 +57,7 @@ export default function DesignerNavBar() {
           ) : (
             <span className="text-zinc-500">Logged in as designer {account.accountID}</span>
           )}
-          <button type="button" onClick={logout} className="rounded border px-3 py-1">
+          <button type="button" onClick={logout} className="btn btn-sm">
             Log out
           </button>
         </span>

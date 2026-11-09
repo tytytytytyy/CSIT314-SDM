@@ -87,7 +87,7 @@ export default function LoginPg() {
             autoComplete="username"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded border px-3 py-2"
+            className="input"
           />
         </label>
         <label htmlFor="login-password" className="grid gap-1">
@@ -98,7 +98,7 @@ export default function LoginPg() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="rounded border px-3 py-2"
+            className="input"
           />
         </label>
         {errorMsg && (
@@ -109,13 +109,13 @@ export default function LoginPg() {
         <button
           type="submit"
           disabled={busy}
-          className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
+          className="btn btn-primary"
         >
           {busy ? "Logging in..." : "Log in"}
         </button>
       </form>
 
-      <section className="mt-10 rounded border p-4">
+      <section className="card mt-10 p-4">
         <h2 className="font-medium">Test: demo accounts</h2>
         <p className="mt-1 text-sm text-zinc-500">
           Click one to fill in the form. Password for all: {DEMO_PASSWORD}
@@ -126,7 +126,7 @@ export default function LoginPg() {
               <button
                 type="button"
                 onClick={() => fillDemoAccount(demo.email)}
-                className="w-full rounded border px-3 py-2 text-left text-sm hover:border-zinc-400"
+                className="w-full rounded-lg border px-3 py-2 text-left text-sm hover:border-zinc-400 hover:bg-[var(--surface-hover)]"
               >
                 <span className="font-medium">{demo.role}</span> {demo.label}
                 <span className="block text-zinc-500">{demo.email}</span>

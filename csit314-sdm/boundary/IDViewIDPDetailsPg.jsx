@@ -26,6 +26,7 @@ import { IDViewIDPDetailsController } from "@/controller/IDViewIDPDetailsControl
 import { PHOTO_NOT_FOUND } from "@/boundary/PhotoFallback";
 import { SessionController } from "@/controller/SessionController";
 import StatusBadge from "@/boundary/StatusBadge";
+import BackButton from "@/boundary/BackButton";
 
 export default function IDViewIDPDetailsPg({ idpID }) {
   const [view, setView] = useState({ kind: "loading" });
@@ -58,11 +59,20 @@ export default function IDViewIDPDetailsPg({ idpID }) {
 
   if (view.kind === "loading") return <p className="p-8">Loading...</p>;
   if (view.kind === "error")
-    return <p className="p-8 text-red-600">{view.message}</p>;
+    return (
+      <main className="mx-auto w-full max-w-3xl p-8">
+        <BackButton fallbackHref="/designer/idp" />
+        <p className="text-red-600">{view.message}</p>
+      </main>
+    );
 
   const { idp, photos } = view.details;
   return (
     <main className="mx-auto w-full max-w-3xl p-8">
+      {/* Always back to the list: after saving, "previous page" would be the edit form. */}
+      <Link href="/designer/idp" className="btn btn-sm mb-4">
+        <span aria-hidden="true">←</span> My Projects
+      </Link>
       <p className="text-sm text-zinc-500">My Project #{idp.idpID}</p>
       <div className="mt-1 flex flex-wrap items-center gap-3">
         <h1 className="text-3xl font-semibold">{idp.title}</h1>
@@ -81,12 +91,9 @@ export default function IDViewIDPDetailsPg({ idpID }) {
       <div className="mt-4 flex gap-3">
         <Link
           href={`/designer/idp/${idp.idpID}/edit`}
-          className="rounded border bg-zinc-900 px-4 py-2 text-white"
+          className="btn btn-primary"
         >
           Edit IDP
-        </Link>
-        <Link href="/designer/idp" className="rounded border px-4 py-2">
-          Back to My Projects
         </Link>
       </div>
 
@@ -97,7 +104,7 @@ export default function IDViewIDPDetailsPg({ idpID }) {
             <img
               src={photo.photoURL}
               alt={photo.caption}
-              className="rounded"
+              className="photo rounded-lg border"
               onError={(e) => {
                 e.currentTarget.onerror = null;
                 e.currentTarget.src = PHOTO_NOT_FOUND;
@@ -111,7 +118,7 @@ export default function IDViewIDPDetailsPg({ idpID }) {
         ))}
       </div>
 
-      <dl className="mt-6 grid grid-cols-[8rem_1fr] gap-y-2">
+      <dl className="card mt-6 grid grid-cols-[8rem_1fr] gap-y-3 p-5 text-sm">
         <dt className="font-medium">Style</dt>
         <dd>{idp.style}</dd>
         <dt className="font-medium">Property type</dt>

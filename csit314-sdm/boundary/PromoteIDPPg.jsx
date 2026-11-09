@@ -24,6 +24,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { PromoteIDPController } from "@/controller/PromoteIDPController";
 import { SessionController } from "@/controller/SessionController";
+import BackButton from "@/boundary/BackButton";
 
 function getLocalDateValue(date = new Date()) {
   const year = date.getFullYear();
@@ -137,8 +138,8 @@ export default function PromoteIDPPg({ params }) {
       <main className="mx-auto w-full max-w-3xl space-y-4 p-8">
         <h1 className="text-3xl font-semibold">Promote IDP</h1>
         <p role="alert" className="text-red-700">IDP not found.</p>
-        <Link href="/platform-manager/promote-idp" className="underline">
-          Back to Promote IDP
+        <Link href="/platform-manager/promote-idp" className="btn">
+          <span aria-hidden="true">←</span> Back to Promote IDP
         </Link>
       </main>
     );
@@ -148,11 +149,12 @@ export default function PromoteIDPPg({ params }) {
       <main className="mx-auto w-full max-w-3xl space-y-4 p-8">
         <h1 className="text-3xl font-semibold">Promote IDP</h1>
         <p role="alert" className="text-red-700">{view.message}</p>
-        <Link href="/login" className="underline">Log in</Link>
-        {" · "}
-        <Link href="/platform-manager/promote-idp" className="underline">
-          Promote IDP
-        </Link>
+        <div className="flex flex-wrap gap-3">
+          <Link href="/platform-manager/promote-idp" className="btn">
+            <span aria-hidden="true">←</span> Promote IDP
+          </Link>
+          <Link href="/login" className="btn btn-primary">Log in</Link>
+        </div>
       </main>
     );
   }
@@ -163,8 +165,8 @@ export default function PromoteIDPPg({ params }) {
         <p role="status">
           “{view.idp.title}” is scheduled for promotion from {startDate} to {endDate}.
         </p>
-        <Link href="/platform-manager/promote-idp" className="underline">
-          Return to Promote IDP
+        <Link href="/platform-manager/promote-idp" className="btn btn-primary">
+          <span aria-hidden="true">←</span> Return to Promote IDP
         </Link>
       </main>
     );
@@ -172,6 +174,7 @@ export default function PromoteIDPPg({ params }) {
 
   return (
     <main className="mx-auto w-full max-w-3xl space-y-6 p-8">
+      <BackButton fallbackHref="/platform-manager/promote-idp" className="" />
       <div>
         <h1 className="text-3xl font-semibold">Promote IDP</h1>
         <p className="mt-1 text-sm text-zinc-500">
@@ -179,7 +182,7 @@ export default function PromoteIDPPg({ params }) {
         </p>
       </div>
 
-      <section className="rounded border p-4">
+      <section className="card p-5">
         <h2 className="text-xl font-medium">{view.idp.title}</h2>
         <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
           <div>
@@ -215,7 +218,7 @@ export default function PromoteIDPPg({ params }) {
             required
             value={startDate}
             onChange={(event) => setStartDate(event.target.value)}
-            className="rounded border px-3 py-2"
+            className="input"
           />
         </label>
         <label className="flex flex-col gap-1 text-sm font-medium">
@@ -225,21 +228,17 @@ export default function PromoteIDPPg({ params }) {
             required
             value={endDate}
             onChange={(event) => setEndDate(event.target.value)}
-            className="rounded border px-3 py-2"
+            className="input"
           />
         </label>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="rounded bg-zinc-900 px-5 py-2 text-white disabled:opacity-50"
+          className="btn btn-primary"
         >
           {isSubmitting ? "Promoting..." : "Promote"}
         </button>
       </form>
-
-      <Link href="/platform-manager/promote-idp" className="inline-block text-sm underline">
-        Back to Promote IDP
-      </Link>
     </main>
   );
 }

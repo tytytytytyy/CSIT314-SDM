@@ -79,26 +79,26 @@ export default function HomePg() {
       {cards.length > 0 && (
         <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {cards.map((card) => (
-            <li key={card.idpID} className="overflow-hidden rounded border">
+            <li key={card.idpID} className="card card-hover overflow-hidden">
               <Link href={`/customer/idp/${card.idpID}`}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={card.mainPhotoURL ?? PHOTO_NOT_FOUND}
                   alt={card.title}
                   loading="lazy"
-                  className="aspect-[8/5] w-full object-cover"
+                  className="photo"
                   onError={(e) => {
                     e.currentTarget.onerror = null;
                     e.currentTarget.src = PHOTO_NOT_FOUND;
                   }}
                 />
-                <p className="px-3 pt-3 font-medium">{card.title}</p>
+                <p className="px-4 pt-3 font-medium">{card.title}</p>
               </Link>
-              <p className="px-3 pb-3 text-sm text-zinc-500">
+              <p className="px-4 pb-4 pt-1 text-sm text-zinc-500">
                 {card.style} · by{" "}
                 <Link
                   href={`/customer/designers?designer=${encodeURIComponent(card.designerID)}`}
-                  className="underline"
+                  className="link"
                 >
                   {card.companyName ?? card.designerID}
                 </Link>

@@ -29,6 +29,7 @@ import { useEffect, useState } from "react";
 import { IDPPerformanceDashboardController } from "@/controller/IDPPerformanceDashboardController";
 import { SessionController } from "@/controller/SessionController";
 import StatusBadge from "@/boundary/StatusBadge";
+import BackButton from "@/boundary/BackButton";
 import { daysAgo } from "@/lib/dates";
 
 const DEFAULT_DAYS = 30;
@@ -81,6 +82,7 @@ export default function IDPPerformanceDashboardPg() {
   return (
     <main className="viz-root mx-auto w-full max-w-4xl p-8">
       <style>{VIZ_COLOURS}</style>
+      <BackButton fallbackHref="/designer/idp" />
       <h1 className="text-3xl font-semibold">Performance Dashboard</h1>
       <p className="mt-1 text-sm text-zinc-500">Which of your projects attract the most customer interest.</p>
 
@@ -99,7 +101,7 @@ export default function IDPPerformanceDashboardPg() {
           To
           <input type="date" id="endDate" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={inputClass} />
         </label>
-        <button type="submit" className="rounded bg-zinc-900 px-5 py-2 text-white dark:bg-zinc-100 dark:text-zinc-900">
+        <button type="submit" className="btn btn-primary">
           View
         </button>
       </form>
@@ -114,7 +116,7 @@ export default function IDPPerformanceDashboardPg() {
       {view.kind === "noIDPs" && (
         <p className="mt-6">
           You have no projects yet.{" "}
-          <Link href="/designer/idp/create" className="underline">
+          <Link href="/designer/idp/create" className="link">
             Create an IDP
           </Link>
         </p>
@@ -227,7 +229,7 @@ function DashboardBody({ dashboard, chartIDP, onChartIDPChange }) {
 
 function StatTile({ label, value }) {
   return (
-    <div className="rounded border p-4">
+    <div className="card p-4">
       <p className="text-sm text-zinc-500">{label}</p>
       <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
     </div>
@@ -314,7 +316,7 @@ function formatDate(dateKey) {
   return new Date(y, m - 1, d).toLocaleDateString("en-SG", { day: "numeric", month: "short" });
 }
 
-const inputClass = "rounded border border-zinc-300 bg-white px-3 py-2 text-sm text-black";
+const inputClass = "input";
 
 // Chart colours (light and dark), from a colour-blind-checked palette.
 const VIZ_COLOURS = `
