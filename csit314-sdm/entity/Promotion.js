@@ -12,7 +12,21 @@
 // - createPromotion(promotion)
 // - getPromotions()
 
+// Entity: Promotion
+// One IDP promoted (featured) by a platform manager between two dates.
+// Used by: Promote IDP (saving), Home feed (promoted IDPs shown first, marked "Featured")
+//
+// Database table: promotion
+//
+// Attributes:
+// - promotionID, idpID, startDate ("YYYY-MM-DD"), endDate ("YYYY-MM-DD"), createdBy (platform manager ID)
+//
+// Methods:
+// - createPromotion(promotion)        saves it with the next promotionID
+// - getPromotions()                   every promotion
+// - getActivePromotions(dateKey)      promotions running on that day (first and last day included)
 import { readTable, writeTable } from "./LocalStore";
+import { toDateKey } from "@/lib/dates";
 
 export class Promotion {
     promotionID;
@@ -40,4 +54,10 @@ export class Promotion {
         return readTable("promotion").map((r) => new Promotion(r));
     }
 
+    // Promotions running on the given day ("YYYY-MM-DD", default today), oldest promotion first.
+    static async getActivePromotions(dateKey = toDateKey(new Date())) {
+        return readTable("promotion")
+            .filter((p) => p.startDate.slice(0, 10) <= dateKey && dateKey <= p.endDate.slice(0, 10))
+            .map((r) => new Promotion(r));
+    }
 }

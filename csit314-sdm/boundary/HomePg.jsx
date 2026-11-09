@@ -92,6 +92,11 @@ export default function HomePg() {
                     e.currentTarget.src = PHOTO_NOT_FOUND;
                   }}
                 />
+                {card.featured && (
+                  <span className="mx-4 mt-3 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                    Featured
+                  </span>
+                )}
                 <p className="px-4 pt-3 font-medium">{card.title}</p>
               </Link>
               <p className="px-4 pb-4 pt-1 text-sm text-zinc-500">
