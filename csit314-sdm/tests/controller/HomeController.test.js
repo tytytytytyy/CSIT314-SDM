@@ -65,15 +65,15 @@ describe("getIDPFeed", () => {
   });
 });
 
-describe("getIDPFeed with promoted IDPs", () => {
+describe("featured IDPs", () => {
   const today = toDateKey(new Date());
   const promote = (rows) => writeTable("promotion", rows.map((r, i) => ({ promotionID: i + 1, createdBy: "M12345", ...r })));
 
-  it("shows IDPs with a promotion running today first, marked as featured", async () => {
+  it("lists the IDPs with a promotion running today, as cards", async () => {
     promote([{ idpID: 3, startDate: today, endDate: "2099-12-31" }]);
-    const page = await HomeController.getIDPFeed(0, 10);
-    expect(idpIDs(page)).toEqual([3, 1, 2]);
-    expect(page.cards.map((c) => c.featured)).toEqual([true, false, false]);
+    const featured = await HomeController.getFeaturedIDPs();
+    expect(featured.map((c) => c.idpID)).toEqual([3]);
+    expect(featured[0]).toMatchObject({ title: expect.any(String), designerID: "D2", companyName: "Studio Linea" });
   });
 
   it("ignores promotions that have finished or not started, and deleted IDPs", async () => {
@@ -82,16 +82,17 @@ describe("getIDPFeed with promoted IDPs", () => {
       { idpID: 2, startDate: "2099-01-01", endDate: "2099-01-31" },
       { idpID: 4, startDate: today, endDate: "2099-12-31" },
     ]);
-    const page = await HomeController.getIDPFeed(0, 10);
-    expect(idpIDs(page)).toEqual([1, 2, 3]);
-    expect(page.cards.every((c) => !c.featured)).toBe(true);
+    expect(await HomeController.getFeaturedIDPs()).toEqual([]);
+    expect(idpIDs(await HomeController.getIDPFeed(0, 10))).toEqual([1, 2, 3]);
   });
 
-  it("keeps paging correct with featured IDPs first", async () => {
-    promote([{ idpID: 3, startDate: today, endDate: "2099-12-31" }]);
-    expect(idpIDs(await HomeController.getIDPFeed(0, 2))).toEqual([3, 1]);
-    const page2 = await HomeController.getIDPFeed(2, 2);
-    expect(idpIDs(page2)).toEqual([2]);
+  it("leaves featured IDPs out of the main feed, so no card shows twice", async () => {
+    promote([{ idpID: 1, startDate: today, endDate: "2099-12-31" }]);
+    const page = await HomeController.getIDPFeed(0, 1);
+    expect(idpIDs(page)).toEqual([2]);
+    expect(page.hasMore).toBe(true);
+    const page2 = await HomeController.getIDPFeed(1, 1);
+    expect(idpIDs(page2)).toEqual([3]);
     expect(page2.hasMore).toBe(false);
   });
 });
