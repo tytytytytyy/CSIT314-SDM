@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { PromoteIDPController } from "@/controller/PromoteIDPController";
+import BackButton from "@/boundary/BackButton";
 
 const MAX_VISIBLE_IDPS = 50;
 
@@ -55,6 +56,7 @@ export default function PromoteIDPListPg() {
 
   return (
     <main className="mx-auto w-full max-w-5xl space-y-6 p-8">
+      <BackButton fallbackHref="/platform-manager/report" className="" />
       <div>
         <h1 className="text-3xl font-semibold">Promote an IDP</h1>
         <p className="mt-1 text-sm text-zinc-500">
@@ -79,7 +81,7 @@ export default function PromoteIDPListPg() {
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              className="rounded border px-3 py-2"
+              className="input"
             />
           </label>
           {matchingIDPs.length === 0 ? (
@@ -95,7 +97,7 @@ export default function PromoteIDPListPg() {
                 {visibleIDPs.map((idp) => (
                   <li
                     key={idp.idpID}
-                    className="flex items-center justify-between gap-4 rounded border p-4"
+                    className="card card-hover flex items-center justify-between gap-4 p-4"
                   >
                     <div className="min-w-0">
                       <h2 className="truncate font-medium">{idp.title}</h2>
@@ -109,7 +111,7 @@ export default function PromoteIDPListPg() {
                     </div>
                     <Link
                       href={`/platform-manager/promote-idp/${idp.idpID}`}
-                      className="shrink-0 rounded bg-zinc-900 px-3 py-2 text-sm text-white"
+                      className="btn btn-sm btn-primary shrink-0"
                     >
                       Select
                     </Link>

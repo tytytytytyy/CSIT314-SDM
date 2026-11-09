@@ -22,6 +22,7 @@ import { useEffect, useState } from "react";
 import { IDViewIDPDetailsController } from "@/controller/IDViewIDPDetailsController";
 import { SessionController } from "@/controller/SessionController";
 import StatusBadge from "@/boundary/StatusBadge";
+import { PHOTO_NOT_FOUND } from "@/boundary/PhotoFallback";
 
 export default function IDMyIDPListPg() {
   const [view, setView] = useState({ kind: "loading" });
@@ -44,10 +45,7 @@ export default function IDMyIDPListPg() {
     <main className="mx-auto w-full max-w-4xl p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl font-semibold">My Projects</h1>
-        <Link
-          href="/designer/idp/create"
-          className="rounded bg-zinc-900 px-4 py-2 text-white"
-        >
+        <Link href="/designer/idp/create" className="btn btn-primary">
           + Create IDP
         </Link>
       </div>
@@ -63,17 +61,20 @@ export default function IDMyIDPListPg() {
           </p>
           <ul className="mt-6 grid gap-4 sm:grid-cols-2">
             {view.myIDPs.map((item) => (
-              <li key={item.idpID} className="overflow-hidden rounded border">
+              <li key={item.idpID} className="card card-hover overflow-hidden">
                 <Link href={`/designer/idp/${item.idpID}`}>
-                  {item.mainPhotoURL && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={item.mainPhotoURL}
-                      alt={item.title}
-                      className="aspect-[8/5] w-full object-cover"
-                    />
-                  )}
-                  <div className="p-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={item.mainPhotoURL ?? PHOTO_NOT_FOUND}
+                    alt={item.title}
+                    loading="lazy"
+                    className="photo"
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = PHOTO_NOT_FOUND;
+                    }}
+                  />
+                  <div className="p-4">
                     <div className="flex items-start justify-between gap-2">
                       <p className="font-medium">{item.title}</p>
                       <StatusBadge status={item.status} />

@@ -96,29 +96,29 @@ export default function VerifyIDAccountsPg() {
     <p>Review company information before allowing a firm to publish IDPs.</p>
     {error && <p role="alert" className="rounded border border-red-400 p-4 text-red-700">{error}</p>}
     {message && <p role="status" className="rounded border border-green-500 p-4 text-green-800">{message}</p>}
-    {!admin && session !== undefined && <Link href="/login" className="inline-block rounded border px-4 py-2">Log in as User Admin</Link>}
+    {!admin && session !== undefined && <Link href="/login" className="btn btn-primary">Log in as User Admin</Link>}
     {admin && session?.profileID === "admin" && session.accountID === admin && <div className="grid gap-6 md:grid-cols-2">
       <section className="space-y-3"><h2 className="text-xl font-semibold">Interior designer accounts</h2>
         <div className="flex flex-wrap gap-2" role="group" aria-label="Filter accounts by status">
           {["pending", "active", "rejected", "all"].map(status => <button key={status} disabled={busy} aria-pressed={statusFilter === status}
-            className={`rounded border px-3 py-2 capitalize ${statusFilter === status ? "bg-zinc-900 text-white" : ""}`}
+            className="btn btn-sm capitalize"
             onClick={() => { setStatusFilter(status); setSelected(null); setRejecting(false); setReason(""); }}>
             {status === "all" ? "All" : status[0].toUpperCase() + status.slice(1)} ({accounts.filter(row => status === "all" || row.account.status === status).length})
           </button>)}
         </div>
         {visibleAccounts.length === 0 && <p>No {statusFilter === "all" ? "designer" : statusFilter} accounts.</p>}
-        {visibleAccounts.map(({account, company, verification}) => <button key={account.accountID} disabled={busy} onClick={() => select(account.accountID)} className="block w-full rounded border p-4 text-left hover:bg-zinc-100" aria-pressed={selected?.account.accountID === account.accountID}>
+        {visibleAccounts.map(({account, company, verification}) => <button key={account.accountID} disabled={busy} onClick={() => select(account.accountID)} className={`card card-hover block w-full p-4 text-left ${selected?.account.accountID === account.accountID ? "border-indigo-500 ring-2 ring-indigo-500/30" : ""}`} aria-pressed={selected?.account.accountID === account.accountID}>
           <strong>{company?.companyName ?? account.accountID}</strong><span className="block">{account.email}</span><span className="block capitalize">Status: {account.status}</span><span className="block text-sm">Submitted: {verification?.submittedAt ? new Date(verification.submittedAt).toLocaleString() : "Not recorded"}</span>
         </button>)}
       </section>
-      <section className="space-y-4 rounded border p-5"><h2 className="text-xl font-semibold">Account details</h2>
+      <section className="card space-y-4 self-start p-5"><h2 className="text-xl font-semibold">Account details</h2>
         {!selected ? <p>Select an account to view its details.</p> : <>
           <dl className="space-y-3">{Object.entries({"Account ID":selected.account.accountID, "Email":selected.account.email, "Account status":selected.account.status, "Company":selected.company?.companyName,"Registration number":selected.company?.registrationNumber,"Description":selected.company?.description,"Location":selected.company?.location,"Phone":selected.company?.phone,"Website":selected.company?.website,"Verification status":selected.verification?.status,"Reviewed by":selected.verification?.reviewedBy,"Reviewed at":selected.verification?.reviewedAt ? new Date(selected.verification.reviewedAt).toLocaleString() : null,"Rejection reason":selected.verification?.rejectReason}).map(([label,value]) => <div key={label}><dt className="font-semibold">{label}</dt><dd className="break-words">{value || "Not supplied"}</dd></div>)}</dl>
           {selected.account.status === "pending" && selected.verification?.status === "pending" ? <>
-          <div className="flex gap-3"><button disabled={busy} onClick={() => decide(false)} className="rounded bg-green-700 px-4 py-2 text-white">Approve account</button><button disabled={busy} onClick={() => setRejecting(true)} className="rounded border px-4 py-2">Reject account</button></div>
+          <div className="flex gap-3"><button disabled={busy} onClick={() => decide(false)} className="btn btn-success">Approve account</button><button disabled={busy} onClick={() => setRejecting(true)} className="btn btn-danger-outline">Reject account</button></div>
           {rejecting && <form onSubmit={e => { e.preventDefault(); void decide(true); }} className="space-y-3">
-            <label htmlFor="rejection-reason" className="block">Rejection reason (required)</label><textarea id="rejection-reason" value={reason} onChange={e => setReason(e.target.value)} className="w-full rounded border p-2" rows={4} disabled={busy}/>
-            <button disabled={busy} className="rounded bg-red-700 px-4 py-2 text-white">Confirm rejection</button><button type="button" disabled={busy} onClick={() => setRejecting(false)} className="ml-4">Cancel</button>
+            <label htmlFor="rejection-reason" className="block">Rejection reason (required)</label><textarea id="rejection-reason" value={reason} onChange={e => setReason(e.target.value)} className="input w-full" rows={4} disabled={busy}/>
+            <div className="flex gap-3"><button disabled={busy} className="btn btn-danger">Confirm rejection</button><button type="button" disabled={busy} onClick={() => setRejecting(false)} className="btn">Cancel</button></div>
           </form>}
           </> : <p className="text-sm text-zinc-500">This account is read-only. Only pending accounts can be approved or rejected.</p>}
         </>}

@@ -12,6 +12,7 @@
 // Methods:
 // - isLiked(customerID, idpID)                          has this customer already liked it?
 // - addLike(customerID, idpID)                          true once the like is saved
+// - removeLike(customerID, idpID)                       true if a like was removed
 // - getLikesByCustomer(customerID)                      newest first
 // - countLikes(idpID, startDate, endDate)
 // - getLikesByIDPs(idpIDs, startDate, endDate)          dashboard (raw events; the controller groups by day)
@@ -45,6 +46,17 @@ export class IDPLike {
       likedAt: new Date().toISOString(),
     };
     writeTable("idp_like", [...rows, created]);
+    return true;
+  }
+
+  // Removes the customer's like on the IDP. true if a like was removed, false if there was none.
+  static async removeLike(customerID, idpID) {
+    const rows = readTable("idp_like");
+    const kept = rows.filter(
+      (r) => !(r.customerID === customerID && r.idpID === idpID),
+    );
+    if (kept.length === rows.length) return false;
+    writeTable("idp_like", kept);
     return true;
   }
 
