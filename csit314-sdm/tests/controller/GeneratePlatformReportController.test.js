@@ -1,10 +1,28 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GeneratePlatformReportController } from "@/controller/GeneratePlatformReportController";
 import { IDP } from "@/entity/IDP";
 import { writeTable } from "@/entity/LocalStore";
 
 beforeEach(() => {
   window.localStorage.clear();
+});
+
+describe("validateReportRequest", () => {
+  afterEach(() => vi.useRealTimers());
+
+  it("accepts today's date early in the morning (before 8 am in Singapore)", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 10, 10, 1, 30)); // 10 Nov 2026, 1:30 am local time
+    expect(GeneratePlatformReportController.validateReportRequest("daily", "2026-11-10")).toBeNull();
+  });
+
+  it("refuses a date after today", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 10, 10, 23, 30)); // 10 Nov 2026, 11:30 pm local time
+    expect(GeneratePlatformReportController.validateReportRequest("daily", "2026-11-11")).toBe(
+      "Reference date cannot be in the future",
+    );
+  });
 });
 
 describe("generateReport", () => {
