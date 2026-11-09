@@ -270,9 +270,21 @@ export function generateDummyData(today = new Date()) {
     user_account.push({ accountID: `C${c}`, email: `customer${c}@example.com`, profileID: "customer", status: "active", createdAt: randomTimeInLast(365) });
   }
 
+  // Simulated ACRA register: every generated company is registered (live) under its own name,
+  // a month before its account was created. No random numbers, so the rest of the data is unchanged.
+  const acra_registry = company_information.map((company) => {
+    const account = user_account.find((a) => a.accountID === company.designerID);
+    return {
+      uen: company.registrationNumber,
+      entityName: `${company.companyName.toUpperCase()} PTE. LTD.`,
+      status: "live",
+      registeredAt: new Date(new Date(account.createdAt).getTime() - 30 * 86_400_000).toISOString().slice(0, 10),
+    };
+  });
+
   return {
     idp, idp_photo, idp_view, idp_like,
-    user_account, designer_verification, company_information,
+    user_account, designer_verification, company_information, acra_registry,
     lastIDPID: nextIDP - 1,
   };
 }

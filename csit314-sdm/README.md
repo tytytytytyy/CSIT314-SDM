@@ -35,3 +35,6 @@ csit314-sdm/
 ## Data
 
 `entity/LocalStore.js` keeps one table per entity (`idp`, `idp_photo`, `idp_view`, `idp_like`, ...) in the browser's localStorage. On the first visit it fills them with the hand-made rows plus the rows from `entity/DummyData.js` (fixed seed, so everyone gets the same data). Changing `KEY_PREFIX` in `LocalStore.js` makes every browser reload fresh data.
+
+`acra_registry` is a **simulated** copy of ACRA's business register (shaped like ACRA's open data on data.gov.sg, not real data). Verify ID Accounts uses it for the automatic ACRA check. The hand-made pending firms D101 to D103 each fail the check in a different way (name mismatch, UEN not found, struck off); D4 passes.
+
