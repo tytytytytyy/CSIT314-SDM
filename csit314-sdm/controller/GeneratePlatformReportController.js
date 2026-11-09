@@ -2,14 +2,13 @@
 // Feature: Generate Platform Report (Platform Management)
 //
 // What goes here:
-// - Date range calculation for the chosen period, plus the previous period of the same length.
-// - Aggregation across entities for both periods.
-// - Comparison with the previous period.
+// - Build five consecutive date ranges ending with the selected period.
+// - Aggregate platform metrics for each range.
 //
 // Constants:
 // - REPORT_PERIODS = daily | weekly | monthly
 //
-// Report metrics (each for the current and previous period):
+// Report metrics (for each of the five periods):
 // - new customer accounts, new interior designer accounts   -> UserAccount.countNewAccounts(...)
 // - designers verified                                      -> DesignerVerification.countVerified(...)
 // - new IDPs                                                -> IDP.countIDPs(...)
@@ -20,10 +19,9 @@
 // - validateReportRequest(period, referenceDate)   valid period, date not in the future
 // - calculateDateRange(period, referenceDate)       returns { startDate, endDate }
 // - calculatePreviousRange(period, startDate)       the period just before
-// - calculateChange(current, previous)              % change; handle previous = 0
 // - generateReport(period, referenceDate)           runs the above and returns the report
 //
-// Entities used: UserAccount, DesignerVerification, IDP, IDPView, IDPLike, Promotion
+// Entities used: UserAccount, DesignerVerification, IDP, IDPView, IDPLike
 //
 // Attributes: none
 
@@ -112,13 +110,6 @@ export class GeneratePlatformReportController {
         };
     }
 
-    static calculateChange(current, previous) {
-        if (previous === 0)
-            return current === 0 ? 0 : null;
-
-        return ((current - previous) / previous) * 100;
-    }
-
     static async getPeriodMetrics(range) {
         const [customerAccounts, designerAccounts, verifiedDesigners, idps, views, likes] =
             await Promise.all([
@@ -164,55 +155,11 @@ export class GeneratePlatformReportController {
                 metrics: await this.getPeriodMetrics(range)
             })),
         );
-        const [currentPeriod, previousPeriod] = newestFirstPeriods;
-        const currentRange = currentPeriod.range;
-        const previousRange = previousPeriod.range;
-        const currentMetrics = currentPeriod.metrics;
-        const previousMetrics = previousPeriod.metrics;
-
         return {
             status: "ok",
-            currentRange,
-            previousRange,
             periods: [...newestFirstPeriods]
                 .reverse()
                 .map(({ range, metrics }) => ({ range, ...metrics })),
-
-            customerAccounts: {
-                current: currentMetrics.customerAccounts,
-                previous: previousMetrics.customerAccounts,
-                change: this.calculateChange(currentMetrics.customerAccounts, previousMetrics.customerAccounts)
-            },
-
-            designerAccounts: {
-                current: currentMetrics.designerAccounts,
-                previous: previousMetrics.designerAccounts,
-                change: this.calculateChange(currentMetrics.designerAccounts, previousMetrics.designerAccounts)
-            },
-
-            verifiedDesigners: {
-                current: currentMetrics.verifiedDesigners,
-                previous: previousMetrics.verifiedDesigners,
-                change: this.calculateChange(currentMetrics.verifiedDesigners, previousMetrics.verifiedDesigners)
-            },
-
-            idps: {
-                current: currentMetrics.idps,
-                previous: previousMetrics.idps,
-                change: this.calculateChange(currentMetrics.idps, previousMetrics.idps)
-            },
-
-            views: {
-                current: currentMetrics.views,
-                previous: previousMetrics.views,
-                change: this.calculateChange(currentMetrics.views, previousMetrics.views)
-            },
-
-            likes: {
-                current: currentMetrics.likes,
-                previous: previousMetrics.likes,
-                change: this.calculateChange(currentMetrics.likes, previousMetrics.likes)
-            }
         };
     }
 }

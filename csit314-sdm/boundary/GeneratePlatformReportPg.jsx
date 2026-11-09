@@ -8,14 +8,10 @@
 // What goes here:
 // - Period selector (daily / weekly / monthly) and a reference date.
 // - "Generate" button that calls GeneratePlatformReportController.
-// - Report display: each metric with its current value, previous period value,
-//   and the change (up / down %).
+// - Report display: six metrics for five consecutive periods in a table and charts.
 //
 // Methods:
-// - displayReportForm()
-// - submitReportRequest(period, referenceDate)
-// - displayReport(report)
-// - displayErrorPg(message)          e.g. "Date cannot be in the future"
+// - submitReportRequest(event)        calls GeneratePlatformReportController.generateReport(...)
 //
 // Attributes: none
 
