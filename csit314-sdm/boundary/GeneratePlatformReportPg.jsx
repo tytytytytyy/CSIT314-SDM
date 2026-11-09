@@ -125,7 +125,7 @@ export default function GeneratePlatformReportPg() {
           <select
             value={period}
             onChange={(event) => setPeriod(event.target.value)}
-            className="rounded border px-3 py-2"
+            className="input"
           >
             {GeneratePlatformReportController.REPORT_PERIODS.map((option) => (
               <option key={option} value={option}>
@@ -141,13 +141,13 @@ export default function GeneratePlatformReportPg() {
             required
             value={referenceDate}
             onChange={(event) => setReferenceDate(event.target.value)}
-            className="rounded border px-3 py-2"
+            className="input"
           />
         </label>
         <button
           type="submit"
           disabled={view.kind === "loading"}
-          className="rounded bg-zinc-900 px-5 py-2 text-white disabled:opacity-50"
+          className="btn btn-primary"
         >
           {view.kind === "loading" ? "Generating..." : "Generate report"}
         </button>
@@ -228,7 +228,7 @@ export default function GeneratePlatformReportPg() {
                   .join("; ")}`;
 
                 return (
-                  <figure key={key} className="min-w-0 rounded border p-4">
+                  <figure key={key} className="card min-w-0 p-4">
                     <figcaption className="font-semibold">{label}</figcaption>
                     <svg
                       role="img"
