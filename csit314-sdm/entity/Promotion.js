@@ -1,7 +1,7 @@
 // Entity: Promotion
 // A period during which an IDP is promoted (shown first to customers).
 // Active = today is between startDate and endDate, so promotions expire automatically.
-// Used by: Promote IDP, IDP search / browse ordering, Generate Platform Report
+// Used by: Promote IDP, IDP search / browse ordering
 //
 // Database table: promotion
 //
@@ -10,12 +10,8 @@
 //
 // Methods:
 // - createPromotion(promotion)
-// - countActivePromotions() - not needed anymore since need check active per day
-// - getActivePromotions() - change to getPromotions();(since active promotions changes per day)
-// - countPromotions(startDate, endDate)                 platform report
 
 import { readTable, writeTable } from "./LocalStore";
-import { isWithinDateRange } from "@/lib/dates";
 
 export class Promotion {
     promotionID;
@@ -49,10 +45,4 @@ export class Promotion {
         return readTable("promotion").map((r) => new Promotion(r));
     }
 
-    static async countPromotions(startDate, endDate) {
-        return readTable("promotion").filter((promotion) =>
-            isWithinDateRange(promotion.createdAt, startDate, endDate),
-        ).length;
-    }
-    
 }

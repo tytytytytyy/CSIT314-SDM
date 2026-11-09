@@ -37,7 +37,6 @@ describe("generateReport", () => {
     expect(report.idps.current).toBe(1);
     expect(report.views.current).toBe(1);
     expect(report.likes.current).toBe(1);
-    expect(report).not.toHaveProperty("promotions");
     expect(report.periods).toHaveLength(5);
     expect(report.periods.map(({ range }) => range.startDate)).toEqual([
       new Date("2026-11-01"),
