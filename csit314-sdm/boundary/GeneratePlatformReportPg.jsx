@@ -5,128 +5,91 @@
 //
 // Route: /platform-manager/report   (app/platform-manager/report/page.jsx renders this)
 //
-// What goes here:
-// - Period selector (daily / weekly / monthly) and a reference date.
-// - "Generate" button that calls GeneratePlatformReportController.
-// - Report display: six metrics for five consecutive periods in a table and charts.
+// What goes here (same look as the designer's Performance Dashboard):
+// - Period selector (daily / weekly / monthly) and a reference date, with a "Generate report" button.
+// - Opens with this week's report already shown.
+// - Summary tiles: each metric for the current period, and how it changed from the period before.
+// - Table of six metrics for five consecutive periods, and a small chart per metric.
 //
 // Methods:
-// - submitReportRequest(event)        calls GeneratePlatformReportController.generateReport(...)
+// - submitReportRequest(period, referenceDate)   calls GeneratePlatformReportController.generateReport(...)
+// - displayReport(report)
+// - displayErrorMsg(message)
 //
 // Attributes: none
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { GeneratePlatformReportController } from "@/controller/GeneratePlatformReportController";
+import { daysAgo } from "@/lib/dates";
 
 const REPORT_METRICS = [
   ["customerAccounts", "New customer accounts"],
-  ["designerAccounts", "New interior designer accounts"],
-  ["verifiedDesigners", "Verified designers"],
+  ["designerAccounts", "New designer accounts"],
+  ["verifiedDesigners", "Designers verified"],
   ["idps", "New IDPs"],
   ["views", "IDP views"],
   ["likes", "IDP likes"],
 ];
-const PERIOD_COLORS = ["#d4d4d8", "#a1a1aa", "#71717a", "#3f3f46", "#2563eb"];
 
-function getLocalDateValue(date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function formatDate(date) {
-  const value = new Date(date);
-  const day = String(value.getDate()).padStart(2, "0");
-  const month = String(value.getMonth() + 1).padStart(2, "0");
-  const year = value.getFullYear();
-  return `${day}/${month}/${year}`;
-}
-
-function formatTableDateRange(range, period) {
-  if (period === "daily") return formatDate(range.startDate);
-  if (period === "monthly") return formatDate(range.startDate).slice(3);
-  const start = formatDate(range.startDate);
-  const end = formatDate(range.endDate);
-  return start === end ? start : `${start} – ${end}`;
-}
-
-function formatChartDateRange(range, period) {
-  const start = new Date(range.startDate);
-  const end = new Date(range.endDate);
-  const dayMonth = (date) =>
-    `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}`;
-  if (period === "daily") return dayMonth(start);
-  if (period === "monthly") {
-    return `${String(start.getMonth() + 1).padStart(2, "0")}/${start.getFullYear()}`;
-  }
-  return `${dayMonth(start)}–${dayMonth(end)}`;
-}
-
-function getChartScale(values) {
-  const maxValue = Math.max(0, ...values);
-  const rawStep = Math.max(1, maxValue / 4);
-  const magnitude = 10 ** Math.floor(Math.log10(rawStep));
-  const normalizedStep = rawStep / magnitude;
-  const stepFactor =
-    normalizedStep <= 1 ? 1 : normalizedStep <= 2 ? 2 : normalizedStep <= 5 ? 5 : 10;
-  const step = stepFactor * magnitude;
-  const max = maxValue === 0 ? step * 4 : Math.ceil(maxValue / step) * step;
-  return { max, step };
-}
+const PERIOD_UNITS = { daily: "day", weekly: "week", monthly: "month" };
 
 export default function GeneratePlatformReportPg() {
   const [period, setPeriod] = useState("weekly");
-  const [referenceDate, setReferenceDate] = useState(() => getLocalDateValue());
-  const [view, setView] = useState({ kind: "empty" });
+  const [referenceDate, setReferenceDate] = useState("");
+  const [view, setView] = useState({ kind: "loading" });
+  const [message, setMessage] = useState(null);
+  const [busy, setBusy] = useState(false);
 
-  const submitReportRequest = async (event) => {
-    event.preventDefault();
-    setView({ kind: "loading" });
+  const displayReport = (report) => {
+    setMessage(null);
+    setView({ kind: "report", report });
+  };
+  const displayErrorMsg = (text) => setMessage(text);
 
+  const submitReportRequest = async (chosenPeriod, chosenDate) => {
+    setBusy(true);
     try {
-      const report = await GeneratePlatformReportController.generateReport(
-        period,
-        referenceDate,
-      );
-      if (report.status === "ok") {
-        setView({ kind: "report", report });
-      } else {
-        setView({ kind: "error", message: report.message });
-      }
-    } catch (error) {
-      setView({
-        kind: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Unable to generate the report. Please try again.",
-      });
+      const report = await GeneratePlatformReportController.generateReport(chosenPeriod, chosenDate);
+      if (report.status === "ok") displayReport(report);
+      else displayErrorMsg(report.message);
+    } catch {
+      displayErrorMsg("Unable to generate the report. Please try again.");
+    } finally {
+      setBusy(false);
     }
   };
 
+  // Platform manager opens "Generate Report" -> show this week's report straight away.
+  useEffect(() => {
+    const load = async () => {
+      const today = daysAgo(0);
+      setReferenceDate(today);
+      await submitReportRequest("weekly", today);
+      setView((current) => (current.kind === "loading" ? { kind: "empty" } : current));
+    };
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <main className="mx-auto w-full max-w-5xl space-y-6 p-8">
-      <div>
-        <h1 className="text-3xl font-semibold">Generate Platform Report</h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          Compare platform activity with the previous four periods of the same length.
-        </p>
-      </div>
+    <main className="viz-root mx-auto w-full max-w-5xl p-8">
+      <h1 className="text-3xl font-semibold">Generate Platform Report</h1>
+      <p className="mt-1 text-sm text-zinc-500">
+        How the platform is doing, compared with the four periods before.
+      </p>
 
       <form
-        className="flex flex-wrap items-end gap-3"
-        onSubmit={submitReportRequest}
+        className="mt-6 flex flex-wrap items-end gap-3"
+        onSubmit={(event) => {
+          event.preventDefault();
+          submitReportRequest(period, referenceDate);
+        }}
       >
         <label className="flex flex-col gap-1 text-sm font-medium">
           Period
-          <select
-            value={period}
-            onChange={(event) => setPeriod(event.target.value)}
-            className="input"
-          >
+          <select value={period} onChange={(e) => setPeriod(e.target.value)} className="input">
             {GeneratePlatformReportController.REPORT_PERIODS.map((option) => (
               <option key={option} value={option}>
                 {option[0].toUpperCase() + option.slice(1)}
@@ -139,197 +102,218 @@ export default function GeneratePlatformReportPg() {
           <input
             type="date"
             required
+            max={daysAgo(0)}
             value={referenceDate}
-            onChange={(event) => setReferenceDate(event.target.value)}
+            onChange={(e) => setReferenceDate(e.target.value)}
             className="input"
           />
         </label>
-        <button
-          type="submit"
-          disabled={view.kind === "loading"}
-          className="btn btn-primary"
-        >
-          {view.kind === "loading" ? "Generating..." : "Generate report"}
+        <button type="submit" disabled={busy} className="btn btn-primary">
+          {busy ? "Generating..." : "Generate report"}
         </button>
       </form>
 
-      {view.kind === "error" && (
-        <p
-          role="alert"
-          className="rounded border border-red-300 bg-red-50 p-3 text-sm text-red-800"
-        >
-          {view.message}
+      {message && (
+        <p role="alert" className="mt-4 rounded border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+          {message}
         </p>
       )}
-      {view.kind === "loading" && (
-        <p role="status" className="text-sm text-zinc-500">
-          Generating report...
-        </p>
-      )}
-      {view.kind === "report" && (
-        <section aria-label="Platform report" className="space-y-4">
-          <div className="overflow-x-auto rounded border">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="divide-x divide-zinc-200 border-b bg-zinc-50 text-zinc-600">
-                  <th scope="col" className="p-3 text-left font-medium">Metric</th>
-                  {view.report.periods.map((reportPeriod, index) => (
-                    <th
-                      key={String(reportPeriod.range.startDate)}
-                      scope="col"
-                      className={`min-w-28 p-3 text-center font-medium ${index === view.report.periods.length - 1 ? "text-blue-700" : ""}`}
-                    >
-                      {formatTableDateRange(reportPeriod.range, view.report.period)}
-                      {index === view.report.periods.length - 1 && (
-                        <span className="block text-xs">(current)</span>
-                      )}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {REPORT_METRICS.map(([key, label]) => {
-                  return (
-                    <tr key={key} className="divide-x divide-zinc-200 border-b last:border-0">
-                      <th scope="row" className="p-3 text-left font-medium">{label}</th>
-                      {view.report.periods.map((reportPeriod, index) => (
-                        <td
-                          key={String(reportPeriod.range.startDate)}
-                          className={`p-3 text-center tabular-nums ${index === view.report.periods.length - 1 ? "font-semibold text-blue-700" : ""}`}
-                        >
-                          {reportPeriod[key].toLocaleString()}
-                        </td>
-                      ))}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          <section aria-label="Five-period metric charts" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              {REPORT_METRICS.map(([key, label]) => {
-                const values = view.report.periods.map(
-                  (reportPeriod) => reportPeriod[key],
-                );
-                const { max, step } = getChartScale(values);
-                const plot = { left: 52, right: 12, top: 24, bottom: 188 };
-                const plotWidth = 440 - plot.left - plot.right;
-                const plotHeight = plot.bottom - plot.top;
-                const ticks = Array.from(
-                  { length: Math.round(max / step) + 1 },
-                  (_, index) => index * step,
-                );
-                const chartDescription = `${label} over five periods: ${view.report.periods
-                  .map(
-                    (reportPeriod) =>
-                      `${formatDate(reportPeriod.range.startDate)}: ${reportPeriod[key].toLocaleString()}`,
-                  )
-                  .join("; ")}`;
 
-                return (
-                  <figure key={key} className="card min-w-0 p-4">
-                    <figcaption className="font-semibold">{label}</figcaption>
-                    <svg
-                      role="img"
-                      aria-label={chartDescription}
-                      viewBox="0 0 440 250"
-                      className="mt-3 w-full"
-                    >
-                      {ticks.map((tick) => {
-                        const y =
-                          plot.bottom - (tick / max) * plotHeight;
-                        return (
-                          <g key={tick}>
-                            <line
-                              x1={plot.left}
-                              x2={440 - plot.right}
-                              y1={y}
-                              y2={y}
-                              stroke="#e4e4e7"
-                              strokeWidth="1"
-                            />
-                            <text
-                              x={plot.left - 7}
-                              y={y + 3}
-                              textAnchor="end"
-                              fontSize="10"
-                              fill="#71717a"
-                            >
-                              {tick.toLocaleString()}
-                            </text>
-                          </g>
-                        );
-                      })}
-                      <line
-                        x1={plot.left}
-                        x2={plot.left}
-                        y1={plot.top}
-                        y2={plot.bottom}
-                        stroke="#a1a1aa"
-                      />
-                      <line
-                        x1={plot.left}
-                        x2={440 - plot.right}
-                        y1={plot.bottom}
-                        y2={plot.bottom}
-                        stroke="#a1a1aa"
-                      />
-                      {view.report.periods.map((reportPeriod, index) => {
-                        const value = reportPeriod[key];
-                        const x =
-                          plot.left +
-                          ((index + 0.5) * plotWidth) /
-                            view.report.periods.length;
-                        const y =
-                          plot.bottom - (value / max) * plotHeight;
-
-                        return (
-                          <g key={String(reportPeriod.range.startDate)}>
-                            <rect
-                              x={x - 17}
-                              y={y}
-                              width="34"
-                              height={Math.max(0, plot.bottom - y)}
-                              fill={PERIOD_COLORS[index]}
-                              rx="2"
-                            />
-                            <text
-                              x={x}
-                              y={Math.max(plot.top - 2, y - 5)}
-                              textAnchor="middle"
-                              fontSize="9"
-                              fill="#3f3f46"
-                            >
-                              {value.toLocaleString()}
-                            </text>
-                            <text
-                              x={x}
-                              y={plot.bottom + 15}
-                              textAnchor="middle"
-                              fontSize="9"
-                              fontWeight={
-                                index === view.report.periods.length - 1
-                                  ? "600"
-                                  : "400"
-                              }
-                              fill="#52525b"
-                            >
-                              <title>{formatDate(reportPeriod.range.startDate)}</title>
-                              {formatChartDateRange(reportPeriod.range, view.report.period)}
-                            </text>
-                          </g>
-                        );
-                      })}
-                    </svg>
-                  </figure>
-                );
-              })}
-            </div>
-          </section>
-        </section>
-      )}
-
+      {view.kind === "loading" && <p className="mt-6">Loading...</p>}
+      {view.kind === "report" && <ReportBody report={view.report} />}
     </main>
   );
+}
+
+// ---------- Report content (UI only) ----------
+
+function ReportBody({ report }) {
+  const { periods, period } = report;
+  const current = periods.at(-1);
+  const previous = periods.at(-2);
+  const unit = PERIOD_UNITS[period];
+
+  return (
+    <>
+      <p className="mt-8 text-sm text-zinc-500">
+        This {unit}:{" "}
+        <span className="font-medium text-[var(--foreground)]">{periodLabel(current.range, period, true)}</span>
+      </p>
+      <section className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-3">
+        {REPORT_METRICS.map(([key, label]) => (
+          <StatTile
+            key={key}
+            label={label}
+            value={current[key]}
+            change={GeneratePlatformReportController.calculateChange(current[key], previous[key])}
+            unit={unit}
+          />
+        ))}
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-lg font-semibold">Last five {unit}s</h2>
+        <p className="text-sm text-zinc-500">Oldest on the left. The current {unit} is in bold.</p>
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b text-zinc-500">
+                <th className="py-2 pr-3 font-medium">Metric</th>
+                {periods.map((p, index) => (
+                  <th
+                    key={index}
+                    className={`whitespace-nowrap py-2 pr-3 text-right font-medium ${index === periods.length - 1 ? "text-[var(--foreground)]" : ""}`}
+                  >
+                    {periodLabel(p.range, period)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {REPORT_METRICS.map(([key, label]) => (
+                <tr key={key} className="border-b border-zinc-100 dark:border-zinc-800">
+                  <td className="py-2 pr-3">{label}</td>
+                  {periods.map((p, index) => (
+                    <td
+                      key={index}
+                      className={`py-2 pr-3 text-right tabular-nums ${index === periods.length - 1 ? "font-semibold" : ""}`}
+                    >
+                      {p[key].toLocaleString()}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-lg font-semibold">Trends</h2>
+        <div className="mt-3 grid gap-4 md:grid-cols-2">
+          {REPORT_METRICS.map(([key, label]) => (
+            <PeriodChart key={key} title={label} periods={periods} field={key} period={period} />
+          ))}
+        </div>
+      </section>
+    </>
+  );
+}
+
+function StatTile({ label, value, change, unit }) {
+  const arrow = change.direction === "up" ? "▲" : change.direction === "down" ? "▼" : "";
+  const colour =
+    change.direction === "up"
+      ? "text-emerald-700 dark:text-emerald-400"
+      : change.direction === "down"
+        ? "text-red-700 dark:text-red-400"
+        : "text-zinc-500";
+  const text =
+    change.direction === "same"
+      ? `Same as last ${unit}`
+      : change.percent === null
+        ? `Up from 0 last ${unit}`
+        : `${change.percent}% vs last ${unit}`;
+
+  return (
+    <div className="card p-4">
+      <p className="text-sm text-zinc-500">{label}</p>
+      <p className="mt-1 text-2xl font-semibold tabular-nums">{value.toLocaleString()}</p>
+      <p className={`mt-1 text-xs ${colour}`}>
+        {arrow && <span aria-hidden="true">{arrow} </span>}
+        {text}
+      </p>
+    </div>
+  );
+}
+
+// One small column chart: five periods, the current one in full colour.
+function PeriodChart({ title, periods, field, period }) {
+  const W = 360, H = 170, LEFT = 32, BOTTOM = 24, TOP = 18;
+  const plotW = W - LEFT - 4;
+  const plotH = H - BOTTOM - TOP;
+  const max = niceMax(Math.max(0, ...periods.map((p) => p[field])));
+  const slot = plotW / periods.length;
+  const barW = Math.min(36, slot - 12);
+  const y = (value) => TOP + plotH - (value / max) * plotH;
+  const description = `${title}: ${periods.map((p) => `${periodLabel(p.range, period)} ${p[field]}`).join(", ")}`;
+
+  return (
+    <figure className="card p-4">
+      <figcaption className="text-sm font-medium">{title}</figcaption>
+      <svg viewBox={`0 0 ${W} ${H}`} className="mt-2 w-full" role="img" aria-label={description}>
+        {[0, max / 2, max].map((tick) => (
+          <g key={tick}>
+            <line x1={LEFT} x2={W} y1={y(tick)} y2={y(tick)} stroke="var(--grid)" strokeWidth="1" />
+            <text x={LEFT - 6} y={y(tick) + 4} textAnchor="end" fontSize="11" fill="var(--text-muted)">
+              {tick.toLocaleString()}
+            </text>
+          </g>
+        ))}
+        {periods.map((p, i) => {
+          const value = p[field];
+          const x = LEFT + i * slot + (slot - barW) / 2;
+          const top = y(value);
+          const isCurrent = i === periods.length - 1;
+          return (
+            <g key={i}>
+              {value > 0 && (
+                <path
+                  d={roundedTop(x, top, barW, y(0) - top)}
+                  fill="var(--series-views)"
+                  opacity={isCurrent ? 1 : 0.35}
+                />
+              )}
+              <text
+                x={x + barW / 2}
+                y={top - 5}
+                textAnchor="middle"
+                fontSize="11"
+                fontWeight={isCurrent ? 600 : 400}
+                fill="var(--text-muted)"
+              >
+                {value.toLocaleString()}
+              </text>
+              <text x={x + barW / 2} y={H - 6} textAnchor="middle" fontSize="11" fill="var(--text-muted)">
+                {axisLabel(p.range, period)}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    </figure>
+  );
+}
+
+// ---------- Formatting helpers ----------
+
+const dayMonth = (date) => new Date(date).toLocaleDateString("en-SG", { day: "numeric", month: "short" });
+const monthYear = (date) => new Date(date).toLocaleDateString("en-SG", { month: "short", year: "numeric" });
+
+// "10 Nov", "3 Nov – 9 Nov" or "Nov 2026"; withYear adds the year to day and week labels.
+function periodLabel(range, period, withYear = false) {
+  const year = withYear ? ` ${new Date(range.endDate).getFullYear()}` : "";
+  if (period === "monthly") return monthYear(range.startDate);
+  if (period === "daily") return `${dayMonth(range.startDate)}${year}`;
+  return `${dayMonth(range.startDate)} – ${dayMonth(range.endDate)}${year}`;
+}
+
+// Shorter labels under the chart columns: the day, the week's first day, or the month.
+function axisLabel(range, period) {
+  if (period === "monthly") return new Date(range.startDate).toLocaleDateString("en-SG", { month: "short" });
+  return dayMonth(range.startDate);
+}
+
+// Column with a 4px rounded top and a square bottom on the baseline (same as the dashboard).
+function roundedTop(x, top, width, height) {
+  const r = Math.min(4, width / 2, height);
+  return `M${x},${top + height} V${top + r} Q${x},${top} ${x + r},${top} H${x + width - r} Q${x + width},${top} ${x + width},${top + r} V${top + height} Z`;
+}
+
+// Rounds the top of the axis up to a tidy even number, never 0 (same as the dashboard).
+function niceMax(value) {
+  if (value <= 4) return 4;
+  const step = 10 ** Math.floor(Math.log10(value)) / 2;
+  const rounded = Math.ceil(value / step) * step;
+  return rounded % 2 === 0 ? rounded : rounded + 1;
 }

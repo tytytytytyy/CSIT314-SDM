@@ -20,6 +20,7 @@
 // - calculateDateRange(period, referenceDate)       returns { startDate, endDate }
 // - calculatePreviousRange(period, startDate)       the period just before
 // - generateReport(period, referenceDate)           runs the above and returns the report
+// - calculateChange(current, previous)              { direction: up | down | same, percent }
 //
 // Entities used: UserAccount, DesignerVerification, IDP, IDPView, IDPLike
 //
@@ -108,6 +109,15 @@ export class GeneratePlatformReportController {
             startDate: previousStart,
             endDate: previousEnd
         };
+    }
+
+    // How a metric moved from the previous period to this one, for the summary tiles.
+    // percent is a whole number, or null when the previous period was 0 (no fair percentage).
+    static calculateChange(current, previous) {
+        if (current === previous) return { direction: "same", percent: 0 };
+        const direction = current > previous ? "up" : "down";
+        if (previous === 0) return { direction, percent: null };
+        return { direction, percent: Math.round((Math.abs(current - previous) / previous) * 100) };
     }
 
     static async getPeriodMetrics(range) {

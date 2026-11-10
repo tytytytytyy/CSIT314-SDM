@@ -84,6 +84,28 @@ describe("getIDPs", () => {
     ]);
     expect((await PromoteIDPController.getIDPs()).map((idp) => idp.idpID)).toEqual([1, 2, 3]);
   });
+
+  it("gives each IDP its main photo and company name, for the cards", async () => {
+    const [first, , third] = await PromoteIDPController.getIDPs();
+    expect(first).toMatchObject({ idpID: 1, title: "Bright Scandinavian Living Room", companyName: "Nordic Nest Interiors", status: "completed" });
+    expect(first.mainPhotoURL).toBe("/demo-photos/scandinavian-living-room.jpg");
+    expect(third).toMatchObject({ idpID: 3, companyName: "Studio Linea" });
+  });
+});
+
+describe("getIDP", () => {
+  it("returns the IDP with its main photo and company name", async () => {
+    expect(await PromoteIDPController.getIDP(2)).toMatchObject({
+      idpID: 2,
+      title: "Industrial Loft Conversion",
+      companyName: "Nordic Nest Interiors",
+      mainPhotoURL: "/demo-photos/industrial-living-room.jpg",
+    });
+  });
+
+  it("returns null for an IDP that does not exist", async () => {
+    expect(await PromoteIDPController.getIDP(4)).toBeNull();
+  });
 });
 
 describe("promoteIDP", () => {

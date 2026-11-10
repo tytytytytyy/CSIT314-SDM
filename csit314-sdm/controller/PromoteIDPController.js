@@ -12,7 +12,7 @@
 // - the same IDP cannot have overlapping promotions             -> "dateOverlap"
 //
 // Methods:
-// - getIDPs(), getIDP(idpID)                                   -> IDP.listIDPs, IDP.getIDP
+// - getIDPs(), getIDP(idpID)    with main photo + company name -> IDP, IDPPhoto, CompanyInformation
 // - validatePromotion(idpID, startDate, endDate)               -> IDP.getIDP, Promotion.getPromotions
 // - promoteIDP(idpID, startDate, endDate, createdBy)           -> Promotion.createPromotion
 //
@@ -51,6 +51,8 @@
 import { IDP } from "@/entity/IDP";
 import { Promotion } from "@/entity/Promotion";
 import { InteriorDesignerAccount } from "@/entity/InteriorDesignerAccount";
+import { IDPPhoto } from "@/entity/IDPPhoto";
+import { CompanyInformation } from "@/entity/CompanyInformation";
 import { daysBetween, isValidDateKey, toDateKey } from "@/lib/dates";
 const MAX_ACTIVE_PROMOTIONS = 10;
 
@@ -60,17 +62,31 @@ const dayOf = (date) => String(date).slice(0, 10);
 
 export class PromoteIDPController {
     // IDPs that can be promoted: only those whose designer is active and verified.
+    // Each comes with its main photo and company name, for the cards.
     static async getIDPs() {
         const idps = await IDP.listIDPs(0, Number.MAX_SAFE_INTEGER);
-        const allowed = new Set();
+        const companyNames = new Map();
         for (const designerID of new Set(idps.map((idp) => idp.designerID))) {
-            if (await InteriorDesignerAccount.isActiveAndVerified(designerID)) allowed.add(designerID);
+            if (!(await InteriorDesignerAccount.isActiveAndVerified(designerID))) continue;
+            const company = await CompanyInformation.getCompanyInfo(designerID);
+            companyNames.set(designerID, company?.companyName ?? null);
         }
-        return idps.filter((idp) => allowed.has(idp.designerID));
+        const allowed = idps.filter((idp) => companyNames.has(idp.designerID));
+        const photos = await IDPPhoto.getMainPhotos(allowed.map((idp) => idp.idpID));
+        return allowed.map((idp) => ({
+            ...idp,
+            mainPhotoURL: photos.get(idp.idpID) ?? null,
+            companyName: companyNames.get(idp.designerID),
+        }));
     }
 
+    // The selected IDP with its main photo and company name; null if there is no such IDP.
     static async getIDP(idpID) {
-        return IDP.getIDP(idpID);
+        const idp = await IDP.getIDP(idpID);
+        if (!idp) return null;
+        const photos = await IDPPhoto.getPhotos(idpID);
+        const company = await CompanyInformation.getCompanyInfo(idp.designerID);
+        return { ...idp, mainPhotoURL: photos[0]?.photoURL ?? null, companyName: company?.companyName ?? null };
     }
 
     static async validatePromotion(idpID, startDate, endDate) {
