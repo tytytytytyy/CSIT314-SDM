@@ -1,4 +1,4 @@
-// Unit tests for UpdateIDPController (Interior Designer: Update IDP).
+// Unit tests for EditIDPController (Interior Designer: Edit IDP).
 // Uses the dummy data in entity/LocalStore.js:
 // - IDP 1 (D1, completed) has photos P1 (main) and P2
 // - IDP 2 (D1, ongoing) has photo P3
@@ -6,12 +6,12 @@
 // localStorage is cleared before each test, so every test starts from that same data.
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { UpdateIDPController } from "@/controller/UpdateIDPController";
+import { EditIDPController } from "@/controller/EditIDPController";
 import { IDP } from "@/entity/IDP";
 import { IDPPhoto } from "@/entity/IDPPhoto";
 import { readTable, writeTable } from "@/entity/LocalStore";
 
-const C = UpdateIDPController;
+const C = EditIDPController;
 
 function validInput(overrides = {}) {
   return {
@@ -43,26 +43,26 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("getIDPForUpdate", () => {
+describe("getIDPForEdit", () => {
   it("returns the IDP and photos to its owner", async () => {
-    const result = await C.getIDPForUpdate("D1", 2);
+    const result = await C.getIDPForEdit("D1", 2);
     expect(result.status).toBe("ok");
     expect(result.details?.idp.title).toBe("Industrial Loft Conversion");
     expect(result.details?.photos.map((p) => p.photoID)).toEqual(["P3"]);
   });
 
   it("blocks another designer", async () => {
-    expect(await C.getIDPForUpdate("D1", 3)).toEqual({ status: "notOwner" });
+    expect(await C.getIDPForEdit("D1", 3)).toEqual({ status: "notOwner" });
   });
 
   it("reports a deleted IDP as not found", async () => {
-    expect(await C.getIDPForUpdate("D1", 4)).toEqual({ status: "notFound" });
+    expect(await C.getIDPForEdit("D1", 4)).toEqual({ status: "notFound" });
   });
 });
 
-describe("getUpdateFormData", () => {
+describe("getEditFormData", () => {
   it("gives the choices for each dropdown", () => {
-    const data = C.getUpdateFormData();
+    const data = C.getEditFormData();
     expect(data.categories).toEqual(["Residential", "Commercial"]);
     expect(data.propertyTypesByCategory.Residential).toContain("HDB");
     expect(data.propertyTypesByCategory.Commercial).toContain("Office");
@@ -177,13 +177,13 @@ describe("validateIDP", () => {
   });
 });
 
-describe("updateIDP", () => {
+describe("editIDP", () => {
   it("keeps the IDP's creation date, even when every photo is replaced", async () => {
     // An older IDP created on 10 Jan, with one photo uploaded that day.
     writeTable("idp", [...readTable("idp"), { ...validInput({ status: "completed" }), idpID: 50, designerID: "D1", createdAt: "2026-01-10T08:00:00.000Z" }]);
     writeTable("idp_photo", [...readTable("idp_photo"), { photoID: "P50", idpID: 50, photoURL: "/demo-photos/industrial-kitchen.jpg", caption: "", sortOrder: 1, uploadedAt: "2026-01-10T08:01:00.000Z" }]);
 
-    const result = await C.updateIDP("D1", 50, validInput({ title: "Updated title" }), ["P50"], [newPhoto()]);
+    const result = await C.editIDP("D1", 50, validInput({ title: "Updated title" }), ["P50"], [newPhoto()]);
 
     expect(result.success).toBe(true);
     const idp = await IDP.getIDP(50);
@@ -192,7 +192,7 @@ describe("updateIDP", () => {
   });
 
   it("saves the changed details and status", async () => {
-    const result = await C.updateIDP(
+    const result = await C.editIDP(
       "D1",
       2,
       validInput({
@@ -217,7 +217,7 @@ describe("updateIDP", () => {
   });
 
   it("adds new photos after the existing ones, using the file name as caption", async () => {
-    await C.updateIDP(
+    await C.editIDP(
       "D1",
       2,
       validInput(),
@@ -237,7 +237,7 @@ describe("updateIDP", () => {
   });
 
   it("removes photos, and the next photo becomes the main photo", async () => {
-    await C.updateIDP(
+    await C.editIDP(
       "D1",
       1,
       validInput({ style: "Scandinavian", propertyType: "HDB" }),
@@ -249,7 +249,7 @@ describe("updateIDP", () => {
   });
 
   it("can replace the only photo in one save", async () => {
-    const result = await C.updateIDP(
+    const result = await C.editIDP(
       "D1",
       2,
       validInput(),
@@ -263,12 +263,12 @@ describe("updateIDP", () => {
   });
 
   it("ignores photo IDs that belong to another IDP", async () => {
-    await C.updateIDP("D1", 2, validInput(), ["P4"], []);
+    await C.editIDP("D1", 2, validInput(), ["P4"], []);
     expect((await IDPPhoto.getPhotos(3)).map((p) => p.photoID)).toEqual(["P4"]);
   });
 
   it("does not change another designer's IDP", async () => {
-    const result = await C.updateIDP(
+    const result = await C.editIDP(
       "D1",
       3,
       validInput({ title: "Hacked" }),
@@ -283,14 +283,14 @@ describe("updateIDP", () => {
   });
 
   it("reports a deleted IDP", async () => {
-    expect(await C.updateIDP("D1", 4, validInput(), [], [])).toEqual({
+    expect(await C.editIDP("D1", 4, validInput(), [], [])).toEqual({
       success: false,
       errors: ["IDP not found"],
     });
   });
 
   it("does not save anything when the input is invalid", async () => {
-    const result = await C.updateIDP(
+    const result = await C.editIDP(
       "D1",
       2,
       validInput({ title: "", status: "completed" }),
@@ -312,7 +312,7 @@ describe("updateIDP", () => {
       throw new DOMException("full", "QuotaExceededError");
     });
 
-    const result = await C.updateIDP(
+    const result = await C.editIDP(
       "D1",
       2,
       validInput({ status: "completed" }),

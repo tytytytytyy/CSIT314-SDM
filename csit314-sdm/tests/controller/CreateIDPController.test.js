@@ -40,7 +40,7 @@ afterEach(() => {
 });
 
 describe("getCreateFormData", () => {
-  it("gives the same dropdown choices as Update IDP", () => {
+  it("gives the same dropdown choices as Edit IDP", () => {
     const data = C.getCreateFormData();
     expect(data.categories).toEqual(["Residential", "Commercial"]);
     expect(data.statuses.map((s) => s.label)).toEqual([
@@ -69,7 +69,7 @@ describe("validateIDP", () => {
     );
   });
 
-  it("uses the same field rules as Update IDP", () => {
+  it("uses the same field rules as Edit IDP", () => {
     const errors = C.validateIDP(
       validInput({ title: "", propertyType: "Office", budget: 0 }),
       [photo()],
