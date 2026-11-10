@@ -152,7 +152,9 @@ export class UpdateIDPController {
           }),
         );
       }
+      // Start from the stored IDP so fields the form does not edit (e.g. createdAt) are kept.
       await IDP.updateIDP({
+        ...idp,
         idpID,
         designerID: idp.designerID,
         title: input.title.trim(),
