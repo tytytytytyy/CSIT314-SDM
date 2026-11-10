@@ -2,6 +2,7 @@
 // tests/setup.js switches the generator off for the other tests, so this file loads the real one.
 
 import { describe, it, expect, vi } from "vitest";
+import { readTable } from "@/entity/LocalStore";
 
 const { generateDummyData } = await vi.importActual("@/entity/DummyData");
 
@@ -83,6 +84,12 @@ describe("generateDummyData", () => {
     expect(data.lastIDPID).toBe(Math.max(...ids));
   });
 
+  it("records creation timestamps for generated IDPs", () => {
+    for (const idp of data.idp) {
+      expect(Number.isNaN(new Date(idp.createdAt).getTime())).toBe(false);
+    }
+  });
+
   it("gives every generated IDP 1 or 2 photos, the first as the main photo", () => {
     for (const idp of data.idp) {
       const photos = data.idp_photo.filter((p) => p.idpID === idp.idpID);
@@ -128,6 +135,54 @@ describe("generateDummyData", () => {
   it("gives the demo designer D1 activity on every one of their IDPs", () => {
     const d1IDs = allIDPs.filter((idp) => idp.designerID === "D1").map((idp) => idp.idpID);
     for (const id of d1IDs) expect(data.idp_view.some((v) => v.idpID === id)).toBe(true);
+  });
+
+  it("registers every generated company with ACRA under its own name and UEN (live)", () => {
+    expect(data.acra_registry).toHaveLength(95);
+    for (const company of data.company_information) {
+      const record = data.acra_registry.find((r) => r.uen === company.registrationNumber);
+      expect(record).toMatchObject({ entityName: `${company.companyName.toUpperCase()} PTE. LTD.`, status: "live" });
+    }
+  });
+
+  it("keeps dates in a sensible order, so reports by date make sense", () => {
+    // With the generator switched off (tests/setup.js), LocalStore returns only the hand-made rows.
+    const handMadeIDPs = readTable("idp");
+    const verifiedAt = {}, joinedAt = {}, createdAt = {};
+    for (const v of [...readTable("designer_verification"), ...data.designer_verification])
+      if (v.reviewedAt) verifiedAt[v.designerID] = v.reviewedAt;
+    for (const a of [...data.user_account, ...readTable("user_account")]) joinedAt[a.accountID] = a.createdAt;
+    for (const i of [...handMadeIDPs, ...data.idp]) createdAt[i.idpID] = i.createdAt;
+    const now = TODAY.toISOString();
+
+    for (const idp of data.idp) {
+      expect(idp.createdAt >= verifiedAt[idp.designerID], `IDP ${idp.idpID} before its designer was verified`).toBe(true);
+      expect(idp.createdAt <= now).toBe(true);
+    }
+    for (const photo of data.idp_photo) expect(photo.uploadedAt >= createdAt[photo.idpID]).toBe(true);
+    for (const v of data.idp_view) {
+      expect(v.viewedAt >= createdAt[v.idpID], `view ${v.viewID} before IDP ${v.idpID} existed`).toBe(true);
+      if (v.customerID) expect(v.viewedAt >= joinedAt[v.customerID], `view ${v.viewID} before ${v.customerID} joined`).toBe(true);
+    }
+    for (const l of data.idp_like) {
+      expect(l.likedAt >= createdAt[l.idpID], `like ${l.likeID} before IDP ${l.idpID} existed`).toBe(true);
+      expect(l.likedAt >= joinedAt[l.customerID], `like ${l.likeID} before ${l.customerID} joined`).toBe(true);
+    }
+  });
+
+  it("adds sample promotions: 3 running today, 1 finished and 1 upcoming", () => {
+    const today = TODAY.toISOString().slice(0, 10);
+    const ids = new Set(data.idp.map((i) => i.idpID).concat([1, 2, 3]));
+    expect(data.promotion).toHaveLength(5);
+    for (const p of data.promotion) {
+      expect(ids.has(p.idpID)).toBe(true);
+      expect(p.endDate > p.startDate).toBe(true);
+      expect(p.createdBy).toBe("M12345");
+    }
+    const running = data.promotion.filter((p) => p.startDate <= today && today <= p.endDate);
+    expect(running).toHaveLength(3);
+    expect(data.promotion.filter((p) => p.endDate < today)).toHaveLength(1);
+    expect(data.promotion.filter((p) => p.startDate > today)).toHaveLength(1);
   });
 
   it("makes the same data every time", () => {

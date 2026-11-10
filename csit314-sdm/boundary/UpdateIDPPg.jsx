@@ -33,6 +33,7 @@ import IDPFormFields, {
   preparePhoto,
   toIDPInput,
 } from "@/boundary/IDPFormFields";
+import BackButton from "@/boundary/BackButton";
 
 export default function UpdateIDPPg({ idpID }) {
   const router = useRouter();
@@ -101,7 +102,12 @@ export default function UpdateIDPPg({ idpID }) {
   if (view.kind === "loading" || (view.kind === "form" && !values))
     return <p className="p-8">Loading...</p>;
   if (view.kind === "error")
-    return <p className="p-8 text-red-600">{view.message}</p>;
+    return (
+      <main className="mx-auto w-full max-w-3xl p-8">
+        <BackButton fallbackHref="/designer/idp" />
+        <p className="text-red-600">{view.message}</p>
+      </main>
+    );
 
   const { details, formData } = view;
 
@@ -123,7 +129,8 @@ export default function UpdateIDPPg({ idpID }) {
 
   return (
     <main className="mx-auto w-full max-w-3xl p-8">
-      <p className="text-sm text-zinc-500">My IDP #{idpID}</p>
+      <BackButton fallbackHref={`/designer/idp/${idpID}`} />
+      <p className="text-sm text-zinc-500">My Project #{idpID}</p>
       <h1 className="text-3xl font-semibold">Edit IDP</h1>
 
       <ErrorList messages={errors} />
@@ -149,12 +156,12 @@ export default function UpdateIDPPg({ idpID }) {
             {details.photos.map((photo) => {
               const removed = removedPhotoIDs.includes(photo.photoID);
               return (
-                <li key={photo.photoID} className="rounded border p-2">
+                <li key={photo.photoID} className="card p-2">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={photo.photoURL}
                     alt={photo.caption}
-                    className={`aspect-[8/5] w-full rounded object-cover ${removed ? "opacity-30" : ""}`}
+                    className={`photo rounded-md ${removed ? "opacity-30" : ""}`}
                   />
                   <div className="mt-1 flex items-center justify-between gap-2 text-xs">
                     <span className="truncate">
@@ -163,7 +170,7 @@ export default function UpdateIDPPg({ idpID }) {
                     <button
                       type="button"
                       onClick={() => toggleRemove(photo.photoID)}
-                      className="shrink-0 underline"
+                      className={`btn btn-sm shrink-0 ${removed ? "" : "btn-danger-outline"}`}
                     >
                       {removed ? "Undo" : "Remove"}
                     </button>
@@ -188,14 +195,11 @@ export default function UpdateIDPPg({ idpID }) {
           <button
             type="submit"
             disabled={isSaving}
-            className="rounded bg-zinc-900 px-5 py-2 text-white disabled:opacity-50"
+            className="btn btn-primary"
           >
             {isSaving ? "Saving..." : "Save changes"}
           </button>
-          <Link
-            href={`/designer/idp/${idpID}`}
-            className="rounded border px-5 py-2"
-          >
+          <Link href={`/designer/idp/${idpID}`} className="btn">
             Cancel
           </Link>
         </div>

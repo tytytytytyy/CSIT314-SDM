@@ -21,6 +21,7 @@
 //
 // Implemented so far: getVerificationByDesigner (Browse Interior Designers).
 import { readTable } from "./LocalStore";
+import { isWithinDateRange } from "@/lib/dates";
 
 export class DesignerVerification {
   static VERIFICATION_STATUS = ["pending", "approved", "rejected"];
@@ -45,12 +46,10 @@ export class DesignerVerification {
   }
 
   static async countVerified(startDate, endDate) {
-  return readTable("designer_verification").filter(
-    (r) =>
-      r.status === "approved" &&
-      r.reviewedAt &&
-      r.reviewedAt >= startDate &&
-      r.reviewedAt <= endDate,
-  ).length;
+    return readTable("designer_verification").filter(
+      (row) =>
+        row.status === "approved" &&
+        isWithinDateRange(row.reviewedAt, startDate, endDate),
+    ).length;
   }
 }

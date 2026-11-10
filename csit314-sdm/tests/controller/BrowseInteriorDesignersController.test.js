@@ -102,6 +102,18 @@ describe("browseDesigners - filters", () => {
     expect(ids(result)).toEqual([]);
   });
 
+  it("shows just one designer when asked for their designer ID (link from an IDP page)", async () => {
+    expect(ids(await browse({ designerID: "D2" }, "name"))).toEqual(["D2"]);
+  });
+
+  it("still hides a hidden designer when asked for them by ID", async () => {
+    expect(ids(await browse({ designerID: "D5" }, "name"))).toEqual([]);
+  });
+
+  it("matches a keyword that is a designer ID, ignoring case", async () => {
+    expect(ids(await browse({ keyword: "d1" }, "name"))).toEqual(["D1"]);
+  });
+
   it("returns an empty list when nothing matches", async () => {
     const result = await browse({ keyword: "no such firm" }, "name");
     expect(result).toEqual({ status: "ok", designers: [] });
@@ -142,6 +154,13 @@ describe("validateFilters", () => {
     expect((await browse({ category: "Industrial" }, "name")).status).toBe(
       "invalid",
     );
+  });
+
+  it("rejects a designer ID that is not text", async () => {
+    expect(await browse({ designerID: 7 }, "name")).toEqual({
+      status: "invalid",
+      message: "Invalid designer",
+    });
   });
 
   it("rejects a keyword that is too long", async () => {
