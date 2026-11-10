@@ -1,8 +1,8 @@
 // Boundary: UpdateIDPPg
 // Feature: Update IDP (Interior Designer)
-// Opened with the "Edit IDP" button on IDViewIDPDetailsPg.
+// Opened with the "Update IDP" button on IDViewIDPDetailsPg.
 //
-// Route: /designer/idp/[idpID]/edit   (app/designer/idp/[idpID]/edit/page.jsx renders this)
+// Route: /designer/idp/[idpID]/update   (app/designer/idp/[idpID]/update/page.jsx renders this)
 //
 // What goes here:
 // - Form filled with the IDP's current values (fields shared with Create IDP: IDPFormFields).
@@ -81,7 +81,7 @@ export default function UpdateIDPPg({ idpID }) {
   };
 
   useEffect(() => {
-    // Designer clicks "Edit IDP" -> the page asks the controller for the current values.
+    // Designer clicks "Update IDP" -> the page asks the controller for the current values.
     const load = async () => {
       const result = await UpdateIDPController.getIDPForUpdate(
         SessionController.getLoggedInDesignerID(),
@@ -131,7 +131,7 @@ export default function UpdateIDPPg({ idpID }) {
     <main className="mx-auto w-full max-w-3xl p-8">
       <BackButton fallbackHref={`/designer/idp/${idpID}`} />
       <p className="text-sm text-zinc-500">My Project #{idpID}</p>
-      <h1 className="text-3xl font-semibold">Edit IDP</h1>
+      <h1 className="text-3xl font-semibold">Update IDP</h1>
 
       <ErrorList messages={errors} />
 

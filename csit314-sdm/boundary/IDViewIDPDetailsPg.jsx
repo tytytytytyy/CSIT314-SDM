@@ -9,7 +9,7 @@
 //
 // What goes here:
 // - Title, status, photos with captions, style, property type, category, budget, description.
-// - "Edit IDP" button that opens UpdateIDPPg (Update IDP).
+// - "Update IDP" button that opens UpdateIDPPg (Update IDP).
 // - "IDP created" / "IDP updated" message after Create IDP / Update IDP saves.
 //
 // Methods:
@@ -69,7 +69,7 @@ export default function IDViewIDPDetailsPg({ idpID }) {
   const { idp, photos } = view.details;
   return (
     <main className="mx-auto w-full max-w-3xl p-8">
-      {/* Always back to the list: after saving, "previous page" would be the edit form. */}
+      {/* Always back to the list: after saving, "previous page" would be the update form. */}
       <Link href="/designer/idp" className="btn btn-sm mb-4">
         <span aria-hidden="true">←</span> My Projects
       </Link>
@@ -90,10 +90,10 @@ export default function IDViewIDPDetailsPg({ idpID }) {
 
       <div className="mt-4 flex gap-3">
         <Link
-          href={`/designer/idp/${idp.idpID}/edit`}
+          href={`/designer/idp/${idp.idpID}/update`}
           className="btn btn-primary"
         >
-          Edit IDP
+          Update IDP
         </Link>
       </div>
 

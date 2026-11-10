@@ -1,7 +1,7 @@
 // Control: IDViewIDPDetailsController
 // Feature: View IDP Details (Interior Designer)
 // Not the same as ViewIDPController (Customer): a designer only sees their OWN IDPs,
-// sees each IDP's status (In Progress / Completed), and can go on to edit it (Update IDP).
+// sees each IDP's status (In Progress / Completed), and can go on to update it (Update IDP).
 // Designers cannot like IDPs; liking is a customer feature.
 //
 // Rules:
