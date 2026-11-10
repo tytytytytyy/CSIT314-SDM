@@ -6,7 +6,7 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import { HomeController } from "@/controller/HomeController";
-import { writeTable } from "@/entity/LocalStore";
+import { readTable, writeTable } from "@/entity/LocalStore";
 import { toDateKey } from "@/lib/dates";
 
 beforeEach(() => {
@@ -14,6 +14,23 @@ beforeEach(() => {
 });
 
 const idpIDs = (page) => page.cards.map((c) => c.idpID);
+
+// Adds one IDP per designer, with IDs 50, 51, ... (D4 is pending, D5 is suspended in LocalStore).
+const addIDPsBy = (designerIDs) =>
+  writeTable("idp", [
+    ...readTable("idp"),
+    ...designerIDs.map((designerID, i) => ({
+      idpID: 50 + i,
+      designerID,
+      title: `Project by ${designerID}`,
+      style: "Industrial",
+      category: "Residential",
+      propertyType: "Condo",
+      budget: 10000,
+      status: "completed",
+      createdAt: "2026-03-01T08:00:00.000Z",
+    })),
+  ]);
 
 describe("getIDPFeed", () => {
   it("returns the first page of IDPs in ID order", async () => {
@@ -58,6 +75,13 @@ describe("getIDPFeed", () => {
     expect(await HomeController.getIDPFeed(50, 12)).toEqual({ cards: [], hasMore: false });
   });
 
+  it("leaves out IDPs whose designer is suspended (D5) or still pending verification (D4)", async () => {
+    addIDPsBy(["D5", "D4"]);
+    const page = await HomeController.getIDPFeed(0, 10);
+    expect(idpIDs(page)).toEqual([1, 2, 3]);
+    expect(page.hasMore).toBe(false);
+  });
+
   it("uses a page of PAGE_SIZE when no size is given", async () => {
     expect(HomeController.PAGE_SIZE).toBe(12);
     const page = await HomeController.getIDPFeed(0);
@@ -84,6 +108,15 @@ describe("featured IDPs", () => {
     ]);
     expect(await HomeController.getFeaturedIDPs()).toEqual([]);
     expect(idpIDs(await HomeController.getIDPFeed(0, 10))).toEqual([1, 2, 3]);
+  });
+
+  it("leaves out promoted IDPs whose designer is suspended or not verified", async () => {
+    addIDPsBy(["D5", "D4"]);
+    promote([
+      { idpID: 50, startDate: today, endDate: "2099-12-31" },
+      { idpID: 51, startDate: today, endDate: "2099-12-31" },
+    ]);
+    expect(await HomeController.getFeaturedIDPs()).toEqual([]);
   });
 
   it("leaves featured IDPs out of the main feed, so no card shows twice", async () => {
