@@ -179,7 +179,7 @@ export default function GeneratePlatformReportPg() {
                       scope="col"
                       className={`min-w-28 p-3 text-center font-medium ${index === view.report.periods.length - 1 ? "text-blue-700" : ""}`}
                     >
-                      {formatTableDateRange(reportPeriod.range, period)}
+                      {formatTableDateRange(reportPeriod.range, view.report.period)}
                       {index === view.report.periods.length - 1 && (
                         <span className="block text-xs">(current)</span>
                       )}
@@ -316,7 +316,7 @@ export default function GeneratePlatformReportPg() {
                               fill="#52525b"
                             >
                               <title>{formatDate(reportPeriod.range.startDate)}</title>
-                              {formatChartDateRange(reportPeriod.range, period)}
+                              {formatChartDateRange(reportPeriod.range, view.report.period)}
                             </text>
                           </g>
                         );

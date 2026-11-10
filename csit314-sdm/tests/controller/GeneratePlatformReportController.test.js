@@ -67,6 +67,11 @@ describe("generateReport", () => {
     });
   });
 
+  it("returns the period it was generated for, so the page labels the columns correctly", async () => {
+    const report = await GeneratePlatformReportController.generateReport("weekly", "2026-11-05");
+    expect(report.period).toBe("weekly");
+  });
+
   it("assigns a creation timestamp when a new IDP is saved", async () => {
     const created = await IDP.createIDP({
       designerID: "D1",

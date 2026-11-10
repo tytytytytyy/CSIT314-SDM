@@ -11,13 +11,16 @@
 //     -> IDPPhoto.getPhotos(idpID)                first photo is the main photo
 //     -> CompanyInformation.getCompanyInfo(designerID)   who made the IDP
 //
-// Entities used: IDP, IDPPhoto, CompanyInformation
+// Only IDPs by active, verified designers are shown (InteriorDesignerAccount.isActiveAndVerified).
+//
+// Entities used: IDP, IDPPhoto, CompanyInformation, Promotion, InteriorDesignerAccount
 //
 // Attributes: none
 import { IDP } from "@/entity/IDP";
 import { IDPPhoto } from "@/entity/IDPPhoto";
 import { CompanyInformation } from "@/entity/CompanyInformation";
 import { Promotion } from "@/entity/Promotion";
+import { InteriorDesignerAccount } from "@/entity/InteriorDesignerAccount";
 import { toDateKey } from "@/lib/dates";
 
 export class HomeController {
@@ -35,19 +38,33 @@ export class HomeController {
   // Featured IDPs are left out, so no card shows twice on the page.
   static async getIDPFeed(offset = 0, limit = this.PAGE_SIZE) {
     const featured = new Set(await this.getFeaturedIDPIDs());
-    const rest = (await IDP.listIDPs(0, Number.MAX_SAFE_INTEGER)).filter((idp) => !featured.has(idp.idpID));
+    const rest = (await this.getVisibleIDPs()).filter((idp) => !featured.has(idp.idpID));
     const cards = [];
     for (const idp of rest.slice(offset, offset + limit)) cards.push(await this.toCard(idp));
     return { cards, hasMore: rest.length > offset + limit };
   }
 
-  // IDs of IDPs promoted today, oldest promotion first; skips deleted IDPs and repeats.
+  // IDs of IDPs promoted today, oldest promotion first; skips deleted IDPs, IDPs of designers
+  // who are not active and verified, and repeats.
   static async getFeaturedIDPIDs() {
     const ids = [];
     for (const { idpID } of await Promotion.getActivePromotions(toDateKey(new Date()))) {
-      if (!ids.includes(idpID) && (await IDP.getIDP(idpID))) ids.push(idpID);
+      if (ids.includes(idpID)) continue;
+      const idp = await IDP.getIDP(idpID);
+      if (idp && (await InteriorDesignerAccount.isActiveAndVerified(idp.designerID))) ids.push(idpID);
     }
     return ids;
+  }
+
+  // All IDPs whose designer is active and verified (a suspended or pending designer's IDPs
+  // are hidden from customers, the same as in Browse Interior Designers), in idpID order.
+  static async getVisibleIDPs() {
+    const idps = await IDP.listIDPs(0, Number.MAX_SAFE_INTEGER);
+    const visible = new Set();
+    for (const designerID of new Set(idps.map((idp) => idp.designerID))) {
+      if (await InteriorDesignerAccount.isActiveAndVerified(designerID)) visible.add(designerID);
+    }
+    return idps.filter((idp) => visible.has(idp.designerID));
   }
 
   static async toCard(idp) {

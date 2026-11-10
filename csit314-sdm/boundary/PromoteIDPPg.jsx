@@ -41,6 +41,7 @@ function getNextDateValue() {
 
 const PROMOTION_ERRORS = {
   notFound: "This IDP could not be found.",
+  designerNotVerified: "This IDP's designer is suspended or not yet verified, so it cannot be promoted.",
   invalidStartDate: "The start date must be today or later.",
   invalidEndDate: "The end date must be after the start date.",
   maxPromotionsReached: "The promotion limit has been reached for one or more selected dates.",

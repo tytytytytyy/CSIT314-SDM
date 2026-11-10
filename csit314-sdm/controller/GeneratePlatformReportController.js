@@ -157,6 +157,7 @@ export class GeneratePlatformReportController {
         );
         return {
             status: "ok",
+            period, // the page labels the columns with this, not with whatever the dropdown shows now
             periods: [...newestFirstPeriods]
                 .reverse()
                 .map(({ range, metrics }) => ({ range, ...metrics })),

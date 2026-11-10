@@ -9,6 +9,13 @@ export class InteriorDesignerAccount {
       verification: readTable("designer_verification").find(r => r.designerID === accountID) ?? null };
   }
 
+  // True only for a designer whose account is active and whose verification was approved,
+  // i.e. one whose IDPs customers may see. False for pending, suspended, rejected or unknown IDs.
+  static async isActiveAndVerified(accountID) {
+    const account = readTable("user_account").find(r => r.accountID === accountID && r.profileID === "designer");
+    const verification = readTable("designer_verification").find(r => r.designerID === accountID);
+    return account?.status === "active" && verification?.status === "approved";
+  }
   static getAccounts(status = "all") {
     if (!["all", "pending", "active", "rejected", "suspended"].includes(status)) {
       throw new Error("Invalid account status.");

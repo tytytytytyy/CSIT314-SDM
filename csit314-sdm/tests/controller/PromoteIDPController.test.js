@@ -5,7 +5,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PromoteIDPController } from "@/controller/PromoteIDPController";
 import { Promotion } from "@/entity/Promotion";
-import { writeTable } from "@/entity/LocalStore";
+import { readTable, writeTable } from "@/entity/LocalStore";
 
 beforeEach(() => {
   localStorage.clear();
@@ -42,10 +42,47 @@ describe("validatePromotion", () => {
     expect((await PromoteIDPController.validatePromotion(1, "2026-11-15", "2026-11-20")).status).toBe("ok");
   });
 
+  it("refuses empty or impossible dates", async () => {
+    expect((await PromoteIDPController.validatePromotion(1, "", "")).status).toBe("invalidStartDate");
+    expect((await PromoteIDPController.validatePromotion(1, "2026-11-12", "")).status).toBe("invalidEndDate");
+    expect((await PromoteIDPController.validatePromotion(1, "2026-02-31", "2026-03-05")).status).toBe("invalidStartDate");
+    expect((await PromoteIDPController.validatePromotion(1, "2026-11-12", "not a date")).status).toBe("invalidEndDate");
+  });
+
+  it("accepts today as the start date in a timezone behind UTC", async () => {
+    const originalTZ = process.env.TZ;
+    process.env.TZ = "America/New_York";
+    try {
+      vi.setSystemTime(new Date(2026, 10, 10, 10, 0)); // 10 Nov 2026, 10 am in New York
+      expect((await PromoteIDPController.validatePromotion(1, "2026-11-10", "2026-11-20")).status).toBe("ok");
+    } finally {
+      process.env.TZ = originalTZ;
+    }
+  });
+
+  it("refuses an IDP whose designer is suspended or not verified", async () => {
+    writeTable("idp", [
+      ...readTable("idp"),
+      { idpID: 50, designerID: "D5", title: "Suspended designer's loft", category: "Residential", propertyType: "Condo", status: "completed" },
+    ]);
+    expect((await PromoteIDPController.validatePromotion(50, "2026-11-10", "2026-11-20")).status).toBe("designerNotVerified");
+  });
+
   it("refuses dates that overlap another promotion of the same IDP", async () => {
     writeTable("promotion", promotionsOn([1], "2026-11-12", "2026-11-18"));
     expect((await PromoteIDPController.validatePromotion(1, "2026-11-15", "2026-11-25")).status).toBe("dateOverlap");
     expect((await PromoteIDPController.validatePromotion(2, "2026-11-15", "2026-11-25")).status).toBe("ok");
+  });
+});
+
+describe("getIDPs", () => {
+  it("lists only IDPs whose designer is active and verified", async () => {
+    writeTable("idp", [
+      ...readTable("idp"),
+      { idpID: 50, designerID: "D5", title: "Suspended designer's loft" },
+      { idpID: 51, designerID: "D4", title: "Pending designer's flat" },
+    ]);
+    expect((await PromoteIDPController.getIDPs()).map((idp) => idp.idpID)).toEqual([1, 2, 3]);
   });
 });
 
