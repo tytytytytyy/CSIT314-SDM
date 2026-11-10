@@ -1,6 +1,6 @@
 // Control: UpdateIDPController
 // Feature: Update IDP (Interior Designer)
-// Opened with the "Update IDP" button on IDViewIDPDetailsPg.
+// Opened with the "Edit IDP" button on IDViewIDPDetailsPg.
 //
 // What goes here:
 // - Lets a designer change their IDP's details, status and photos.
