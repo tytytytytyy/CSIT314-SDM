@@ -81,7 +81,6 @@ export default function IDPPerformanceDashboardPg() {
 
   return (
     <main className="viz-root mx-auto w-full max-w-4xl p-8">
-      <style>{VIZ_COLOURS}</style>
       <BackButton fallbackHref="/designer/idp" />
       <h1 className="text-3xl font-semibold">Performance Dashboard</h1>
       <p className="mt-1 text-sm text-zinc-500">Which of your projects attract the most customer interest.</p>
@@ -317,11 +316,4 @@ function formatDate(dateKey) {
 }
 
 const inputClass = "input";
-
-// Chart colours (light and dark), from a colour-blind-checked palette.
-const VIZ_COLOURS = `
-.viz-root { --series-views: #2a78d6; --series-likes: #eb6834; --grid: #e7e6e2; --text-muted: #6f6e69; }
-@media (prefers-color-scheme: dark) {
-  .viz-root { --series-views: #3987e5; --series-likes: #d95926; --grid: #2f2f2d; --text-muted: #a3a29b; }
-}
-`;
+// Chart colours (.viz-root) live in app/globals.css, shared with the Platform Report.

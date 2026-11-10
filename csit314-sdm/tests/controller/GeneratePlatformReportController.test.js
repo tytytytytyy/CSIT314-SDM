@@ -25,6 +25,25 @@ describe("validateReportRequest", () => {
   });
 });
 
+describe("calculateChange", () => {
+  const change = (current, previous) => GeneratePlatformReportController.calculateChange(current, previous);
+
+  it("gives the rise or fall as a whole percentage of the previous period", () => {
+    expect(change(12, 10)).toEqual({ direction: "up", percent: 20 });
+    expect(change(5, 20)).toEqual({ direction: "down", percent: 75 });
+    expect(change(2, 3)).toEqual({ direction: "down", percent: 33 });
+  });
+
+  it("says 'same' when nothing changed, including 0 to 0", () => {
+    expect(change(7, 7)).toEqual({ direction: "same", percent: 0 });
+    expect(change(0, 0)).toEqual({ direction: "same", percent: 0 });
+  });
+
+  it("has no percentage when the previous period was 0", () => {
+    expect(change(4, 0)).toEqual({ direction: "up", percent: null });
+  });
+});
+
 describe("generateReport", () => {
   it("counts records by their calendar date, including the end date", async () => {
     writeTable("user_account", [
