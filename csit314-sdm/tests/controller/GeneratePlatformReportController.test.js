@@ -86,6 +86,15 @@ describe("generateReport", () => {
     });
   });
 
+  it("gives the same whole-month range for any day of that month (the page sends the 1st)", () => {
+    const fromFirst = GeneratePlatformReportController.calculateDateRange("monthly", "2026-10-01");
+    const fromLast = GeneratePlatformReportController.calculateDateRange("monthly", "2026-10-31");
+    expect(fromFirst).toEqual(fromLast);
+    expect(fromFirst.startDate.getDate()).toBe(1);
+    expect(fromFirst.endDate.getDate()).toBe(31);
+    expect(fromFirst.endDate.getMonth()).toBe(9); // October
+  });
+
   it("returns the period it was generated for, so the page labels the columns correctly", async () => {
     const report = await GeneratePlatformReportController.generateReport("weekly", "2026-11-05");
     expect(report.period).toBe("weekly");

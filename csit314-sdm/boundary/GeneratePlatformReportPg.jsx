@@ -6,7 +6,8 @@
 // Route: /platform-manager/report   (app/platform-manager/report/page.jsx renders this)
 //
 // What goes here (same look as the designer's Performance Dashboard):
-// - Period selector (daily / weekly / monthly) and a reference date, with a "Generate report" button.
+// - Period selector (daily / weekly / monthly) with a "Generate report" button. Daily: pick a day.
+//   Weekly: pick any day, and the chosen Monday-Sunday week is shown. Monthly: pick a month and year.
 // - Opens with this week's report already shown.
 // - Summary tiles: each metric for the current period, and how it changed from the period before.
 // - Table of six metrics for five consecutive periods, and a small chart per metric.
@@ -97,21 +98,31 @@ export default function GeneratePlatformReportPg() {
             ))}
           </select>
         </label>
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Reference date
-          <input
-            type="date"
-            required
-            max={daysAgo(0)}
-            value={referenceDate}
-            onChange={(e) => setReferenceDate(e.target.value)}
-            className="input"
-          />
-        </label>
+        {period === "monthly" ? (
+          <MonthPicker value={referenceDate} onChange={setReferenceDate} />
+        ) : (
+          <label className="flex flex-col gap-1 text-sm font-medium">
+            {period === "weekly" ? "Any day in the week" : "Day"}
+            <input
+              type="date"
+              required
+              max={daysAgo(0)}
+              value={referenceDate}
+              onChange={(e) => setReferenceDate(e.target.value)}
+              className="input"
+            />
+          </label>
+        )}
         <button type="submit" disabled={busy} className="btn btn-primary">
           {busy ? "Generating..." : "Generate report"}
         </button>
       </form>
+      {period === "weekly" && referenceDate && (
+        <p className="mt-2 text-sm text-zinc-500">
+          Week:{" "}
+          {periodLabel(GeneratePlatformReportController.calculateDateRange("weekly", referenceDate), "weekly", true)}
+        </p>
+      )}
 
       {message && (
         <p role="alert" className="mt-4 rounded border border-red-300 bg-red-50 p-3 text-sm text-red-800">
@@ -122,6 +133,47 @@ export default function GeneratePlatformReportPg() {
       {view.kind === "loading" && <p className="mt-6">Loading...</p>}
       {view.kind === "report" && <ReportBody report={view.report} />}
     </main>
+  );
+}
+
+// ---------- Month picker (UI only) ----------
+
+const MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const YEARS_SHOWN = 3; // this year and the two before
+
+// Month + year dropdowns for the monthly report. Any day in a month gives the same report, so
+// the page sends the 1st of the chosen month ("YYYY-MM-01"). Months after this one are disabled.
+function MonthPicker({ value, onChange }) {
+  const [thisYear, thisMonth] = daysAgo(0).split("-").map(Number);
+  const [year, month] = (value || daysAgo(0)).split("-").map(Number);
+  const choose = (y, m) => {
+    const safeMonth = y === thisYear ? Math.min(m, thisMonth) : m; // never a future month
+    onChange(`${y}-${String(safeMonth).padStart(2, "0")}-01`);
+  };
+
+  return (
+    <>
+      <label className="flex flex-col gap-1 text-sm font-medium">
+        Month
+        <select value={month} onChange={(e) => choose(year, Number(e.target.value))} className="input">
+          {MONTH_NAMES.map((name, index) => (
+            <option key={name} value={index + 1} disabled={year === thisYear && index + 1 > thisMonth}>
+              {name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="flex flex-col gap-1 text-sm font-medium">
+        Year
+        <select value={year} onChange={(e) => choose(Number(e.target.value), month)} className="input">
+          {Array.from({ length: YEARS_SHOWN }, (_, i) => thisYear - i).map((y) => (
+            <option key={y} value={y}>
+              {y}
+            </option>
+          ))}
+        </select>
+      </label>
+    </>
   );
 }
 
