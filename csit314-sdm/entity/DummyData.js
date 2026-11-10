@@ -17,6 +17,9 @@
 //   The demo designer D1's IDPs get more activity, so the Performance Dashboard has something to show.
 //
 // Dates are counted back from the day the data is first created, so the last 90 days always have data.
+// They follow a sensible order: account -> verified -> IDPs (with their photos) -> views and likes,
+// and a customer only views or likes after their account exists. This keeps the Generate Platform
+// Report consistent when it compares new designers, new IDPs, views and likes by date.
 //
 // Methods:
 // - generateDummyData(today)       extra rows per table, plus lastIDPID for the ID counter
@@ -39,6 +42,14 @@ const HAND_MADE_SPECIALTIES = {
   D5: ["Industrial"], // "Bold industrial lofts and bars."
 };
 const COMMERCIAL_ONLY = ["D2"]; // D2 only does offices and retail spaces
+
+// Dates of the hand-made rows in LocalStore that generated rows must come after.
+// (tests/entity/DummyData.test.js checks the generated data against LocalStore itself.)
+const HAND_MADE_DATES = {
+  verifiedAt: { D1: "2026-03-03T09:00:00.000Z", D2: "2026-05-12T09:00:00.000Z", D3: "2026-08-22T09:00:00.000Z", D5: "2026-02-13T09:00:00.000Z" },
+  customerJoinedAt: { C1: "2026-01-15T08:00:00.000Z", C2: "2026-02-03T08:00:00.000Z", C3: "2026-04-22T08:00:00.000Z" },
+  idpCreatedAt: { 1: "2026-03-05T08:00:00.000Z", 2: "2026-03-05T08:00:00.000Z", 3: "2026-05-14T08:00:00.000Z" },
+};
 
 const COMPANY_WORDS = {
   first: ["Nordic", "Urban", "Haven", "Oak", "Lumen", "Terra", "Atelier", "Canvas", "Maple", "Willow", "Slate", "Ember", "Harbour", "Cove", "Linen", "Stone"],
@@ -88,10 +99,6 @@ export function placeholderLogo(initials, colour) {
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
-// Shown by <img onError> in the boundary pages when a real photo hasn't been downloaded into
-// public/demo-photos/ yet (see the team's photo download guide).
-export const PHOTO_NOT_FOUND = placeholderPhoto("Photo coming soon", "#c7c7c7");
-
 // File names match the team's photo download guide exactly: lowercase, hyphenated, "<style>-<room>.jpg"
 // for residential, "commercial-<room>-<1 or 2>.jpg" for commercial. Real files live in public/demo-photos/;
 // Next.js serves that folder at the site root, so this path alone is enough to show one once it's added.
@@ -136,6 +143,44 @@ export function demoPhotoURL(category, style, room, variant = 1) {
       ? RESIDENTIAL_ROOM_SLUGS[(RESIDENTIAL_ROOM_SLUGS.indexOf(primarySlug) + 1) % RESIDENTIAL_ROOM_SLUGS.length]
       : primarySlug;
   return `/demo-photos/${STYLE_SLUG[style]}-${roomSlug}.jpg`;
+}
+
+// Moves dates that are too early (e.g. an IDP created before its designer was verified) later.
+// Uses no random numbers, so every other value in the data stays exactly the same.
+// Each date keeps its relative place in its window, just squeezed to start at the earliest allowed time.
+function putDatesInOrder({ end, idp, idp_photo, idp_view, idp_like, user_account, designer_verification }) {
+  const DAY = 86_400_000;
+  const endMs = end.getTime();
+  const ms = (iso) => new Date(iso).getTime();
+  // t was picked between windowStart and the end; move it to the same place between earliest and the end.
+  const squeeze = (iso, windowStart, earliest) => {
+    if (earliest <= windowStart) return iso;
+    const share = Math.max(0, Math.min(1, (ms(iso) - windowStart) / (endMs - windowStart)));
+    return new Date(earliest + share * (endMs - earliest)).toISOString();
+  };
+
+  const verifiedAt = { ...HAND_MADE_DATES.verifiedAt };
+  for (const v of designer_verification) verifiedAt[v.designerID] = v.reviewedAt;
+  const joinedAt = {};
+  for (const a of user_account) joinedAt[a.accountID] = a.createdAt;
+  Object.assign(joinedAt, HAND_MADE_DATES.customerJoinedAt); // the hand-made C1 to C3 replace the generated ones
+
+  // IDPs: picked in the last 365 days, but not before the designer was verified.
+  const createdAt = { ...HAND_MADE_DATES.idpCreatedAt };
+  for (const row of idp) {
+    row.createdAt = squeeze(row.createdAt, endMs - 365 * DAY, ms(verifiedAt[row.designerID]));
+    createdAt[row.idpID] = row.createdAt;
+  }
+  // Photos are uploaded when the IDP is created, one minute apart.
+  for (const photo of idp_photo) {
+    photo.uploadedAt = new Date(Math.min(ms(createdAt[photo.idpID]) + photo.sortOrder * 60_000, endMs)).toISOString();
+  }
+  // Views and likes: picked in the last 90 days, but not before the IDP or the customer's account existed.
+  const activityStart = endMs - DAYS_OF_ACTIVITY * DAY;
+  const earliest = (idpID, customerID) =>
+    Math.max(activityStart, ms(createdAt[idpID]), customerID ? ms(joinedAt[customerID]) : 0);
+  for (const v of idp_view) v.viewedAt = squeeze(v.viewedAt, activityStart, earliest(v.idpID, v.customerID));
+  for (const l of idp_like) l.likedAt = squeeze(l.likedAt, activityStart, earliest(l.idpID, l.customerID));
 }
 
 export function generateDummyData(today = new Date()) {
@@ -183,6 +228,7 @@ export function generateDummyData(today = new Date()) {
       idp.push({
         idpID,
         designerID,
+        createdAt: randomTimeInLast(365),
         title: `${style} ${room} - ${size} ${propertyType}`,
         description: `A ${style.toLowerCase()} design for the ${room.toLowerCase()} of a ${size.toLowerCase()} ${propertyType}.`,
         style,
@@ -273,9 +319,40 @@ export function generateDummyData(today = new Date()) {
     user_account.push({ accountID: `C${c}`, email: `customer${c}@example.com`, profileID: "customer", status: "active", createdAt: randomTimeInLast(365) });
   }
 
+  putDatesInOrder({ end, idp, idp_photo, idp_view, idp_like, user_account, designer_verification });
+
+  // Simulated ACRA register: every generated company is registered (live) under its own name,
+  // a month before its account was created. No random numbers, so the rest of the data is unchanged.
+  const acra_registry = company_information.map((company) => {
+    const account = user_account.find((a) => a.accountID === company.designerID);
+    return {
+      uen: company.registrationNumber,
+      entityName: `${company.companyName.toUpperCase()} PTE. LTD.`,
+      status: "live",
+      registeredAt: new Date(new Date(account.createdAt).getTime() - 30 * 86_400_000).toISOString().slice(0, 10),
+    };
+  });
+
+  // Sample promotions by the platform manager (M12345), relative to today: 3 running now (so the
+  // home feed shows Featured IDPs straight away), 1 finished and 1 upcoming. No random numbers.
+  const dayKey = (days) => {
+    const d = new Date(end.getTime() + days * 86_400_000);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+  const firstIDPOf = (designerID) => idp.find((i) => i.designerID === designerID).idpID;
+  const promotion = [
+    [1, -3, 27], // D1's "Bright Scandinavian Living Room"
+    [3, -10, 20], // D2's office
+    [firstIDPOf("D3"), -1, 13],
+    [firstIDPOf("D5"), -40, -20], // finished
+    [firstIDPOf("D6"), 7, 21], // upcoming
+  ].map(([idpID, from, to], i) => ({
+    promotionID: i + 1, idpID, startDate: dayKey(from), endDate: dayKey(to), createdBy: "M12345",
+  }));
+
   return {
-    idp, idp_photo, idp_view, idp_like,
-    user_account, designer_verification, company_information,
+    idp, idp_photo, idp_view, idp_like, promotion,
+    user_account, designer_verification, company_information, acra_registry,
     lastIDPID: nextIDP - 1,
   };
 }

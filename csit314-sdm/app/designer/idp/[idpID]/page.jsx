@@ -1,6 +1,10 @@
 import { Suspense } from "react";
 import IDViewIDPDetailsPg from "@/boundary/IDViewIDPDetailsPg";
 
+// Needs a logged-in user: LoginGate (app/layout.jsx) shows this page only after reading the
+// session in the browser, so it cannot be part of the instant static shell.
+export const instant = false;
+
 // Cache Components needs at least one known param for a dynamic route. Any other id still
 // renders on demand. Reading params inside <Suspense> lets the page show instantly.
 export function generateStaticParams() {

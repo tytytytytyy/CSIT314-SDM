@@ -13,23 +13,61 @@
 
 import { generateDummyData, placeholderLogo, demoPhotoURL } from "./DummyData";
 
-const KEY_PREFIX = "idp_platform_v7_";
+const KEY_PREFIX = "idp_platform_v12_";
+
+// Password of every demo login account below (TEST data: a real system stores a hash, never
+// the password itself). Generated accounts (C4+, D6+) have no password, so they cannot log in.
+const DEMO_PASSWORD = "password123";
 
 const HAND_MADE = {
-  // Login accounts. Passwords are left out until the Login feature exists.
+  // Login accounts. C1-C3, D1-D3, A1 and M12345 are the demo logins listed on the login page.
   // D1-D3 are verified designers. D4 is still waiting for verification and D5 was suspended,
-  // so Browse Interior Designers must hide both.
+  // so Browse Interior Designers must hide both, and Log in must turn both away.
   user_account: [
+    {
+      accountID: "M12345",
+      email: "manager@example.com",
+      password: DEMO_PASSWORD,
+      profileID: "platformManager",
+      status: "active",
+      createdAt: "2026-01-01T00:00:00.000Z",
+    },
+    { 
+      accountID: "A1", 
+      email: "admin@example.com", 
+      password: DEMO_PASSWORD, 
+      profileID: "admin", 
+      status: "active", 
+      createdAt: "2026-01-01T00:00:00.000Z" 
+    },
     {
       accountID: "C1",
       email: "customer1@example.com",
+      password: DEMO_PASSWORD,
       profileID: "customer",
       status: "active",
       createdAt: "2026-01-15T08:00:00.000Z",
     },
     {
+      accountID: "C2",
+      email: "customer2@example.com",
+      password: DEMO_PASSWORD,
+      profileID: "customer",
+      status: "active",
+      createdAt: "2026-02-03T08:00:00.000Z",
+    },
+    {
+      accountID: "C3",
+      email: "customer3@example.com",
+      password: DEMO_PASSWORD,
+      profileID: "customer",
+      status: "active",
+      createdAt: "2026-04-22T08:00:00.000Z",
+    },
+    {
       accountID: "D1",
       email: "hello@nordicnest.example.com",
+      password: DEMO_PASSWORD,
       profileID: "designer",
       status: "active",
       createdAt: "2026-03-01T08:00:00.000Z",
@@ -37,6 +75,7 @@ const HAND_MADE = {
     {
       accountID: "D2",
       email: "studio@linea.example.com",
+      password: DEMO_PASSWORD,
       profileID: "designer",
       status: "active",
       createdAt: "2026-05-10T08:00:00.000Z",
@@ -44,6 +83,7 @@ const HAND_MADE = {
     {
       accountID: "D3",
       email: "team@habitatco.example.com",
+      password: DEMO_PASSWORD,
       profileID: "designer",
       status: "active",
       createdAt: "2026-08-20T08:00:00.000Z",
@@ -51,6 +91,7 @@ const HAND_MADE = {
     {
       accountID: "D4",
       email: "hi@freshstart.example.com",
+      password: DEMO_PASSWORD,
       profileID: "designer",
       status: "pending",
       createdAt: "2026-10-28T08:00:00.000Z",
@@ -58,9 +99,36 @@ const HAND_MADE = {
     {
       accountID: "D5",
       email: "info@urbanedge.example.com",
+      password: DEMO_PASSWORD,
       profileID: "designer",
       status: "suspended",
       createdAt: "2026-02-11T08:00:00.000Z",
+    },
+    // D101-D103 also signed up recently. Each one fails the ACRA check in a different way
+    // (see acra_registry below), so the User Admin has something to review by hand.
+    {
+      accountID: "D101",
+      email: "hello@coastlineliving.example.com",
+      password: DEMO_PASSWORD,
+      profileID: "designer",
+      status: "pending",
+      createdAt: "2026-11-02T08:00:00.000Z",
+    },
+    {
+      accountID: "D102",
+      email: "studio@brightwall.example.com",
+      password: DEMO_PASSWORD,
+      profileID: "designer",
+      status: "pending",
+      createdAt: "2026-11-04T08:00:00.000Z",
+    },
+    {
+      accountID: "D103",
+      email: "info@oakline.example.com",
+      password: DEMO_PASSWORD,
+      profileID: "designer",
+      status: "pending",
+      createdAt: "2026-11-06T08:00:00.000Z",
     },
   ],
   designer_verification: [
@@ -107,6 +175,33 @@ const HAND_MADE = {
       submittedAt: "2026-02-11T09:00:00.000Z",
       reviewedBy: "A1",
       reviewedAt: "2026-02-13T09:00:00.000Z",
+      rejectReason: null,
+    },
+    {
+      verificationID: "V101",
+      designerID: "D101",
+      status: "pending",
+      submittedAt: "2026-11-02T09:00:00.000Z",
+      reviewedBy: null,
+      reviewedAt: null,
+      rejectReason: null,
+    },
+    {
+      verificationID: "V102",
+      designerID: "D102",
+      status: "pending",
+      submittedAt: "2026-11-04T09:00:00.000Z",
+      reviewedBy: null,
+      reviewedAt: null,
+      rejectReason: null,
+    },
+    {
+      verificationID: "V103",
+      designerID: "D103",
+      status: "pending",
+      submittedAt: "2026-11-06T09:00:00.000Z",
+      reviewedBy: null,
+      reviewedAt: null,
       rejectReason: null,
     },
   ],
@@ -167,6 +262,53 @@ const HAND_MADE = {
       website: "https://urbanedge.example.com",
       logoURL: placeholderLogo("UE", "#8b3a3a"),
     },
+    {
+      companyID: "CO101",
+      designerID: "D101",
+      companyName: "Coastline Living",
+      registrationNumber: "202610102F",
+      description: "Breezy coastal homes with natural textures.",
+      location: "Pasir Ris",
+      phone: "+65 6123 4601",
+      website: "https://coastlineliving.example.com",
+      logoURL: placeholderLogo("CL", "#3e7c8f"),
+    },
+    {
+      companyID: "CO102",
+      designerID: "D102",
+      companyName: "Brightwall Studio",
+      registrationNumber: "202610203G",
+      description: "Colourful feature walls and kids' rooms.",
+      location: "Punggol",
+      phone: "+65 6123 4602",
+      website: "https://brightwall.example.com",
+      logoURL: placeholderLogo("BS", "#b5654a"),
+    },
+    {
+      companyID: "CO103",
+      designerID: "D103",
+      companyName: "Oakline Interiors",
+      registrationNumber: "201912345H",
+      description: "Solid timber kitchens and wardrobes.",
+      location: "Bukit Timah",
+      phone: "+65 6123 4603",
+      website: "https://oakline.example.com",
+      logoURL: placeholderLogo("OI", "#7a5a3a"),
+    },
+  ],
+  // SIMULATED copy of ACRA's business register (shaped like ACRA's open data on data.gov.sg).
+  // Not real ACRA data. Looked up by UEN in the Verify ID Accounts ACRA check.
+  // D102's UEN (202610203G) is left out on purpose: "UEN not found".
+  acra_registry: [
+    { uen: "202601234A", entityName: "NORDIC NEST INTERIORS PTE. LTD.", status: "live", registeredAt: "2026-01-20" },
+    { uen: "202605678B", entityName: "STUDIO LINEA PTE. LTD.", status: "live", registeredAt: "2026-04-28" },
+    { uen: "202608765C", entityName: "HABITAT & CO. PTE. LTD.", status: "live", registeredAt: "2026-08-03" },
+    { uen: "202610001D", entityName: "FRESH START DESIGN PTE. LTD.", status: "live", registeredAt: "2026-10-12" },
+    { uen: "202602222E", entityName: "URBAN EDGE INTERIORS PTE. LTD.", status: "live", registeredAt: "2026-01-29" },
+    // Same UEN as Coastline Living, but registered under another name: "name mismatch".
+    { uen: "202610102F", entityName: "SEASIDE HOMES PTE. LTD.", status: "live", registeredAt: "2026-10-15" },
+    // Oakline Interiors exists but has been struck off the register.
+    { uen: "201912345H", entityName: "OAKLINE INTERIORS PTE. LTD.", status: "struck off", registeredAt: "2019-06-10" },
   ],
   // IDP 4 is not in this table: the designer deleted it (a hard delete), but customer C1's
   // like of it is still in idp_like, so the favourites list has to leave it out.
@@ -174,6 +316,7 @@ const HAND_MADE = {
     {
       idpID: 1,
       designerID: "D1",
+      createdAt: "2026-03-05T08:00:00.000Z",
       title: "Bright Scandinavian Living Room",
       description:
         "Light woods, soft textiles and plenty of natural light for a 3-room flat.",
@@ -186,6 +329,7 @@ const HAND_MADE = {
     {
       idpID: 2,
       designerID: "D1",
+      createdAt: "2026-03-05T08:00:00.000Z",
       title: "Industrial Loft Conversion",
       description:
         "Exposed brick, black steel and warm lighting for a condo loft.",
@@ -198,6 +342,7 @@ const HAND_MADE = {
     {
       idpID: 3,
       designerID: "D2",
+      createdAt: "2026-05-14T08:00:00.000Z",
       title: "Minimalist Co-working Office",
       description: "Clean lines and neutral tones for a 20-seat office.",
       style: "Minimalist",
@@ -284,6 +429,11 @@ function seed() {
   for (const table of new Set([...Object.keys(HAND_MADE), ...Object.keys(extraTables)])) {
     seedCache[table] = [...(HAND_MADE[table] ?? []), ...(extraTables[table] ?? [])];
   }
+  // DummyData also generates C2 and C3; the hand-made demo logins above replace those rows.
+  const handMadeIDs = new Set(HAND_MADE.user_account.map((a) => a.accountID));
+  seedCache.user_account = seedCache.user_account.filter(
+    (a, i) => i < HAND_MADE.user_account.length || !handMadeIDs.has(a.accountID),
+  );
   seedCache.idp_sequence = [{ lastIDPID: Math.max(HAND_MADE.idp_sequence[0].lastIDPID, lastIDPID ?? 0) }];
   return seedCache;
 }
@@ -297,14 +447,43 @@ function seedAllTables() {
   }
 }
 
+function addLegacyIDPCreationDates(rows) {
+  const knownSeedDates = {
+    1: "2026-03-05T08:00:00.000Z",
+    2: "2026-03-05T08:00:00.000Z",
+    3: "2026-05-14T08:00:00.000Z",
+  };
+  const storedPhotos = window.localStorage.getItem(KEY_PREFIX + "idp_photo");
+  const photos = storedPhotos ? JSON.parse(storedPhotos) : seed().idp_photo ?? [];
+  const firstUploadByIDP = new Map();
+  for (const photo of photos) {
+    if (!photo.uploadedAt) continue;
+    const firstUpload = firstUploadByIDP.get(photo.idpID);
+    if (!firstUpload || photo.uploadedAt < firstUpload) {
+      firstUploadByIDP.set(photo.idpID, photo.uploadedAt);
+    }
+  }
+
+  return rows.map((row) => {
+    if (row.createdAt) return row;
+    const createdAt =
+      knownSeedDates[row.idpID] ?? firstUploadByIDP.get(row.idpID);
+    return createdAt ? { ...row, createdAt } : row;
+  });
+}
+
 export function readTable(table) {
   if (typeof window === "undefined") return [];
   const key = KEY_PREFIX + table;
   try {
     const raw = window.localStorage.getItem(key);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const rows = JSON.parse(raw);
+      return table === "idp" ? addLegacyIDPCreationDates(rows) : rows;
+    }
     seedAllTables();
-    return JSON.parse(window.localStorage.getItem(key) ?? "[]");
+    const rows = JSON.parse(window.localStorage.getItem(key) ?? "[]");
+    return table === "idp" ? addLegacyIDPCreationDates(rows) : rows;
   } catch {
     // storage blocked or corrupted: fall back to the seed data
   }
@@ -313,4 +492,27 @@ export function readTable(table) {
 
 export function writeTable(table, rows) {
   window.localStorage.setItem(KEY_PREFIX + table, JSON.stringify(rows));
+}
+
+// Save the account and its verification together; restore written rows if saving fails.
+// Existing readTable / writeTable behavior is unchanged for other features.
+export function writeTables(tables) {
+  const updates = Object.entries(tables).map(([table, rows]) => ({
+    key: KEY_PREFIX + table,
+    value: JSON.stringify(rows),
+    previous: window.localStorage.getItem(KEY_PREFIX + table),
+  }));
+  const written = [];
+  try {
+    for (const update of updates) {
+      window.localStorage.setItem(update.key, update.value);
+      written.push(update);
+    }
+  } catch (error) {
+    for (const update of written.reverse()) {
+      if (update.previous === null) window.localStorage.removeItem(update.key);
+      else window.localStorage.setItem(update.key, update.previous);
+    }
+    throw error;
+  }
 }

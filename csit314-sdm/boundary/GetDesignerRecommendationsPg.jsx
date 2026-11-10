@@ -23,7 +23,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { GetDesignerRecommendationsController } from "@/controller/GetDesignerRecommendationsController";
 import { SessionController } from "@/controller/SessionController";
-import { PHOTO_NOT_FOUND } from "@/entity/DummyData";
+import { PHOTO_NOT_FOUND } from "@/boundary/PhotoFallback";
+import BackButton from "@/boundary/BackButton";
 
 export default function GetDesignerRecommendationsPg() {
   const [view, setView] = useState({ kind: "loading" });
@@ -62,6 +63,7 @@ export default function GetDesignerRecommendationsPg() {
 
   return (
     <main className="mx-auto w-full max-w-5xl p-8">
+      <BackButton fallbackHref="/" />
       <h1 className="text-3xl font-semibold">Recommended Designers</h1>
       <p className="mt-1 text-zinc-500">
         Designers picked for you from the IDPs you have liked.
@@ -93,13 +95,17 @@ export default function GetDesignerRecommendationsPg() {
       {view.kind === "list" && (
         <ol className="mt-6 grid gap-6 md:grid-cols-2">
           {view.recommendations.map((d) => (
-            <li key={d.designerID} className="rounded border p-4">
+            <li key={d.designerID} className="card card-hover p-5">
               <div className="flex items-start gap-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={d.logoURL}
                   alt={`${d.companyName} logo`}
-                  className="h-14 w-14 shrink-0 rounded"
+                  className="h-14 w-14 shrink-0 rounded-lg border object-cover"
+                  onError={(e) => {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = PHOTO_NOT_FOUND;
+                  }}
                 />
                 <div className="min-w-0">
                   <h2 className="text-lg font-semibold">{d.companyName}</h2>
@@ -113,10 +119,7 @@ export default function GetDesignerRecommendationsPg() {
               {d.topStyles.length > 0 && (
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {d.topStyles.map((s) => (
-                    <li
-                      key={s}
-                      className="rounded-full border px-2 py-0.5 text-xs"
-                    >
+                    <li key={s} className="chip">
                       {s}
                     </li>
                   ))}
@@ -126,12 +129,12 @@ export default function GetDesignerRecommendationsPg() {
               {d.samplePhotos.length > 0 ? (
                 <div className="mt-3 grid grid-cols-3 gap-2">
                   {d.samplePhotos.map((p) => (
-                    <Link key={p.idpID} href={`/idp/${p.idpID}`} title={p.title}>
+                    <Link key={p.idpID} href={`/customer/idp/${p.idpID}`} title={p.title}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={p.photoURL}
                         alt={p.title}
-                        className="aspect-[8/5] w-full rounded object-cover"
+                        className="photo rounded-md transition-opacity hover:opacity-85"
                         onError={(e) => {
                           e.currentTarget.onerror = null;
                           e.currentTarget.src = PHOTO_NOT_FOUND;

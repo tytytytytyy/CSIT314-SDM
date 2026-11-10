@@ -1,4 +1,22 @@
 // Control: PromoteIDPController
+// Feature: Promote IDP (Platform Manager)
+// The platform manager features an IDP between two dates. While a promotion is running, the
+// home feed shows that IDP first with a "Featured" badge (HomeController.getIDPFeed).
+//
+// Rules (validatePromotion):
+// - the IDP must exist                                         -> "notFound"
+// - the start date cannot be in the past                       -> "invalidStartDate"
+// - the end date must be after the start date                  -> "invalidEndDate"
+// - at most 10 promotions running on any one day                -> "maxPromotionsReached"
+// - the same IDP cannot have overlapping promotions             -> "dateOverlap"
+//
+// Methods:
+// - getIDPs(), getIDP(idpID)                                   -> IDP.listIDPs, IDP.getIDP
+// - validatePromotion(idpID, startDate, endDate)               -> IDP.getIDP, Promotion.getPromotions
+// - promoteIDP(idpID, startDate, endDate, createdBy)           -> Promotion.createPromotion
+//
+// Entities used: IDP, Promotion
+// Control: PromoteIDPController
 // Feature: Promote IDP (Platform Management)
 //
 // What goes here:
@@ -17,12 +35,13 @@
 // - Active promotions must be below MAX_ACTIVE_PROMOTIONS.
 //
 // Methods:
+// - getIDPs()                            list IDPs for selection
+// - getIDP(idpID)                        find the selected IDP
 // - validatePromotion(idpID, startDate, endDate)
 //     -> IDP.getIDP(idpID)
-//     -> Promotion.countActivePromotions() - changed to getPromotions
-//     -> Promotion.getActivePromotions()   (overlap check) - changed to getPromotions
-// - promoteIDP(idpID, startDate, endDate)
-//     createdBy = logged-in platform manager ID from the session
+//     -> Promotion.getPromotions()
+// - promoteIDP(idpID, startDate, endDate, createdBy)
+//     -> validatePromotion(...)
 //     -> Promotion.createPromotion(promotion)
 //
 // Entities used: Promotion, IDP
@@ -33,8 +52,12 @@ import { Promotion } from "@/entity/Promotion";
 const MAX_ACTIVE_PROMOTIONS = 10;
 
 export class PromoteIDPController {
+    static async getIDPs() {
+        return IDP.listIDPs(0, Number.MAX_SAFE_INTEGER);
+    }
+
     static async getIDP(idpID) {
-        return await IDP.getIDP(idpID);
+        return IDP.getIDP(idpID);
     }
     
     static async validatePromotion(idpID, startDate, endDate) {
@@ -86,5 +109,3 @@ export class PromoteIDPController {
         return { status: "ok" };
     }
 }
-
-

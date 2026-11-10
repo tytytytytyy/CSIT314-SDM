@@ -33,6 +33,7 @@ import IDPFormFields, {
   preparePhoto,
   toIDPInput,
 } from "@/boundary/IDPFormFields";
+import BackButton from "@/boundary/BackButton";
 
 export default function CreateIDPPg() {
   const router = useRouter();
@@ -93,7 +94,8 @@ export default function CreateIDPPg() {
 
   return (
     <main className="mx-auto w-full max-w-3xl p-8">
-      <p className="text-sm text-zinc-500">My IDPs</p>
+      <BackButton fallbackHref="/designer/idp" />
+      <p className="text-sm text-zinc-500">My Projects</p>
       <h1 className="text-3xl font-semibold">Create IDP</h1>
 
       <ErrorList messages={errors} />
@@ -141,11 +143,11 @@ export default function CreateIDPPg() {
           <button
             type="submit"
             disabled={isSaving}
-            className="rounded bg-zinc-900 px-5 py-2 text-white disabled:opacity-50"
+            className="btn btn-primary"
           >
             {isSaving ? "Creating..." : "Create IDP"}
           </button>
-          <Link href="/designer/idp" className="rounded border px-5 py-2">
+          <Link href="/designer/idp" className="btn">
             Cancel
           </Link>
         </div>

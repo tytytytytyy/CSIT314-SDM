@@ -2,40 +2,35 @@
 // Feature: Generate Platform Report (Platform Management)
 //
 // What goes here:
-// - Date range calculation for the chosen period, plus the previous period of the same length.
-// - Aggregation across entities for both periods.
-// - Comparison with the previous period.
+// - Build five consecutive date ranges ending with the selected period.
+// - Aggregate platform metrics for each range.
 //
 // Constants:
 // - REPORT_PERIODS = daily | weekly | monthly
 //
-// Report metrics (each for the current and previous period):
+// Report metrics (for each of the five periods):
 // - new customer accounts, new interior designer accounts   -> UserAccount.countNewAccounts(...)
 // - designers verified                                      -> DesignerVerification.countVerified(...)
 // - new IDPs                                                -> IDP.countIDPs(...)
 // - IDP views                                               -> IDPView.countViews(...)
 // - IDP likes                                               -> IDPLike.countLikes(...)
-// - promotions created                                      -> Promotion.countPromotions(...)
 //
 // Methods:
 // - validateReportRequest(period, referenceDate)   valid period, date not in the future
 // - calculateDateRange(period, referenceDate)       returns { startDate, endDate }
 // - calculatePreviousRange(period, startDate)       the period just before
-// - calculateChange(current, previous)              % change; handle previous = 0
 // - generateReport(period, referenceDate)           runs the above and returns the report
 //
-// Entities used: UserAccount, DesignerVerification, IDP, IDPView, IDPLike, Promotion
+// Entities used: UserAccount, DesignerVerification, IDP, IDPView, IDPLike
 //
 // Attributes: none
-
-//TODOOOOOOO need check if can add createdAt top IDPs
 
 import { UserAccount } from "@/entity/UserAccount";
 import { DesignerVerification } from "@/entity/DesignerVerification";
 import { IDP } from "@/entity/IDP";
 import { IDPView } from "@/entity/IDPView";
 import { IDPLike } from "@/entity/IDPLike";
-import { Promotion } from "@/entity/Promotion";
+import { toDateKey } from "@/lib/dates";
 
 export class GeneratePlatformReportController {
     static REPORT_PERIODS = ["daily", "weekly", "monthly"];
@@ -44,10 +39,9 @@ export class GeneratePlatformReportController {
         if (!this.REPORT_PERIODS.includes(period))
             return "Invalid report period";
 
-        const date = new Date(referenceDate);
-        const today = new Date();
-
-        if (date > today)
+        // Compare calendar days as "YYYY-MM-DD" text in local time. new Date("2026-11-10") would be
+        // midnight UTC (8 am in Singapore), so today's date counted as "the future" before 8 am.
+        if (String(referenceDate).slice(0, 10) > toDateKey(new Date()))
             return "Reference date cannot be in the future";
 
         return null;
@@ -116,11 +110,25 @@ export class GeneratePlatformReportController {
         };
     }
 
-    static calculateChange(current, previous) {
-        if (previous === 0)
-            return current === 0 ? 0 : null;
+    static async getPeriodMetrics(range) {
+        const [customerAccounts, designerAccounts, verifiedDesigners, idps, views, likes] =
+            await Promise.all([
+                UserAccount.countNewAccounts("customer", range.startDate, range.endDate),
+                UserAccount.countNewAccounts("designer", range.startDate, range.endDate),
+                DesignerVerification.countVerified(range.startDate, range.endDate),
+                IDP.countIDPs(range.startDate, range.endDate),
+                IDPView.countViews(null, range.startDate, range.endDate),
+                IDPLike.countLikes(null, range.startDate, range.endDate)
+            ]);
 
-        return ((current - previous) / previous) * 100;
+        return {
+            customerAccounts,
+            designerAccounts,
+            verifiedDesigners,
+            idps,
+            views,
+            likes
+        };
     }
 
     static async generateReport(period, referenceDate) {
@@ -132,76 +140,26 @@ export class GeneratePlatformReportController {
                 message: error
             };
 
-        const currentRange = this.calculateDateRange(period, referenceDate);
-        const previousRange = this.calculatePreviousRange(period, currentRange.startDate);
+        const newestFirstRanges = [this.calculateDateRange(period, referenceDate)];
+        while (newestFirstRanges.length < 5) {
+            const previousRange = this.calculatePreviousRange(
+                period,
+                newestFirstRanges[newestFirstRanges.length - 1].startDate,
+            );
+            newestFirstRanges.push(previousRange);
+        }
 
-        const customerAccountsCurrent = await UserAccount.countNewAccounts("customer", currentRange.startDate, currentRange.endDate);
-        const customerAccountsPrevious = await UserAccount.countNewAccounts("customer", previousRange.startDate, previousRange.endDate);
-
-        const designerAccountsCurrent = await UserAccount.countNewAccounts("designer", currentRange.startDate, currentRange.endDate);
-        const designerAccountsPrevious = await UserAccount.countNewAccounts("designer", previousRange.startDate, previousRange.endDate);
-
-        const verifiedCurrent = await DesignerVerification.countVerified(currentRange.startDate, currentRange.endDate);
-        const verifiedPrevious = await DesignerVerification.countVerified(previousRange.startDate, previousRange.endDate);
-
-        const idpsCurrent = await IDP.countIDPs(currentRange.startDate, currentRange.endDate);
-        const idpsPrevious = await IDP.countIDPs(previousRange.startDate, previousRange.endDate);
-
-        const viewsCurrent = await IDPView.countViews(null, currentRange.startDate, currentRange.endDate);
-        const viewsPrevious = await IDPView.countViews(null, previousRange.startDate, previousRange.endDate);
-
-        const likesCurrent = await IDPLike.countLikes(null, currentRange.startDate, currentRange.endDate);
-        const likesPrevious = await IDPLike.countLikes(null, previousRange.startDate, previousRange.endDate);
-
-        const promotionsCurrent = await Promotion.countPromotions(currentRange.startDate, currentRange.endDate);
-        const promotionsPrevious = await Promotion.countPromotions(previousRange.startDate, previousRange.endDate);
-
+        const newestFirstPeriods = await Promise.all(
+            newestFirstRanges.map(async (range) => ({
+                range,
+                metrics: await this.getPeriodMetrics(range)
+            })),
+        );
         return {
             status: "ok",
-            currentRange,
-            previousRange,
-
-            customerAccounts: {
-                current: customerAccountsCurrent,
-                previous: customerAccountsPrevious,
-                change: this.calculateChange(customerAccountsCurrent, customerAccountsPrevious)
-            },
-
-            designerAccounts: {
-                current: designerAccountsCurrent,
-                previous: designerAccountsPrevious,
-                change: this.calculateChange(designerAccountsCurrent, designerAccountsPrevious)
-            },
-
-            verifiedDesigners: {
-                current: verifiedCurrent,
-                previous: verifiedPrevious,
-                change: this.calculateChange(verifiedCurrent, verifiedPrevious)
-            },
-
-            idps: {
-                current: idpsCurrent,
-                previous: idpsPrevious,
-                change: this.calculateChange(idpsCurrent, idpsPrevious)
-            },
-
-            views: {
-                current: viewsCurrent,
-                previous: viewsPrevious,
-                change: this.calculateChange(viewsCurrent, viewsPrevious)
-            },
-
-            likes: {
-                current: likesCurrent,
-                previous: likesPrevious,
-                change: this.calculateChange(likesCurrent, likesPrevious)
-            },
-
-            promotions: {
-                current: promotionsCurrent,
-                previous: promotionsPrevious,
-                change: this.calculateChange(promotionsCurrent, promotionsPrevious)
-            }
+            periods: [...newestFirstPeriods]
+                .reverse()
+                .map(({ range, metrics }) => ({ range, ...metrics })),
         };
     }
 }

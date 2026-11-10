@@ -12,7 +12,7 @@
 // - getViewsByIDPs(idpIDs, startDate, endDate)          dashboard (raw events; the controller groups by day)
 
 import { readTable, writeTable } from "./LocalStore";
-import { isWithinDates } from "@/lib/dates";
+import { isWithinDateRange, isWithinDates } from "@/lib/dates";
 
 export class IDPView {
   viewID;
@@ -47,10 +47,9 @@ export class IDPView {
   //Counts views between the dates for report
   static async countViews(idpID, startDate, endDate) {
     return readTable("idp_view").filter(
-        (r) =>
-        (!idpID || r.idpID === idpID) &&
-        (!startDate || r.viewedAt >= startDate) &&
-        (!endDate || r.viewedAt <= endDate),
+      (row) =>
+        (!idpID || row.idpID === idpID) &&
+        isWithinDateRange(row.viewedAt, startDate, endDate),
     ).length;
-    }
+  }
 }

@@ -17,7 +17,8 @@
 // - MAX_SAMPLE_PHOTOS = 3       main photos of the designer's first IDPs, shown on the card
 //
 // Filters (all optional):
-// - keyword    company name or description
+// - keyword    company name, description or designer ID (e.g. D1)
+// - designerID exactly this designer (the "By ..." link on an IDP page)
 // - location   part of the company's location
 // - style      the designer has at least one IDP in this style
 // - category   the designer has at least one IDP in this category
@@ -67,6 +68,8 @@ export class BrowseInteriorDesignersController {
       if (value.length > MAX_TEXT_LENGTH)
         return `The ${field} must be ${MAX_TEXT_LENGTH} characters or fewer`;
     }
+    if (filters.designerID != null && typeof filters.designerID !== "string")
+      return "Invalid designer";
     if (filters.style && !IDP.STYLES.includes(filters.style))
       return "Invalid style";
     if (filters.category && !IDP.CATEGORIES.includes(filters.category))
@@ -81,6 +84,7 @@ export class BrowseInteriorDesignersController {
     const companies = await CompanyInformation.searchCompanies(filters);
     const designers = [];
     for (const company of companies) {
+      if (filters.designerID && company.designerID !== filters.designerID) continue;
       const account = await UserAccount.getAccount(company.designerID);
       if (account?.status !== "active") continue;
       const verification =
