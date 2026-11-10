@@ -1,33 +1,3 @@
-// Control: LoginController
-// Feature: Log in / Log out (Customer and Interior Designer)
-// User stories: C02 / ID02 log in, C03 / ID03 log out.
-//
-// What goes here:
-// - Checks the email and password against the user account, and that the account is active.
-// - Starts the session (SessionController) and tells the page where to go next.
-// - The same message for an unknown email and a wrong password, so nobody can find out
-//   which emails are registered.
-//
-// Fixed values:
-// - HOME_PAGES = customer -> "/", designer -> "/designer/idp"
-//
-// Methods:
-// - login(email, password)
-//     -> UserAccount.getAccountByEmail(email)
-//     -> SessionController.login(accountID, profileID)
-//   returns { status: "ok", profileID, homePage }
-//        or { status: "invalid" | "blocked", message }
-// - logout()
-//     -> SessionController.logout()
-// - getHomePage()                           where the logged-in user starts; "/login" when logged out
-// - getLoggedInDesignerCompany()            company name and logo for the designer menu bar;
-//                                           null unless a designer is logged in
-//     -> SessionController.getLoggedInDesignerID()
-//     -> CompanyInformation.getCompanyInfo(designerID)
-//
-// Entities used: UserAccount, CompanyInformation
-//
-// Attributes: none
 import { UserAccount } from "@/entity/UserAccount";
 import { CompanyInformation } from "@/entity/CompanyInformation";
 import { SessionController } from "@/controller/SessionController";

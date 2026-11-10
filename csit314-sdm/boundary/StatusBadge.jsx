@@ -1,6 +1,3 @@
-// Boundary helper: StatusBadge
-// Small coloured label for an IDP's status, shared by the designer pages.
-// The wording comes from IDViewIDPDetailsController.getStatusLabel.
 import { IDViewIDPDetailsController } from "@/controller/IDViewIDPDetailsController";
 
 export default function StatusBadge({ status }) {

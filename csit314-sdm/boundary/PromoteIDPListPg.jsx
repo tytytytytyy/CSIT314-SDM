@@ -1,19 +1,3 @@
-// Boundary: PromoteIDPListPg
-// Feature: Promote IDP (Platform Management) - step 1, choose the IDP to promote.
-// Clicking "Promote" on a card opens PromoteIDPPg for that IDP.
-//
-// Route: /platform-manager/promote-idp   (app/platform-manager/promote-idp/page.jsx renders this)
-//
-// What goes here (same card grid as the customer home page):
-// - Search box: title, IDP ID, designer ID, company, category or property type.
-// - Cards with the main photo, title, status, company and property details.
-// - Only the first MAX_VISIBLE_IDPS matches are shown; the customer refines the search for more.
-//
-// Methods:
-// - displayIDPs(idps)
-// - displayErrorMsg(message)
-//
-// Attributes: none
 "use client";
 
 import Link from "next/link";

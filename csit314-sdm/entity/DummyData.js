@@ -1,31 +1,3 @@
-// Entity support: DummyData
-// Generates the large set of test data the project spec asks for ("e.g. 100 records to each
-// datatype"), so the live demo looks like a real platform. LocalStore adds these rows to its
-// small hand-made data the first time the app runs in a browser.
-//
-// What it makes (same every time, because it uses a fixed random seed):
-// - 100 interior designers (D1 to D100). D1 to D5 are hand-made in LocalStore (accounts,
-//   verification, company info); D6 to D100 are generated here as verified, active designers
-//   with their own company info, so Browse Interior Designers shows them too.
-// - Each designer specialises in 1 to 3 styles, and all their IDPs use those styles (like a
-//   real firm). D1, D2, D3 and D5 follow their hand-made company descriptions in LocalStore.
-// - 10 IDPs per designer: 9 Completed and 1 In Progress (90% completed). D1's and D2's hand-made
-//   IDPs (1, 2 and 3) count towards their 10. D4 is still waiting for verification, so it has none.
-//   That gives 990 IDPs.
-// - 1 or 2 placeholder photos per IDP.
-// - 100 customers (C1 to C100; C2 to C100 generated) viewing and liking IDPs over the last 90 days.
-//   The demo designer D1's IDPs get more activity, so the Performance Dashboard has something to show.
-//
-// Dates are counted back from the day the data is first created, so the last 90 days always have data.
-// They follow a sensible order: account -> verified -> IDPs (with their photos) -> views and likes,
-// and a customer only views or likes after their account exists. This keeps the Generate Platform
-// Report consistent when it compares new designers, new IDPs, views and likes by date.
-//
-// Methods:
-// - generateDummyData(today)       extra rows per table, plus lastIDPID for the ID counter
-// - placeholderPhoto(label, colour)   a small coloured image with a label, as a data URL
-// - placeholderLogo(initials, colour) a square company logo with initials, as a data URL
-
 const DESIGNERS = 100;
 const IDPS_PER_DESIGNER = 10;
 const CUSTOMERS = 100;

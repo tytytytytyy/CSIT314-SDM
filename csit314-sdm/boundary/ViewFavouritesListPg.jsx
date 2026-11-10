@@ -1,23 +1,3 @@
-// Boundary: ViewFavouritesListPg
-// Features: View Favourites List and Unlike IDP (Customer)
-//
-// Route: /customer/favourites   (app/customer/favourites/page.jsx renders this)
-//
-// What goes here:
-// - List of IDPs the customer has liked: title, main photo and style.
-// - Each item links to ViewIDPPg.
-// - "Unlike" button on each item removes it from the list, with an Undo link.
-// - Empty message when nothing has been liked yet.
-// - Needs a logged-in customer.
-//
-// Methods:
-// - displayFavourites(favourites)
-// - displayEmptyList()
-// - displayErrorPg(message)
-// - unlikeIDP(item)                  customer clicks Unlike
-// - undoUnlike()                     customer clicks Undo
-//
-// Attributes: none
 "use client";
 
 import Link from "next/link";

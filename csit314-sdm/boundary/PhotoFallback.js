@@ -1,8 +1,3 @@
-// Boundary helper: PhotoFallback
-// Shown in place of a photo whose file can't be loaded (e.g. a demo photo not in public/demo-photos/).
-// Kept in the boundary layer because it is only about display; pages use it as
-//   <img src={url} onError={showPhotoFallback} />
-
 const svg =
   `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 100'>` +
   `<rect width='160' height='100' fill='#c7c7c7'/>` +

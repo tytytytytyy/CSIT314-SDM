@@ -1,23 +1,3 @@
-// Boundary: PromoteIDPPg
-// Feature: Promote IDP (Platform Management)
-// User story: As a platform manager, I want to promote an IDP for a set period,
-// so that high-quality projects get more visibility.
-//
-// Route: /platform-manager/promote-idp/[idpID]   (app/platform-manager/promote-idp/[idpID]/page.jsx renders this)
-//
-// What goes here (same layout as the IDP details pages):
-// - The selected IDP: main photo, title, status, company and details.
-// - Start date and end date pickers with a "Promote" button that submits to PromoteIDPController.
-// - Success / error messages (e.g. promotion limit reached, invalid dates).
-//
-// Methods:
-// - displayPromoteForm(idp)
-// - submitPromotion(idpID, startDate, endDate)
-// - displaySuccessPg()
-// - displayErrorPg(message)
-//
-// Attributes: none
-
 "use client";
 
 import Link from "next/link";

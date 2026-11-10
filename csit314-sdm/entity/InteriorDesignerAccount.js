@@ -1,4 +1,3 @@
-// Entity facade joining the project's existing account, company and verification tables.
 import { readTable, writeTables } from "./LocalStore";
 
 export class InteriorDesignerAccount {

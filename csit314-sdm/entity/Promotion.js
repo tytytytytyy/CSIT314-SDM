@@ -1,18 +1,4 @@
 // Entity: Promotion
-// A period during which an IDP is promoted (shown first to customers).
-// Active = today is between startDate and endDate, so promotions expire automatically.
-// Used by: Promote IDP, IDP search / browse ordering
-//
-// Database table: promotion
-//
-// Attributes:
-// - promotionID, idpID, startDate, endDate, createdBy (platform manager accountID)
-//
-// Methods:
-// - createPromotion(promotion)
-// - getPromotions()
-
-// Entity: Promotion
 // One IDP promoted (featured) by a platform manager between two dates.
 // Used by: Promote IDP (saving), Home feed (promoted IDPs shown first, marked "Featured")
 //

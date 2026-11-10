@@ -1,28 +1,3 @@
-// Control: SessionController
-// Remembers who is logged in (set by LoginController) and which pages need which role.
-// The session is kept in localStorage, so it lasts until the user logs out and is shared by
-// every tab of the same browser. Use a private window to be logged in as a second user.
-//
-// Rules / fixed values:
-// - Customer pages: "/" and "/customer/..."      need a logged-in customer
-// - Designer pages: "/designer/..."              need a logged-in designer
-// - User admin pages need no login here and use their own test flow.
-// - Platform manager pages need a logged-in platform manager.
-// - DEMO_ADMIN_ID = A1                           the user admin side is always "logged in" as A1
-//                                                for now (TEST stub until admins use the login page)
-//
-// Methods:
-// - login(accountID, profileID)             called by LoginController after the password check
-// - logout()
-// - getLoggedInAccount()                    { accountID, profileID }, or null when logged out
-// - getLoggedInCustomerID()                 null unless a customer is logged in
-// - getLoggedInDesignerID()                 null unless a designer is logged in
-// - getLoggedInADMINID()                    null unless a user admin is logged in
-// - getRequiredProfile(pathname)            "customer", "designer", "platformManager" or null
-// - onChange(callback)                      calls back when the session changes, in this tab or
-//                                           another; returns a function that stops listening
-//
-// Attributes: none
 const SESSION_KEY = "idp_platform_session";
 const CHANGE_EVENT = "idp-platform-session-change";
 

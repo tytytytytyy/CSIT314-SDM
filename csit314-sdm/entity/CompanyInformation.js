@@ -1,20 +1,3 @@
-// Entity: CompanyInformation
-// The interior design firm's details, one per designer account.
-// Used by: Verify ID Accounts, Browse Interior Designers, View IDP,
-//          Get Designer Recommendations
-//
-// Database table: company_information
-//
-// Attributes:
-// - companyID, designerID (accountID), companyName, registrationNumber, description,
-//   location, phone, website, logoURL
-//
-// Methods:
-// - getCompanyInfo(designerID)                          null if the designer has no company details
-// - searchCompanies(filters)                            keyword / location filters for browsing
-//     keyword  matches companyName or description, or is the designer ID, ignoring case
-//     location matches part of the location, ignoring case
-//     an empty filter matches every company
 import { readTable } from "./LocalStore";
 
 function contains(text, part) {

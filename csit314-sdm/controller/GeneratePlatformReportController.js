@@ -1,31 +1,3 @@
-// Control: GeneratePlatformReportController
-// Feature: Generate Platform Report (Platform Management)
-//
-// What goes here:
-// - Build five consecutive date ranges ending with the selected period.
-// - Aggregate platform metrics for each range.
-//
-// Constants:
-// - REPORT_PERIODS = daily | weekly | monthly
-//
-// Report metrics (for each of the five periods):
-// - new customer accounts, new interior designer accounts   -> UserAccount.countNewAccounts(...)
-// - designers verified                                      -> DesignerVerification.countVerified(...)
-// - new IDPs                                                -> IDP.countIDPs(...)
-// - IDP views                                               -> IDPView.countViews(...)
-// - IDP likes                                               -> IDPLike.countLikes(...)
-//
-// Methods:
-// - validateReportRequest(period, referenceDate)   valid period, date not in the future
-// - calculateDateRange(period, referenceDate)       returns { startDate, endDate }
-// - calculatePreviousRange(period, startDate)       the period just before
-// - generateReport(period, referenceDate)           runs the above and returns the report
-// - calculateChange(current, previous)              { direction: up | down | same, percent }
-//
-// Entities used: UserAccount, DesignerVerification, IDP, IDPView, IDPLike
-//
-// Attributes: none
-
 import { UserAccount } from "@/entity/UserAccount";
 import { DesignerVerification } from "@/entity/DesignerVerification";
 import { IDP } from "@/entity/IDP";

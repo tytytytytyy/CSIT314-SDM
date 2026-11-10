@@ -1,26 +1,3 @@
-// Boundary: ViewIDPPg
-// Features: View IDP and Like IDP (Customer). The Like button lives on the IDP page.
-//
-// Route: /customer/idp/[idpID]   (app/customer/idp/[idpID]/page.jsx renders this)
-//
-// What goes here:
-// - View IDP: title, photos, style, property type, category, budget, description. No login needed.
-// - "By <company> (D1)" links to Browse Interior Designers showing just that designer.
-// - Like IDP: a Like button. Clicking it calls LikeIDPController, then shows a success message and
-//   the liked state, or the "already in favourites" message.
-//
-// Methods:
-// - displayIDP(idpDetails)
-// - displayErrorPg(message)          e.g. "IDP not found"
-// - likeIDP(customerID, idpID)       customer clicks the Like button
-// - displaySuccessMsg()              "added to favourites"
-// - displayAlreadyLikedMsg()         "already in favourites"
-// - displayLikedState()              the Like button changes to "Liked"
-// - unlikeIDP(customerID, idpID)     customer clicks "Liked" again to remove it from favourites
-// - displayRemovedMsg()              "removed from favourites"
-// - displayUnlikedState()            the button changes back to "Like"
-//
-// Attributes: none
 "use client";
 
 import Link from "next/link";

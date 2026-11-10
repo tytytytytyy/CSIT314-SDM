@@ -1,21 +1,3 @@
-// Control: HomeController  (TEMPORARY - replace with the real IDP list / search feature)
-// Supplies the customer home page feed: every IDP, a page at a time, so the page can keep
-// loading more as the customer scrolls down.
-//
-// Fixed values:
-// - PAGE_SIZE = 12            IDPs per page
-//
-// Methods:
-// - getIDPFeed(offset, limit)     returns { cards, hasMore }; cards are in idpID order
-//     -> IDP.listIDPs(offset, limit + 1)          one extra to know whether more are left
-//     -> IDPPhoto.getPhotos(idpID)                first photo is the main photo
-//     -> CompanyInformation.getCompanyInfo(designerID)   who made the IDP
-//
-// Only IDPs by active, verified designers are shown (InteriorDesignerAccount.isActiveAndVerified).
-//
-// Entities used: IDP, IDPPhoto, CompanyInformation, Promotion, InteriorDesignerAccount
-//
-// Attributes: none
 import { IDP } from "@/entity/IDP";
 import { IDPPhoto } from "@/entity/IDPPhoto";
 import { CompanyInformation } from "@/entity/CompanyInformation";

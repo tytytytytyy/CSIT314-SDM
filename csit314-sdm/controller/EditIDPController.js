@@ -1,39 +1,3 @@
-// Control: EditIDPController
-// Feature: Edit IDP (Interior Designer)
-// Opened with the "Edit IDP" button on IDViewIDPDetailsPg.
-//
-// What goes here:
-// - Lets a designer change their IDP's details, status and photos.
-//
-// Constants:
-// - MAX_TITLE_LENGTH, MAX_DESCRIPTION_LENGTH
-// - MAX_PHOTOS_PER_IDP (10)
-// - MAX_PHOTO_LENGTH                         size limit of one photo (data URL length)
-//
-// Rules:
-// - Only the designer who owns the IDP can update it.
-// - Title, description, style, property type, category, budget and status are required.
-// - Style, category and status must be chosen from the fixed lists.
-// - The property type must belong to the category (e.g. Office is Commercial, HDB is Residential).
-// - Budget must be greater than 0.
-// - The IDP must keep 1 to 10 photos; new photos must be JPG / PNG / WebP and not too large.
-// - All-or-nothing: if saving fails part-way (browser storage full), nothing is changed.
-//
-// Methods:
-// - getEditFormData()                                       choices for the dropdowns
-// - getIDPForEdit(designerID, idpID)                        the form's current values
-//     -> IDP.getIDP(idpID)
-//     -> IDPPhoto.getPhotos(idpID)
-// - validateIDP(input, keptPhotoCount, newPhotos)            list of error messages
-// - editIDP(designerID, idpID, input, removedPhotoIDs, newPhotos)
-//     -> IDP.getIDP(idpID), IDPPhoto.getPhotos(idpID)
-//     -> IDPPhoto.addPhoto(photo) for each new photo
-//     -> IDP.updateIDP(idp)
-//     -> IDPPhoto.deletePhoto(photoID) for each removed photo
-//
-// Entities used: IDP, IDPPhoto
-//
-// Attributes: none
 import { IDP } from "@/entity/IDP";
 import { IDPPhoto } from "@/entity/IDPPhoto";
 import { IDViewIDPDetailsController } from "@/controller/IDViewIDPDetailsController";

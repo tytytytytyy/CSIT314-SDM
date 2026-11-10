@@ -1,9 +1,3 @@
-// Boundary: NavBar
-// Shared nav bar with the "Browse Designers" link (Browse Interior Designers trigger), the
-// "Recommended Designers" link (Get Designer Recommendations trigger) and the
-// "Favourites List" link (View Favourites List trigger), plus who is logged in and Log out.
-// Designer pages (/designer/...) show DesignerNavBar instead. The login page and anyone
-// logged out only get the site name and a Log in link.
 "use client";
 
 import Link from "next/link";

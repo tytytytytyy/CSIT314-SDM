@@ -1,27 +1,3 @@
-// Control: IDViewIDPDetailsController
-// Feature: View IDP Details (Interior Designer)
-// Not the same as ViewIDPController (Customer): a designer only sees their OWN IDPs,
-// sees each IDP's status (In Progress / Completed), and can go on to edit it (Edit IDP).
-// Designers cannot like IDPs; liking is a customer feature.
-//
-// Rules:
-// - The list only shows the logged-in designer's IDPs.
-// - The IDP must exist (not deleted).
-// - The IDP must belong to the logged-in designer.
-// - The list shows In Progress IDPs first, then Completed ones.
-//
-// Methods:
-// - getMyIDPs(designerID)                       the designer's IDP list, In Progress first
-//     -> IDP.getIDPsByDesigner(designerID)
-//     -> IDPPhoto.getPhotos(idpID) for each      first photo is the main photo
-// - viewIDPDetails(designerID, idpID)          one IDP in full
-//     -> IDP.getIDP(idpID)
-//     -> IDPPhoto.getPhotos(idpID)              only if the designer owns the IDP
-// - getStatusLabel(status)                      ongoing -> "In Progress", completed -> "Completed"
-//
-// Entities used: IDP, IDPPhoto
-//
-// Attributes: none
 import { IDP } from "@/entity/IDP";
 import { IDPPhoto } from "@/entity/IDPPhoto";
 

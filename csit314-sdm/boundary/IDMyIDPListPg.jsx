@@ -1,20 +1,3 @@
-// Boundary: IDMyIDPListPg
-// Feature: View IDP Details (Interior Designer) - step 1, the designer's own IDP list.
-// Clicking an IDP opens IDViewIDPDetailsPg.
-//
-// Route: /designer/idp   (app/designer/idp/page.jsx renders this)
-//
-// What goes here:
-// - The logged-in designer's IDPs: main photo, title, property type, category, status.
-// - How many are completed out of the total.
-// - Empty message when the designer has no IDPs yet.
-// - "Create IDP" button that opens CreateIDPPg (Create IDP).
-//
-// Methods:
-// - displayMyIDPs(myIDPs)
-// - displayEmptyList()
-//
-// Attributes: none
 "use client";
 
 import Link from "next/link";

@@ -1,7 +1,3 @@
-// Boundary helper: useSession
-// React hook that gives a page the logged-in account and re-renders it when the user logs in
-// or out. Returns undefined while the page is first drawn (the session lives in the browser),
-// then { accountID, profileID } or null.
 "use client";
 
 import { useSyncExternalStore } from "react";

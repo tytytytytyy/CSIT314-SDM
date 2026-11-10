@@ -1,22 +1,3 @@
-// Boundary: LoginPg
-// Feature: Log in (Customer, Interior Designer, User Admin and Platform Manager)
-//
-// Route: /login   (app/login/page.jsx renders this)
-//
-// What goes here:
-// - Email and password form. On success the user goes to their own home page
-//   (customer: /, designer: /designer/idp).
-// - Error message for missing fields, a wrong email or password, or a blocked account.
-// - Someone who is already logged in is sent straight to their home page.
-// - TEST helper: the demo accounts from entity/LocalStore.js, click one to fill the form.
-//
-// Methods:
-// - submitLogin(email, password)
-//     -> LoginController.login(email, password)
-// - displayErrorMsg(message)
-// - goToHomePage(homePage)
-//
-// Attributes: none
 "use client";
 
 import { useEffect, useState } from "react";

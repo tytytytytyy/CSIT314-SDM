@@ -1,7 +1,3 @@
-// Boundary helper: BackButton
-// "← Back" button that returns to the page the user came from. When there is no earlier page
-// in this tab (e.g. the link was opened in a new tab), it goes to `fallbackHref` instead.
-// Not shown on the login page or on each role's home page.
 "use client";
 
 import { useRouter } from "next/navigation";

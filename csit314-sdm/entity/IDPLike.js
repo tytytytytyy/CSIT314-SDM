@@ -1,23 +1,3 @@
-// Entity: IDPLike
-// One like by a customer on an IDP (unique per customer + IDP). The customer's
-// favourites list is the set of their likes.
-// Used by: Like IDP, View Favourites List, View IDP, Get Designer Recommendations,
-//          IDP Performance Dashboard, Browse Interior Designers, Generate Platform Report
-//
-// Database table: idp_like   (unique key on customerID + idpID)
-//
-// Attributes:
-// - likeID, customerID, idpID, likedAt
-//
-// Methods:
-// - isLiked(customerID, idpID)                          has this customer already liked it?
-// - addLike(customerID, idpID)                          true once the like is saved
-// - removeLike(customerID, idpID)                       true if a like was removed
-// - getLikesByCustomer(customerID)                      newest first
-// - countLikes(idpID, startDate, endDate)
-// - getLikesByIDPs(idpIDs, startDate, endDate)          dashboard (raw events; the controller groups by day)
-//
-// countLikes: startDate / endDate are optional; leave them out to count every like.
 import { readTable, writeTable } from "./LocalStore";
 import { isWithinDateRange, isWithinDates } from "@/lib/dates";
 

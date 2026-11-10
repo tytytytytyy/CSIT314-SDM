@@ -1,38 +1,3 @@
-// Control: VerifyIDAccountsController
-// Feature: Verify ID Accounts (User Admin)
-//
-// What goes here:
-// - The verification status workflow: pending -> approved (account becomes active)
-//   or pending -> rejected (account becomes rejected).
-// - Records who reviewed it (logged-in admin ID from the session) and when.
-//
-// Rules:
-// - Only a verification that is still "pending" can be approved or rejected.
-// - A reject reason is required (not empty) when rejecting.
-//
-// - The automatic ACRA check: each pending firm's UEN is looked up in a simulated copy of
-//   ACRA's business register. Live UEN + matching name -> approved automatically (reviewedBy
-//   "SYSTEM"); name mismatch, UEN not found or struck off -> stays pending for the admin.
-//
-// Methods:
-// - getAdminID()                         the logged-in admin; refuses anyone who is not an active admin
-//     -> SessionController.getLoggedInAdminID(), UserAccount.getAccount(id)
-// - getAccounts(status = "all"), getPendingAccounts(), getAccountDetails(accountID)
-//     -> InteriorDesignerAccount
-// - approveAccount(accountID)            pending -> active / approved, reviewedBy = admin, reviewedAt = now
-// - rejectAccount(accountID, reason)     pending -> rejected, with the reason
-//     -> InteriorDesignerAccount.updateVerification(accountID, status, adminID, reason)
-// - normaliseCompanyName(name)           "Habitat & Co. Pte. Ltd." -> "HABITAT AND CO"
-// - checkUENWithACRA(accountID)          { result: matched | nameMismatch | notFound | struckOff,
-//                                          registeredName, registryStatus }
-//     -> ACRARegistry.findByUEN(uen)
-// - runACRACheck()                       checks every pending account; returns { approved, flagged }
-//     -> InteriorDesignerAccount.getPendingAccounts(), updateVerification(accountID, "active", "SYSTEM")
-//
-// Entities used: InteriorDesignerAccount, UserAccount, ACRARegistry
-//
-// Attributes: none
-
 import { InteriorDesignerAccount } from "@/entity/InteriorDesignerAccount";
 import { SessionController } from "@/controller/SessionController";
 import { UserAccount } from "@/entity/UserAccount";

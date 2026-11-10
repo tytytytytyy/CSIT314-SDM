@@ -1,19 +1,3 @@
-// Entity: IDPPhoto
-// Photos belonging to an IDP.
-// Used by: Create / Edit / View IDP, View Favourites List
-//
-// Database table: idp_photo
-//
-// Attributes:
-// - photoID, idpID, photoURL, caption, sortOrder, uploadedAt
-//
-// Methods:
-// - addPhoto(photo)
-// - getPhotos(idpID)                                    ordered by sortOrder, first is the main photo
-// - getMainPhotos(idpIDs)                               Map idpID -> main photoURL, for lists
-// - deletePhoto(photoID)
-//
-// photoURL is a data: URL while the data lives in the browser (LocalStore).
 import { readTable, writeTable } from "./LocalStore";
 
 export class IDPPhoto {

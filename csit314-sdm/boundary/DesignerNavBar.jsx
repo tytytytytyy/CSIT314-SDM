@@ -1,6 +1,3 @@
-// Boundary: DesignerNavBar
-// Nav bar for interior designer pages (/designer/...). NavBar shows this one instead of the
-// customer bar. Shows the logged-in designer's company logo and name, and Log out.
 "use client";
 
 import Link from "next/link";

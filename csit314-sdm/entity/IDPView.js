@@ -1,16 +1,3 @@
-// Entity: IDPView
-// One view event, recorded when a customer opens an IDP.
-// Used by: View IDP, IDP Performance Dashboard, Generate Platform Report
-//
-// Database table: idp_view
-//
-// Attributes:
-// - viewID, idpID, customerID (null if not logged in), viewedAt
-//
-// Methods:
-// - createView(idpID, customerID)                       View IDP records one view
-// - getViewsByIDPs(idpIDs, startDate, endDate)          dashboard (raw events; the controller groups by day)
-
 import { readTable, writeTable } from "./LocalStore";
 import { isWithinDateRange, isWithinDates } from "@/lib/dates";
 

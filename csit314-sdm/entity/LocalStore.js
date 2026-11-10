@@ -1,16 +1,3 @@
-// Entity support: LocalStore
-// Stand-in for the database while the team has none. Each "table" is a JSON array in
-// the browser's localStorage, filled with dummy data the first time it is read.
-// Replace readTable / writeTable with real queries later; the entity methods stay the same.
-//
-// Database tables: idp, idp_photo, idp_like, idp_view, idp_sequence (next-ID counter for idp),
-//                  user_account, designer_verification, company_information
-//
-// The hand-made rows below are the special cases the unit tests and demo rely on. The large set
-// of generated dummy data (entity/DummyData.js) is added to them the first time the app runs.
-//
-// Bump KEY_PREFIX when the seed data or the row shapes change, so old browser data is ignored.
-
 import { generateDummyData, placeholderLogo, demoPhotoURL } from "./DummyData";
 
 const KEY_PREFIX = "idp_platform_v12_";

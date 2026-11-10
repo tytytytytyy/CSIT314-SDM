@@ -1,24 +1,3 @@
-// Boundary: EditIDPPg
-// Feature: Edit IDP (Interior Designer)
-// Opened with the "Edit IDP" button on IDViewIDPDetailsPg.
-//
-// Route: /designer/idp/[idpID]/edit   (app/designer/idp/[idpID]/edit/page.jsx renders this)
-//
-// What goes here:
-// - Form filled with the IDP's current values (fields shared with Create IDP: IDPFormFields).
-// - Current photos with a Remove / Undo button each.
-// - Upload more photos (they are shrunk in the browser before saving, to save space).
-// - "Save changes" submits to EditIDPController; "Cancel" goes back without saving.
-// - No business rules here: all checking is done by EditIDPController.
-//
-// Methods:
-// - displayEditForm(idpDetails, formData)
-// - submitEdit()
-// - displaySuccessPg()               goes back to the details page with an "IDP updated" message
-// - displayErrorMsg(errors)          e.g. "Title is required", "At least one photo is required"
-// - displayErrorPg(message)          "IDP not found" or "You can only update your own IDPs"
-//
-// Attributes: none
 "use client";
 
 import Link from "next/link";

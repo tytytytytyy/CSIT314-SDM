@@ -1,23 +1,3 @@
-// Boundary: IDViewIDPDetailsPg
-// Feature: View IDP Details (Interior Designer) - step 2, one IDP in full.
-// Opened from IDMyIDPListPg.
-// Not the same as ViewIDPPg (Customer): only the owner can open it, it shows the status
-// (In Progress / Completed) and photo captions, and it has an Edit button instead of a
-// Like button (designers cannot like IDPs).
-//
-// Route: /designer/idp/[idpID]   (app/designer/idp/[idpID]/page.jsx renders this)
-//
-// What goes here:
-// - Title, status, photos with captions, style, property type, category, budget, description.
-// - "Edit IDP" button that opens EditIDPPg (Edit IDP).
-// - "IDP created" / "IDP updated" message after Create IDP / Edit IDP saves.
-//
-// Methods:
-// - displayIDPDetails(idpDetails)
-// - displaySavedMsg(message)         shown after Create IDP / Edit IDP saves
-// - displayErrorPg(message)          "IDP not found" or "You can only view your own IDPs"
-//
-// Attributes: none
 "use client";
 
 import Link from "next/link";

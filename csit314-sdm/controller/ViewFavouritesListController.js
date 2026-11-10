@@ -1,19 +1,3 @@
-// Control: ViewFavouritesListController
-// Feature: View Favourites List (Customer)
-//
-// What goes here:
-// - Loads the logged-in customer's liked IDPs, newest like first.
-// - Leaves out IDPs the designer has removed (IDP.getIDP returns null when the designer has deleted the IDP).
-//
-// Methods:
-// - getFavourites(customerID)
-//     -> IDPLike.getLikesByCustomer(customerID)
-//     -> IDP.getIDP(idpID) for each like
-//     -> IDPPhoto.getPhotos(idpID)              first photo is the main photo
-//
-// Entities used: IDPLike, IDP, IDPPhoto
-//
-// Attributes: none
 import { IDP } from "@/entity/IDP";
 import { IDPLike } from "@/entity/IDPLike";
 import { IDPPhoto } from "@/entity/IDPPhoto";

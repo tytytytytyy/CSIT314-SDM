@@ -1,33 +1,3 @@
-// Entity: IDP (Interior Design Project)
-// A project posted by an interior designer.
-// Used by: Create / Edit / View IDP, Promote IDP, IDP Performance Dashboard, Like IDP,
-//          View Favourites List, Browse Interior Designers, Get Designer Recommendations,
-//          Generate Platform Report
-//
-// Database table: idp
-//
-// Attributes:
-// - idpID, designerID, title, description, style, propertyType, category, budget, status, createdAt
-//   (status = ongoing | completed)
-//
-// Methods:
-// - getIDP(idpID)                                       null if there is no such IDP (e.g. the designer deleted it)
-// - createIDP(idp)
-// - updateIDP(idp)
-// - getIDPsByDesigner(designerID)
-// - listIDPs(offset, limit)                             home page feed, in idpID order
-// - countIDPs(startDate, endDate)                       platform report
-// - deleteIDP(idpID)                                    used to undo a failed Create IDP
-//
-// Implemented so far: getIDP (View IDP, Like IDP, View Favourites List),
-// getIDPsByDesigner (ID View IDP Details), listIDPs (home page), updateIDP (Edit IDP),
-// createIDP and deleteIDP (ID Create IDP).
-//
-// Fixed values:
-// - STATUSES       = ongoing | completed   (shown as "In Progress" / "Completed")
-// - CATEGORIES     = Residential | Commercial
-// - PROPERTY_TYPES = HDB, Condo, Landed (Residential); Office, Retail, F&B (Commercial)
-// - STYLES         = Scandinavian, Industrial, Minimalist, ...
 import { readTable, writeTable } from "./LocalStore";
 import { isWithinDateRange } from "@/lib/dates";
 
