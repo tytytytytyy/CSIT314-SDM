@@ -88,7 +88,6 @@ export default function HomePg() {
       {featuredCards.length > 0 && (
         <section className="mb-10">
           <h1 className="text-3xl font-semibold">Featured projects</h1>
-          <p className="mt-1 text-sm text-zinc-500">Hand-picked by the IDP Platform team.</p>
           <CardGrid cards={featuredCards} />
         </section>
       )}
