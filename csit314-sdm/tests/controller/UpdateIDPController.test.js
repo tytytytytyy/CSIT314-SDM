@@ -9,6 +9,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { UpdateIDPController } from "@/controller/UpdateIDPController";
 import { IDP } from "@/entity/IDP";
 import { IDPPhoto } from "@/entity/IDPPhoto";
+import { readTable, writeTable } from "@/entity/LocalStore";
 
 const C = UpdateIDPController;
 
@@ -177,6 +178,19 @@ describe("validateIDP", () => {
 });
 
 describe("updateIDP", () => {
+  it("keeps the IDP's creation date, even when every photo is replaced", async () => {
+    // An older IDP created on 10 Jan, with one photo uploaded that day.
+    writeTable("idp", [...readTable("idp"), { ...validInput({ status: "completed" }), idpID: 50, designerID: "D1", createdAt: "2026-01-10T08:00:00.000Z" }]);
+    writeTable("idp_photo", [...readTable("idp_photo"), { photoID: "P50", idpID: 50, photoURL: "/demo-photos/industrial-kitchen.jpg", caption: "", sortOrder: 1, uploadedAt: "2026-01-10T08:01:00.000Z" }]);
+
+    const result = await C.updateIDP("D1", 50, validInput({ title: "Updated title" }), ["P50"], [newPhoto()]);
+
+    expect(result.success).toBe(true);
+    const idp = await IDP.getIDP(50);
+    expect(idp.title).toBe("Updated title");
+    expect(idp.createdAt).toBe("2026-01-10T08:00:00.000Z");
+  });
+
   it("saves the changed details and status", async () => {
     const result = await C.updateIDP(
       "D1",
