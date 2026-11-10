@@ -1,6 +1,6 @@
 // Entity: IDP (Interior Design Project)
 // A project posted by an interior designer.
-// Used by: Create / Update / View IDP, Promote IDP, IDP Performance Dashboard, Like IDP,
+// Used by: Create / Edit / View IDP, Promote IDP, IDP Performance Dashboard, Like IDP,
 //          View Favourites List, Browse Interior Designers, Get Designer Recommendations,
 //          Generate Platform Report
 //
@@ -20,7 +20,7 @@
 // - deleteIDP(idpID)                                    used to undo a failed Create IDP
 //
 // Implemented so far: getIDP (View IDP, Like IDP, View Favourites List),
-// getIDPsByDesigner (ID View IDP Details), listIDPs (home page), updateIDP (ID Update IDP),
+// getIDPsByDesigner (ID View IDP Details), listIDPs (home page), updateIDP (Edit IDP),
 // createIDP and deleteIDP (ID Create IDP).
 //
 // Fixed values:

@@ -1,24 +1,3 @@
-// Boundary: GeneratePlatformReportPg
-// Feature: Generate Platform Report (Platform Management)
-// User story: As a platform manager, I want to generate a platform report for a chosen
-// period (e.g. daily, weekly, monthly), so that I can track how the platform is performing.
-//
-// Route: /platform-manager/report   (app/platform-manager/report/page.jsx renders this)
-//
-// What goes here (same look as the designer's Performance Dashboard):
-// - Period selector (daily / weekly / monthly) with a "Generate report" button. Daily: pick a day.
-//   Weekly: pick any day, and the chosen Monday-Sunday week is shown. Monthly: pick a month and year.
-// - Opens with this week's report already shown.
-// - Summary tiles: each metric for the current period, and how it changed from the period before.
-// - Table of six metrics for five consecutive periods, and a small chart per metric.
-//
-// Methods:
-// - submitReportRequest(period, referenceDate)   calls GeneratePlatformReportController.generateReport(...)
-// - displayReport(report)
-// - displayErrorMsg(message)
-//
-// Attributes: none
-
 "use client";
 
 import { useEffect, useState } from "react";

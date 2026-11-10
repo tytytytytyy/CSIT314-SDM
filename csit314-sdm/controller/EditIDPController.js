@@ -1,5 +1,5 @@
-// Control: UpdateIDPController
-// Feature: Update IDP (Interior Designer)
+// Control: EditIDPController
+// Feature: Edit IDP (Interior Designer)
 // Opened with the "Edit IDP" button on IDViewIDPDetailsPg.
 //
 // What goes here:
@@ -20,12 +20,12 @@
 // - All-or-nothing: if saving fails part-way (browser storage full), nothing is changed.
 //
 // Methods:
-// - getUpdateFormData()                                       choices for the dropdowns
-// - getIDPForUpdate(designerID, idpID)                        the form's current values
+// - getEditFormData()                                       choices for the dropdowns
+// - getIDPForEdit(designerID, idpID)                        the form's current values
 //     -> IDP.getIDP(idpID)
 //     -> IDPPhoto.getPhotos(idpID)
 // - validateIDP(input, keptPhotoCount, newPhotos)            list of error messages
-// - updateIDP(designerID, idpID, input, removedPhotoIDs, newPhotos)
+// - editIDP(designerID, idpID, input, removedPhotoIDs, newPhotos)
 //     -> IDP.getIDP(idpID), IDPPhoto.getPhotos(idpID)
 //     -> IDPPhoto.addPhoto(photo) for each new photo
 //     -> IDP.updateIDP(idp)
@@ -40,14 +40,14 @@ import { IDViewIDPDetailsController } from "@/controller/IDViewIDPDetailsControl
 
 // The values the designer typed / picked in the form.
 // One photo the designer chose to upload.
-export class UpdateIDPController {
+export class EditIDPController {
   static MAX_TITLE_LENGTH = 100;
   static MAX_DESCRIPTION_LENGTH = 2000;
   static MAX_PHOTOS_PER_IDP = 10;
   static MAX_PHOTO_LENGTH = 1_000_000; // about 750 KB of image data
   static ALLOWED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
-  static getUpdateFormData() {
+  static getEditFormData() {
     return {
       styles: [...IDP.STYLES],
       categories: [...IDP.CATEGORIES],
@@ -63,12 +63,12 @@ export class UpdateIDPController {
   }
 
   // Same ownership rules as viewing the details.
-  static async getIDPForUpdate(designerID, idpID) {
+  static async getIDPForEdit(designerID, idpID) {
     return IDViewIDPDetailsController.viewIDPDetails(designerID, idpID);
   }
 
   static validateIDP(input, keptPhotoCount, newPhotos) {
-    const C = UpdateIDPController;
+    const C = EditIDPController;
     const errors = [];
     const title = input.title.trim();
     const description = input.description.trim();
@@ -121,7 +121,7 @@ export class UpdateIDPController {
     return errors;
   }
 
-  static async updateIDP(designerID, idpID, input, removedPhotoIDs, newPhotos) {
+  static async editIDP(designerID, idpID, input, removedPhotoIDs, newPhotos) {
     const idp = await IDP.getIDP(idpID);
     if (!idp) return { success: false, errors: ["IDP not found"] };
     if (idp.designerID !== designerID)
@@ -134,7 +134,7 @@ export class UpdateIDPController {
     );
     const keptCount = currentPhotos.length - toRemove.length;
 
-    const errors = UpdateIDPController.validateIDP(input, keptCount, newPhotos);
+    const errors = EditIDPController.validateIDP(input, keptCount, newPhotos);
     if (errors.length > 0) return { success: false, errors };
 
     // New photos go after the existing ones. The lowest sortOrder left is the main photo.

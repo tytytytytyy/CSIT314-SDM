@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import UpdateIDPPg from "@/boundary/UpdateIDPPg";
+import EditIDPPg from "@/boundary/EditIDPPg";
 
 // Needs a logged-in user: LoginGate (app/layout.jsx) shows this page only after reading the
 // session in the browser, so it cannot be part of the instant static shell.
@@ -13,12 +13,12 @@ export function generateStaticParams() {
 export default function Page({ params }) {
   return (
     <Suspense fallback={<p className="p-8">Loading...</p>}>
-      <UpdateIDPRoute params={params} />
+      <EditIDPRoute params={params} />
     </Suspense>
   );
 }
 
-async function UpdateIDPRoute({ params }) {
+async function EditIDPRoute({ params }) {
   const { idpID } = await params;
-  return <UpdateIDPPg idpID={Number(idpID)} />;
+  return <EditIDPPg idpID={Number(idpID)} />;
 }

@@ -1,30 +1,10 @@
-// Boundary: CreateIDPPg
-// Feature: Create IDP (Interior Designer)
-// Opened with the "Create IDP" button on IDMyIDPListPg.
-//
-// Route: /designer/idp/create   (app/designer/idp/create/page.jsx renders this)
-//
-// What goes here:
-// - Empty form (fields shared with Update IDP: IDPFormFields). Status starts as Completed,
-//   since most portfolio projects are finished ones.
-// - Upload 1 to 10 photos (they are shrunk in the browser before saving, to save space).
-// - "Create IDP" submits to CreateIDPController; "Cancel" goes back without saving.
-// - No business rules here: all checking is done by CreateIDPController.
-//
-// Methods:
-// - displayCreateForm(formData)
-// - submitIDP()
-// - displaySuccessPg(idpID)          opens the new IDP's details page with an "IDP created" message
-// - displayErrorMsg(errors)          e.g. "Title is required", "At least one photo is required"
-//
-// Attributes: none
 "use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CreateIDPController } from "@/controller/CreateIDPController";
-import { UpdateIDPController } from "@/controller/UpdateIDPController";
+import { EditIDPController } from "@/controller/EditIDPController";
 import { SessionController } from "@/controller/SessionController";
 import IDPFormFields, {
   ErrorList,
@@ -115,7 +95,7 @@ export default function CreateIDPPg() {
 
         <section>
           <p className="text-sm font-medium">
-            Photos ({photos.length} of {UpdateIDPController.MAX_PHOTOS_PER_IDP}
+            Photos ({photos.length} of {EditIDPController.MAX_PHOTOS_PER_IDP}
             ). The first photo is the main photo.
           </p>
           {photos.length > 0 && (
