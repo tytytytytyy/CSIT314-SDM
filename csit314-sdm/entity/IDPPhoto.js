@@ -1,6 +1,6 @@
 // Entity: IDPPhoto
 // Photos belonging to an IDP.
-// Used by: Create / Update / View IDP, View Favourites List
+// Used by: Create / Edit / View IDP, View Favourites List
 //
 // Database table: idp_photo
 //

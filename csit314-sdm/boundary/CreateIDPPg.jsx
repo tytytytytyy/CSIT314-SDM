@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CreateIDPController } from "@/controller/CreateIDPController";
-import { UpdateIDPController } from "@/controller/UpdateIDPController";
+import { EditIDPController } from "@/controller/EditIDPController";
 import { SessionController } from "@/controller/SessionController";
 import IDPFormFields, {
   ErrorList,
@@ -95,7 +95,7 @@ export default function CreateIDPPg() {
 
         <section>
           <p className="text-sm font-medium">
-            Photos ({photos.length} of {UpdateIDPController.MAX_PHOTOS_PER_IDP}
+            Photos ({photos.length} of {EditIDPController.MAX_PHOTOS_PER_IDP}
             ). The first photo is the main photo.
           </p>
           {photos.length > 0 && (

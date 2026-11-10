@@ -1,5 +1,5 @@
 // Boundary helper: IDPFormFields
-// The form fields shared by CreateIDPPg (Create IDP) and UpdateIDPPg (Update IDP):
+// The form fields shared by CreateIDPPg (Create IDP) and EditIDPPg (Edit IDP):
 // title, description, status, style, category, property type, budget.
 // Also holds small UI helpers both pages use. No business rules here.
 "use client";

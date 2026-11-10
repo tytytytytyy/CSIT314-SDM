@@ -9,12 +9,12 @@
 //
 // What goes here:
 // - Title, status, photos with captions, style, property type, category, budget, description.
-// - "Edit IDP" button that opens UpdateIDPPg (Update IDP).
-// - "IDP created" / "IDP updated" message after Create IDP / Update IDP saves.
+// - "Edit IDP" button that opens EditIDPPg (Edit IDP).
+// - "IDP created" / "IDP updated" message after Create IDP / Edit IDP saves.
 //
 // Methods:
 // - displayIDPDetails(idpDetails)
-// - displaySavedMsg(message)         shown after Create IDP / Update IDP saves
+// - displaySavedMsg(message)         shown after Create IDP / Edit IDP saves
 // - displayErrorPg(message)          "IDP not found" or "You can only view your own IDPs"
 //
 // Attributes: none

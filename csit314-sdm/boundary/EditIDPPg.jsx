@@ -1,5 +1,5 @@
-// Boundary: UpdateIDPPg
-// Feature: Update IDP (Interior Designer)
+// Boundary: EditIDPPg
+// Feature: Edit IDP (Interior Designer)
 // Opened with the "Edit IDP" button on IDViewIDPDetailsPg.
 //
 // Route: /designer/idp/[idpID]/edit   (app/designer/idp/[idpID]/edit/page.jsx renders this)
@@ -8,12 +8,12 @@
 // - Form filled with the IDP's current values (fields shared with Create IDP: IDPFormFields).
 // - Current photos with a Remove / Undo button each.
 // - Upload more photos (they are shrunk in the browser before saving, to save space).
-// - "Save changes" submits to UpdateIDPController; "Cancel" goes back without saving.
-// - No business rules here: all checking is done by UpdateIDPController.
+// - "Save changes" submits to EditIDPController; "Cancel" goes back without saving.
+// - No business rules here: all checking is done by EditIDPController.
 //
 // Methods:
-// - displayUpdateForm(idpDetails, formData)
-// - submitUpdate()
+// - displayEditForm(idpDetails, formData)
+// - submitEdit()
 // - displaySuccessPg()               goes back to the details page with an "IDP updated" message
 // - displayErrorMsg(errors)          e.g. "Title is required", "At least one photo is required"
 // - displayErrorPg(message)          "IDP not found" or "You can only update your own IDPs"
@@ -24,7 +24,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { UpdateIDPController } from "@/controller/UpdateIDPController";
+import { EditIDPController } from "@/controller/EditIDPController";
 import { SessionController } from "@/controller/SessionController";
 import IDPFormFields, {
   ErrorList,
@@ -35,7 +35,7 @@ import IDPFormFields, {
 } from "@/boundary/IDPFormFields";
 import BackButton from "@/boundary/BackButton";
 
-export default function UpdateIDPPg({ idpID }) {
+export default function EditIDPPg({ idpID }) {
   const router = useRouter();
   const [view, setView] = useState({ kind: "loading" });
   const [values, setValues] = useState(null);
@@ -44,7 +44,7 @@ export default function UpdateIDPPg({ idpID }) {
   const [errors, setErrors] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
 
-  const displayUpdateForm = (idpDetails, formData) => {
+  const displayEditForm = (idpDetails, formData) => {
     const { idp } = idpDetails;
     setValues({
       title: idp.title,
@@ -65,10 +65,10 @@ export default function UpdateIDPPg({ idpID }) {
   const displaySuccessPg = () =>
     router.push(`/designer/idp/${idpID}?updated=1`);
 
-  const submitUpdate = async () => {
+  const submitEdit = async () => {
     if (!values) return;
     setIsSaving(true);
-    const result = await UpdateIDPController.updateIDP(
+    const result = await EditIDPController.editIDP(
       SessionController.getLoggedInDesignerID(),
       idpID,
       toIDPInput(values),
@@ -83,14 +83,14 @@ export default function UpdateIDPPg({ idpID }) {
   useEffect(() => {
     // Designer clicks "Edit IDP" -> the page asks the controller for the current values.
     const load = async () => {
-      const result = await UpdateIDPController.getIDPForUpdate(
+      const result = await EditIDPController.getIDPForEdit(
         SessionController.getLoggedInDesignerID(),
         idpID,
       );
       if (result.status === "ok" && result.details) {
-        displayUpdateForm(
+        displayEditForm(
           result.details,
-          UpdateIDPController.getUpdateFormData(),
+          EditIDPController.getEditFormData(),
         );
       } else if (result.status === "notOwner")
         displayErrorPg("You can only update your own IDPs");
@@ -139,7 +139,7 @@ export default function UpdateIDPPg({ idpID }) {
         className="mt-6 flex flex-col gap-5"
         onSubmit={(event) => {
           event.preventDefault();
-          submitUpdate();
+          submitEdit();
         }}
       >
         <IDPFormFields
@@ -150,7 +150,7 @@ export default function UpdateIDPPg({ idpID }) {
 
         <section>
           <p className="text-sm font-medium">
-            Photos ({photoCount} of {UpdateIDPController.MAX_PHOTOS_PER_IDP})
+            Photos ({photoCount} of {EditIDPController.MAX_PHOTOS_PER_IDP})
           </p>
           <ul className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
             {details.photos.map((photo) => {

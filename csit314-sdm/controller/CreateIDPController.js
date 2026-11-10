@@ -6,8 +6,8 @@
 // - Validates a new IDP and saves it with its photos for the logged-in designer.
 //
 // Rules:
-// - Same field rules as Update IDP (title, description, style, category, property type that
-//   matches the category, budget > 0, status), so validation reuses UpdateIDPController.
+// - Same field rules as Edit IDP (title, description, style, category, property type that
+//   matches the category, budget > 0, status), so validation reuses EditIDPController.
 // - 1 to 10 photos, JPG / PNG / WebP, not too large. The first photo is the main photo.
 // - All-or-nothing: if saving fails part-way (browser storage full), nothing is saved.
 //
@@ -25,18 +25,18 @@
 import { IDP } from "@/entity/IDP";
 import { InteriorDesignerAccount } from "@/entity/InteriorDesignerAccount";
 import { IDPPhoto } from "@/entity/IDPPhoto";
-import { UpdateIDPController } from "@/controller/UpdateIDPController";
+import { EditIDPController } from "@/controller/EditIDPController";
 
 // success = true  -> idpID is the new IDP's ID
 // success = false -> errors lists what went wrong
 export class CreateIDPController {
   static getCreateFormData() {
-    return UpdateIDPController.getUpdateFormData();
+    return EditIDPController.getEditFormData();
   }
 
   // A new IDP has no existing photos, so all of its photos are new uploads.
   static validateIDP(input, photos) {
-    return UpdateIDPController.validateIDP(input, 0, photos);
+    return EditIDPController.validateIDP(input, 0, photos);
   }
 
   static async createIDP(designerID, input, photos) {

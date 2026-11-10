@@ -41,7 +41,7 @@ npm test
 | Customer | Get Designer Recommendations | `/customer/recommendations` |
 | Interior Designer | View IDP Details (My Projects list) | `/designer/idp`, `/designer/idp/[idpID]` |
 | Interior Designer | Create IDP | `/designer/idp/create` |
-| Interior Designer | Update IDP | `/designer/idp/[idpID]/edit` |
+| Interior Designer | Edit IDP | `/designer/idp/[idpID]/edit` |
 | Interior Designer | IDP Performance Dashboard | `/designer/dashboard` |
 | User Admin | Verify ID Accounts | `/user-admin/verify-id-accounts` |
 | Platform Manager | Promote IDP | `/platform-manager/promote-idp/[idpID]` |
