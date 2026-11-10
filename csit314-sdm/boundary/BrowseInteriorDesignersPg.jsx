@@ -1,27 +1,3 @@
-// Boundary: BrowseInteriorDesignersPg
-// Feature: Browse Interior Designers (Customer)
-// User story: As a customer, I want to browse verified interior designers,
-// so that I can compare firms before choosing one.
-//
-// Route: /customer/designers   (app/customer/designers/page.jsx renders this). No login needed.
-//
-// What goes here:
-// - Grid of designer cards: company name, logo, location, styles, number of IDPs, total likes,
-//   and up to 3 sample IDP photos (each links to ViewIDPPg).
-// - Filters: keyword (name, description or designer ID), location, style, category.
-// - "/customer/designers?designer=D1" (the "By ..." link on an IDP page) shows only that
-//   designer, with a "Show all designers" link.
-// - Sort dropdown: name, most IDPs, most liked, newest.
-// - The page opens with every verified designer listed (no filters, sorted by name);
-//   the customer clicks Search to apply filters and sort.
-//
-// Methods:
-// - displayDesigners(designers)
-// - submitFilters(filters, sortBy)
-// - displayNoResults()
-// - displayErrorPg(message)
-//
-// Attributes: none
 "use client";
 
 import Link from "next/link";
