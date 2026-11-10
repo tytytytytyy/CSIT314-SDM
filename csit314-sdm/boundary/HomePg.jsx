@@ -1,19 +1,3 @@
-// Boundary: HomePg  (TEMPORARY - replace with the real IDP list / search page)
-// Route: /   (customers only)
-// "Featured projects": IDPs a platform manager is promoting today (only shown when there are some).
-// "All projects": every other IDP as a grid of cards (main photo, title, style, designer). The next
-// page loads by itself when the customer scrolls near the bottom, until there are no more.
-// Each card links to ViewIDPPg, and its designer name to Browse Interior Designers.
-//
-// Methods:
-// - loadFeatured()                   -> HomeController.getFeaturedIDPs()
-// - displayFeaturedCards(cards)      the "Featured projects" section
-// - loadNextPage()                   -> HomeController.getIDPFeed(offset)
-// - displayIDPCards(cards)           adds a page of cards under the ones already shown
-// - displayEndOfList()
-// - displayEmptyList()
-//
-// Attributes: none
 "use client";
 
 import Link from "next/link";
