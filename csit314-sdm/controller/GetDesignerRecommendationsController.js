@@ -162,17 +162,17 @@ export class GetDesignerRecommendationsController {
       .slice(0, this.MAX_TOP_STYLES);
   }
 
-  static toRecommendation(d) {
+  static toRecommendation(designer) {
     return {
-      designerID: d.designerID,
-      companyName: d.companyName,
-      logoURL: d.logoURL,
-      location: d.location,
-      topStyles: this.getTopStyles(d.idps),
-      samplePhotos: d.samplePhotos,
-      totalLikes: d.totalLikes,
-      score: d.score,
-      reason: d.reason,
+      designerID: designer.designerID,
+      companyName: designer.companyName,
+      logoURL: designer.logoURL,
+      location: designer.location,
+      topStyles: this.getTopStyles(designer.idps),
+      samplePhotos: designer.samplePhotos,
+      totalLikes: designer.totalLikes,
+      score: designer.score,
+      reason: designer.reason,
     };
   }
 }

@@ -17,19 +17,15 @@ export default function ViewFavouritesListPg() {
   const displayFavourites = (favourites) =>
     setView({ kind: "list", favourites });
   const displayEmptyList = () => setView({ kind: "empty" });
-  const displayErrorPg = (message) => setView({ kind: "error", message });
 
   const showList = (favourites) =>
     favourites.length === 0 ? displayEmptyList() : displayFavourites(favourites);
 
   useEffect(() => {
     // Customer clicks "Favourites List" in the nav bar.
+    // Pre-condition: the customer is logged in (LoginGate only lets customers open this page).
     const load = async () => {
       const customerID = SessionController.getLoggedInCustomerID();
-      if (!customerID) {
-        displayErrorPg("Please log in as a customer");
-        return;
-      }
       const favourites =
         await ViewFavouritesListController.getFavourites(customerID);
       if (favourites.length === 0) displayEmptyList();
@@ -93,9 +89,6 @@ export default function ViewFavouritesListPg() {
       )}
 
       {view.kind === "loading" && <p className="mt-6">Loading...</p>}
-      {view.kind === "error" && (
-        <p className="mt-6 text-red-600">{view.message}</p>
-      )}
       {view.kind === "empty" && (
         <div className="card mt-6 p-8 text-center">
           <p className="text-zinc-500">You have not liked any IDPs yet.</p>
