@@ -1,7 +1,5 @@
 # Continuous Integration: runs on every push and every pull request.
 # Lint -> unit tests (vitest) -> production build. A red check blocks the merge.
-# Continuous Delivery: Vercel is connected to this repo and deploys main automatically
-# after a merge, and gives each pull request its own preview URL.
 name: CI
 
 on:
